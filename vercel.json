@@ -1,0 +1,26 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/shield-video", "destination": "/shield-video/index.html" },
+    { "source": "/shield-video/(.*)", "destination": "/shield-video/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "functions": {
+    "api/chat.ts": { "maxDuration": 60 },
+    "api/aria.ts": { "maxDuration": 60 },
+    "api/lex.ts": { "maxDuration": 60 },
+    "api/rag-upload.ts": { "maxDuration": 60 },
+    "api/rag-documents.ts": { "maxDuration": 30 },
+    "api/sessions.ts": { "maxDuration": 15 },
+    "api/conversations.ts": { "maxDuration": 15 },
+    "api/projects.ts": { "maxDuration": 15 }
+  }
+}

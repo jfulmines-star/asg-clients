@@ -1,4 +1,4 @@
-Z/**
+/**
  * Sessions API — groups a member's flat message history into browsable sessions.
  * GET  /api/sessions?slug=octant8kevin&member=kevin  → list of sessions
  * GET  /api/sessions?slug=octant8kevin&member=kevin&session=0  → full messages for one session

@@ -189,7 +189,9 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
           const d = await r.json()
           const msgs = d.messages || d.history || []
           if (msgs.length > 0) {
-            setMessages(msgs.map((m: any) => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })))
+            // Show last 20 messages to avoid rendering 100+ large messages at once
+            const recent = msgs.slice(-20)
+            setMessages(recent.map((m: any) => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })))
           }
         }
       } catch {}
@@ -394,6 +396,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
     return (
       <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif" }}>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; }`}</style>
         <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
           <div style={{ fontSize: '13px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '12px' }}>AxiomStream Group</div>
           <div style={{ fontSize: '32px', fontWeight: 900, marginBottom: '6px', letterSpacing: '-0.5px', color: theme.text }}>{config.clientName}</div>
@@ -419,6 +422,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   return (
     <div style={{ minHeight: '100vh', background: theme.bg, color: '#FAFAFA', fontFamily: "'Inter', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+      <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; }`}</style>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, background: theme.bg, zIndex: 100 }}>
         <div>

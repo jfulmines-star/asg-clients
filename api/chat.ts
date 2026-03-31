@@ -2225,10 +2225,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Always load recent institutional context from full flat list (all conversations).
     // This is Rex's cross-session memory — it sees everything regardless of which
     // conversation is currently active. UI conversation boundaries are invisible to Rex.
-    const allRecentMsgs = await readMemberThread(slug, memberSlug, 60);
+    const allRecentMsgs = await readMemberThread(slug, memberSlug, 100);
     const institutionalMsgs = allRecentMsgs
       .filter(m => m.content && typeof m.content === 'string' && (m.role === 'user' || m.role === 'agent') && m.content !== '___SESSION_BREAK___' && m.role !== 'system')
-      .slice(-30); // last 30 messages across ALL conversations
+      .slice(-80); // last 80 messages across ALL conversations — increased from 30 to prevent amnesia on re-login
 
     // Sanitize incoming history first — strip tool_use/tool_result blocks before any processing
     const incomingHistory = ((history as AnthropicMessage[]) || []).filter(m => typeof m.content === 'string');

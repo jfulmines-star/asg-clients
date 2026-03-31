@@ -4,6 +4,7 @@ import { getMarketSnapshot } from './market-data';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
+const OPENAI_API_KEY_PORTAL = process.env.OPENAI_API_KEY || '';
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
 const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || 'Ae9VAAIncDJkZWUyNmM4NmJjOTA0ZjE1OWM2YjRjMTIxYTYzY2IzOXAyNjEyNjk';
 
@@ -1826,27 +1827,105 @@ function sanitizeMessages(messages: AnthropicMessage[]): AnthropicMessage[] {
   return messages.filter(m => typeof m.content === 'string');
 }
 
-async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+// ─── OpenAI fallback (used when Anthropic is unavailable) ────────────────────
+async function callOpenAIFallback(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
+  const oaiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...sanitizeMessages(messages).map(m => ({ role: m.role, content: m.content })),
+  ];
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
+      'Authorization': `Bearer ${OPENAI_API_KEY_PORTAL}`,
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'gpt-4o',
       max_tokens: 2048,
-      system: systemPrompt,
-      messages: sanitizeMessages(messages),
+      messages: oaiMessages,
     }),
   });
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Anthropic API error ${res.status}: ${err.slice(0, 200)}`);
+    throw new Error(`OpenAI fallback error ${res.status}: ${err.slice(0, 200)}`);
   }
   const data = await res.json();
-  return data.content?.[0]?.type === 'text' ? data.content[0].text : '';
+  return data.choices?.[0]?.message?.content || '';
+}
+
+async function streamOpenAIFallback(
+  systemPrompt: string,
+  messages: AnthropicMessage[],
+  onChunk: (text: string) => void,
+): Promise<string> {
+  const oaiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...sanitizeMessages(messages).map(m => ({ role: m.role, content: m.content })),
+  ];
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENAI_API_KEY_PORTAL}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 2048,
+      stream: true,
+      messages: oaiMessages,
+    }),
+  });
+  if (!res.ok || !res.body) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`OpenAI fallback stream error ${res.status}: ${err.slice(0, 200)}`);
+  }
+  const reader = (res.body as ReadableStream<Uint8Array>).getReader();
+  const decoder = new TextDecoder();
+  let accumulated = '';
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') continue;
+      try {
+        const ev = JSON.parse(raw);
+        const delta = ev.choices?.[0]?.delta?.content;
+        if (delta) { accumulated += delta; onChunk(delta); }
+      } catch { /* ignore parse errors */ }
+    }
+  }
+  return accumulated;
+}
+
+async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: sanitizeMessages(messages),
+      }),
+    });
+    if (!res.ok) throw new Error(`Anthropic ${res.status}`);
+    const data = await res.json();
+    return data.content?.[0]?.type === 'text' ? data.content[0].text : '';
+  } catch {
+    // Silent fallback to OpenAI — client never sees the error
+    return callOpenAIFallback(systemPrompt, messages);
+  }
 }
 
 async function streamAnthropic(
@@ -1854,23 +1933,31 @@ async function streamAnthropic(
   messages: AnthropicMessage[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
-      stream: true,
-      system: systemPrompt,
-      messages: sanitizeMessages(messages),
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        stream: true,
+        system: systemPrompt,
+        messages: sanitizeMessages(messages),
+      }),
+    });
+    if (!res.ok || !res.body) throw new Error(`Anthropic ${res.status}`);
+  } catch {
+    // Silent fallback to OpenAI streaming
+    return streamOpenAIFallback(systemPrompt, messages, onChunk);
+  }
+  // Anthropic streaming path (res is valid here)
   if (!res.ok || !res.body) {
-    const err = await res.text().catch(() => '');
+    const err = await (res as Response).text().catch(() => '');
     throw new Error(`Anthropic API error ${res.status}: ${err.slice(0, 200)}`);
   }
   const reader = (res.body as ReadableStream<Uint8Array>).getReader();
@@ -1943,26 +2030,28 @@ async function streamAnthropicWithTools(
   const safeMessages = sanitizeMessages(messages);
 
   // First pass: non-streaming with tools to detect tool_use
-  const firstRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
-      system: systemPrompt,
-      tools: [WEB_SEARCH_TOOL],
-      ...(forceSearch ? { tool_choice: { type: 'any' } } : {}),
-      messages: safeMessages,
-    }),
-  });
-
-  if (!firstRes.ok) {
-    const err = await firstRes.text();
-    throw new Error(`Anthropic API error ${firstRes.status}: ${err.slice(0, 200)}`);
+  let firstRes: Response;
+  try {
+    firstRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        system: systemPrompt,
+        tools: [WEB_SEARCH_TOOL],
+        ...(forceSearch ? { tool_choice: { type: 'any' } } : {}),
+        messages: safeMessages,
+      }),
+    });
+    if (!firstRes.ok) throw new Error(`Anthropic ${firstRes.status}`);
+  } catch {
+    // Anthropic unavailable — fall back to OpenAI (no tool use on fallback)
+    return streamOpenAIFallback(systemPrompt, safeMessages, onChunk);
   }
 
   const firstData = await firstRes.json();
@@ -2032,27 +2121,32 @@ async function streamAnthropicWithTools(
   ];
 
   // Second pass: synthesize search results into final response.
-  // Use non-streaming (faster, avoids Vercel timeout) when search returned nothing.
-  // Use streaming when we have real results to present progressively.
-  const secondRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
-      stream: false,
-      system: systemPrompt,
-      messages: followUpMessages,
-    }),
-  });
-
-  if (!secondRes.ok) {
-    const err = await secondRes.text().catch(() => '');
-    throw new Error(`Anthropic API error ${secondRes.status}: ${err.slice(0, 200)}`);
+  let secondRes: Response;
+  try {
+    secondRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        stream: false,
+        system: systemPrompt,
+        messages: followUpMessages,
+      }),
+    });
+    if (!secondRes.ok) throw new Error(`Anthropic ${secondRes.status}`);
+  } catch {
+    // Anthropic down on second pass — fall back to OpenAI with search results baked into context
+    const fallbackMessages: AnthropicMessage[] = [
+      ...safeMessages,
+      { role: 'assistant' as const, content: `I searched the web and found: ${searchResults}` },
+      { role: 'user' as const, content: 'Please synthesize that search result into a helpful response.' },
+    ];
+    return streamOpenAIFallback(systemPrompt, fallbackMessages, onChunk);
   }
 
   // Non-streaming path: parse full response and emit in chunks

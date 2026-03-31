@@ -1,4 +1,4 @@
-u�Z{
+{
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -10,8 +10,10 @@ u�Z{
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "api"]
 }

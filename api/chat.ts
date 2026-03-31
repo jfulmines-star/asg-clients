@@ -2307,7 +2307,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
   } catch { /* RAG failure is non-fatal */ }
-  // Cap history at 30 most recent turns to prevent context overload on long sessions
+  // Cap history at 80 most recent turns — increased from 30 to prevent cross-session context loss
+  // Claude Sonnet handles long contexts well; 30 was too small for heavy users like Ryan Hopper
   // Use ownRecentHistory (from Redis) when no incoming history — gives Rex cross-session memory
   const sanitizedIncoming = ((history as AnthropicMessage[]) || []).filter(m => typeof m.content === 'string');
   const baseHistory = sanitizedIncoming.length > 0
@@ -2322,7 +2323,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (typeof m.content !== 'string') return false; // only keep plain string content
       return true;
     })
-    .slice(-30);
+    .slice(-80);
 
   const messages: AnthropicMessage[] = [
     ...rawHistory,

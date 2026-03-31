@@ -94,6 +94,18 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
     contactEmail: 'antti@axiomstreamgroup.com',
     bundleChat: true,
   },
+  ryanh: {
+    name: 'Ryan Hopper — Shield Technologies',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
+  },
+  markb: {
+    name: 'Mark Bechtel — Shield Technologies',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
+  },
   // rj: { name: 'RJ Genovese — Bonadio', tier: 'trial', products: ['aria'] },
   // jt: { name: 'John Touhey', tier: 'starter', products: ['lex'] },
 }

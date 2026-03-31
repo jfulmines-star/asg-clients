@@ -15,12 +15,8 @@
   ],
   "functions": {
     "api/chat.ts": { "maxDuration": 60 },
-    "api/aria.ts": { "maxDuration": 60 },
-    "api/lex.ts": { "maxDuration": 60 },
-    "api/rag-upload.ts": { "maxDuration": 60 },
-    "api/rag-documents.ts": { "maxDuration": 30 },
+    "api/rag-chat.ts": { "maxDuration": 60 },
     "api/sessions.ts": { "maxDuration": 15 },
-    "api/conversations.ts": { "maxDuration": 15 },
-    "api/projects.ts": { "maxDuration": 15 }
+    "api/conversations.ts": { "maxDuration": 15 }
   }
 }

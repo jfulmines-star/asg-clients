@@ -17,6 +17,7 @@
     "api/chat.ts": { "maxDuration": 60 },
     "api/rag-chat.ts": { "maxDuration": 60 },
     "api/sessions.ts": { "maxDuration": 15 },
-    "api/conversations.ts": { "maxDuration": 15 }
+    "api/conversations.ts": { "maxDuration": 15 },
+    "api/portal-chat-history.ts": { "maxDuration": 15 }
   }
 }

@@ -12,7 +12,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { randomUUID } from 'crypto';
 
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
-const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || 'Ae9VAAIncDJkZWUyNmM4NmJjOTA0ZjE1OWM2YjRjMTIxYTYzY2IzOXAyNjEyNjk';
+const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || 'Ae9VAAIncDIzYWNmNzg3NGJjMDE0ZWFmYThmNWM2YzM4MzE5NTRjNHAyNjEyNjk';
 
 async function upstashCmd(cmd: (string | number)[]) {
   const res = await fetch(UPSTASH_URL, {

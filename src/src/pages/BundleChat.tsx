@@ -376,6 +376,12 @@ function starters(agents: string[], slug = '') {
     "Help me build a data governance policy for the surveillance data our drone network will collect.",
     "Evaluate build vs. buy vs. partner for standing up our command and control software layer.",
   ]
+  if (slug === 'ryanh') return [
+    "Walk me through the top NAVSEA buying commands for our NSN-assigned corrosion products.",
+    "Help me build a capture strategy for a Coast Guard Acquisition Directorate opportunity.",
+    "Draft an outbound email to a depot contracting officer we haven't worked with before.",
+    "What are the strongest proof points I should lead with when briefing a Navy program office?",
+  ]
   if (slug === 'anttip') return [
     "Mikä erottaa Platinum.ai:n kilpailijoista pitkässä juoksussa?",
     "What's the distribution model that actually scales for AWP — is it direct, channel, or something else?",

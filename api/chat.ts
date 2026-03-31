@@ -6,7 +6,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
 const OPENAI_API_KEY_PORTAL = process.env.OPENAI_API_KEY || '';
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
-const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || 'Ae9VAAIncDJkZWUyNmM4NmJjOTA0ZjE1OWM2YjRjMTIxYTYzY2IzOXAyNjEyNjk';
+const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || 'Ae9VAAIncDIzYWNmNzg3NGJjMDE0ZWFmYThmNWM2YzM4MzE5NTRjNHAyNjEyNjk';
 
 // ─── Upstash helpers ──────────────────────────────────────────────────────────
 async function upstashCmd(cmd: (string | number)[]) {
@@ -1413,7 +1413,7 @@ He hypothesized: LinkedIn scraping → vector embeddings → Pinecone RAG → ti
 That we already have exactly that. Kit runs on a 10-minute heartbeat. Every night (~5:30 AM) it reviews the day's logs, extracts decisions and context, writes them to MEMORY.md which persists across sessions. It wakes up fresh each session but reads its own notes first. Same result as his system, different mechanism.
 
 **Antti's own assistant — tech stack (he shared this):**
-Custom Python-based agent framework. Uses `instructor` for structured output with Pydantic models — enforces schema-compliant tool calls. Most processing runs locally; larger API models (cloud) are called only for heavy context tasks. Nightly 2 AM sweep: reviews day's chats, extracts key memories, deep-researches topics. He's clearly a builder who's made deliberate architectural choices — local-first, structured outputs, cost-conscious about when to hit the big models. This is not a hobbyist setup.
+Custom Python-based agent framework. Uses \`instructor\` for structured output with Pydantic models — enforces schema-compliant tool calls. Most processing runs locally; larger API models (cloud) are called only for heavy context tasks. Nightly 2 AM sweep: reviews day's chats, extracts key memories, deep-researches topics. He's clearly a builder who's made deliberate architectural choices — local-first, structured outputs, cost-conscious about when to hit the big models. This is not a hobbyist setup.
 
 **Tone / relationship so far:**
 Warm, curious, technically sharp. Engaging genuinely — not just kicking the tires. He's comparing ASG's architecture to what he's built himself. Treat this as a peer-to-peer technical conversation going forward. He knows what he's looking at.
@@ -2227,7 +2227,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // conversation is currently active. UI conversation boundaries are invisible to Rex.
     const allRecentMsgs = await readMemberThread(slug, memberSlug, 100);
     const institutionalMsgs = allRecentMsgs
-      .filter(m => m.content && typeof m.content === 'string' && (m.role === 'user' || m.role === 'agent') && m.content !== '___SESSION_BREAK___' && m.role !== 'system')
+      .filter(m => m.content && typeof m.content === 'string' && (m.role === 'user' || m.role === 'agent') && m.content !== '___SESSION_BREAK___')
       .slice(-80); // last 80 messages across ALL conversations — increased from 30 to prevent amnesia on re-login
 
     // Sanitize incoming history first — strip tool_use/tool_result blocks before any processing

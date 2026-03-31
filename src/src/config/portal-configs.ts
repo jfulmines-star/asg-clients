@@ -35,6 +35,7 @@ export interface PortalConfig {
   aboutPoints?: AboutPoint[]  // override default "About Your Agent" bullets
   poweredBy?: string        // footer override — default "Powered by AxiomStream Group"
   whiteLabel?: boolean      // if true, omit ASG branding from chart exports
+  memberName?: string       // full name used for Redis member key (e.g. "Ryan Hopper") — falls back to clientName
 }
 
 // ─── Client Configs ──────────────────────────────────────────────────────────
@@ -135,6 +136,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     slug: 'ryanh',
     pin: '5506',
     clientName: 'Ryan',
+    memberName: 'Ryan Hopper',
     company: 'Shield Technologies — Navy & Coast Guard',
     agentId: 'rex',
     agentLabel: 'Rex',

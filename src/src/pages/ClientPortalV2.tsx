@@ -158,9 +158,9 @@ function IntakeSection({ config, accent, fields, setFields, onSave, tv = DEFAULT
 }
 
 // ─── Chat section ─────────────────────────────────────────────────────────────
-function ChatSection({ config, accent, savedContext, fields, fontSize = 14, themeMode = 'dark', tv }: {
+function ChatSection({ config, accent, savedContext, fields, fontSize = 14, themeMode = 'dark', tv, preloadedHistory }: {
   config: PortalConfig; accent: string; savedContext: any; fields: any;
-  fontSize?: number; themeMode?: string; tv?: typeof DEFAULT_TV
+  fontSize?: number; themeMode?: string; tv?: typeof DEFAULT_TV; preloadedHistory?: { role: string; content: string }[] | null
 }) {
   const th = tv || DEFAULT_TV
   const bg = themeMode === 'light' ? '#F8F9FA' : th.BG
@@ -181,17 +181,25 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMsgRef = useRef<HTMLDivElement>(null)
 
-  // Load history on mount — uses existing /api/history endpoint (same Redis key as BundleChat)
+  // Load history on mount — use preloaded data if available (avoids race condition)
   useEffect(() => {
     async function load() {
       try {
+        // If parent already fetched history, use it directly — no extra network call
+        if (preloadedHistory !== undefined && preloadedHistory !== null) {
+          if (preloadedHistory.length > 0) {
+            setMessages(preloadedHistory)
+          }
+          setReady(true)
+          return
+        }
+        // Fallback: fetch directly
         const r = await fetch(`/api/history?slug=${encodeURIComponent(config.slug)}&member=${encodeURIComponent(memberName)}`)
         if (r.ok) {
           const d = await r.json()
           const msgs = d.messages || d.history || []
           if (msgs.length > 0) {
-            // Show last 20 messages to avoid rendering 100+ large messages at once
-            const recent = msgs.slice(-20)
+            const recent = msgs.slice(-60)
             setMessages(recent.map((m: any) => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })))
           }
         }
@@ -199,7 +207,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
       setReady(true)
     }
     load()
-  }, [])
+  }, [preloadedHistory])
 
   // Greeting on first load or after fresh start
   useEffect(() => {
@@ -372,6 +380,23 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
     return init
   })
 
+  // Pre-load history at top level so ChatSection always has it on mount
+  const [preloadedHistory, setPreloadedHistory] = useState<{ role: string; content: string }[] | null>(null)
+  useEffect(() => {
+    const memberName = (config as any).memberName || config.clientName
+    fetch(`/api/history?slug=${encodeURIComponent(config.slug)}&member=${encodeURIComponent(memberName)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d) {
+          const msgs = (d.messages || d.history || []).slice(-60)
+          setPreloadedHistory(msgs.map((m: any) => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })))
+        } else {
+          setPreloadedHistory([])
+        }
+      })
+      .catch(() => setPreloadedHistory([]))
+  }, [config.slug])
+
   // On unlock, load saved context
   useEffect(() => {
     if (!unlocked) return
@@ -522,7 +547,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
           {section === 'welcome' && <WelcomeSection config={config} accent={accent} intakeSaved={intakeSaved} onNavigate={setSection} tv={tv} />}
           {section === 'about' && <AboutSection config={config} accent={accent} tv={tv} />}
           {section === 'intake' && !intakeSaved && <IntakeSection config={config} accent={accent} fields={fields} setFields={setFields} onSave={handleSaveIntake} tv={tv} />}
-          {section === 'chat' && <ChatSection config={config} accent={accent} savedContext={intakeSaved ? savedContext : null} fields={intakeSaved ? fields : null} fontSize={FONT_SIZE[textSize]} themeMode={themeMode} tv={tv} />}
+          {section === 'chat' && <ChatSection config={config} accent={accent} savedContext={intakeSaved ? savedContext : null} fields={intakeSaved ? fields : null} fontSize={FONT_SIZE[textSize]} themeMode={themeMode} tv={tv} preloadedHistory={preloadedHistory} />}
         </div>
       </div>
     </div>

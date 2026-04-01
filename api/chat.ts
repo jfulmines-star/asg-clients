@@ -6,7 +6,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
 const OPENAI_API_KEY_PORTAL = process.env.OPENAI_API_KEY || '';
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
-const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || 'Ae9VAAIncDIzYWNmNzg3NGJjMDE0ZWFmYThmNWM2YzM4MzE5NTRjNHAyNjEyNjk';
+const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || '';
 
 // ─── Upstash helpers ──────────────────────────────────────────────────────────
 async function upstashCmd(cmd: (string | number)[]) {

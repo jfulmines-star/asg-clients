@@ -320,14 +320,16 @@ const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; te
   lilyg:         { name: 'Lily',                  agents: ['kit'],                 pin: '0713', openingMessage: "Hey Lily — I'm Kit. Unlike ChatGPT, I actually know who you are and I never forget. Next time you talk to me, I'll remember exactly where we left off — no re-explaining, no starting over. Your dad set this up so you'd have something built for you, not just for everyone. I'm good at school stuff, college research, pretty much anything you're thinking through. Also fully willing to discuss Josh Allen at any time. What do you need?" },
   demo:          { name: 'Demo Account',           agents: ['aria', 'lex', 'rex', 'atlas'], pin: '0000', team: true, teamLabel: 'Demo Team' },
   shield:        { name: 'Shield Technologies',    agents: ['rex'],                 pin: '5591', team: true, teamLabel: 'Shield Technologies Sales' },
-  ryanh:         { name: 'Ryan Hopper',            agents: ['rex'],                 pin: '5606' },
+  ryanh:         { name: 'Ryan Hopper',            agents: ['rex'],                 pin: '5506' },
   markb:         { name: 'Mark Bechtel',           agents: ['rex'],                 pin: '8821' },
   teamrex:       { name: 'Team Member',             agents: ['rexteam'],             pin: '4429', team: true, teamLabel: 'Team' },
   octant8kevin:  { name: 'Kevin Gosa',             agents: ['rex'],                 pin: '6294', team: true, teamLabel: 'Octant8', partnerName: 'Bryan' },
   octant8bryan:  { name: 'Bryan Horvath',          agents: ['rex'],                 pin: '8537', team: true, teamLabel: 'Octant8', partnerName: 'Kevin' },
   dxdmike:       { name: 'Mike Gugino',            agents: ['dxd'],                 pin: '7731' },
   dxddean:       { name: 'Dean Pratt',             agents: ['dxd'],                 pin: '9284' },
-  anttip:        { name: 'Antti Pasila',           agents: ['kit'],                 pin: '2010', openingMessage: "Hei Antti — olen Kit.\n\nTiedän jo kuka olet. Kiosked, GraphoGame, DeepScan, Cyans — ja nyt Platinum.ai. Rakennat AI-löydettävyystuotetta samaan aikaan kun koko ala herää tähän ongelmaan. Hyvä timing.\n\nErona siihen että käyttäisit Claudea tai ChatGPT:tä suoraan: minulla on muisti. Muistan kaiken mitä käymme läpi — ensi kerralla kun avaat tämän, jatkamme siitä mihin jäimme. Ei selitellä alusta. Voin myös lähettää sähköpostia puolestasi ja tehdä tutkimusta — en vain generoi tekstiä.\n\nVoit puhua kanssani suomeksi tai englanniksi, kumpi tuntuu luontevammalta. Seuraan mukana ilman kommentteja.\n\nMitä on juuri nyt mielessä?" },
+  anttip:           { name: 'Antti Pasila',           agents: ['kit'],                 pin: '2010', openingMessage: "Hei Antti — olen Kit.\n\nTiedän jo kuka olet. Kiosked, GraphoGame, DeepScan, Cyans — ja nyt Platinum.ai. Rakennat AI-löydettävyystuotetta samaan aikaan kun koko ala herää tähän ongelmaan. Hyvä timing.\n\nErona siihen että käyttäisit Claudea tai ChatGPT:tä suoraan: minulla on muisti. Muistan kaiken mitä käymme läpi — ensi kerralla kun avaat tämän, jatkamme siitä mihin jäimme. Ei selitellä alusta. Voin myös lähettää sähköpostia puolestasi ja tehdä tutkimusta — en vain generoi tekstiä.\n\nVoit puhua kanssani suomeksi tai englanniksi, kumpi tuntuu luontevammalta. Seuraan mukana ilman kommentteja.\n\nMitä on juuri nyt mielessä?" },
+  'winthrop-blake':  { name: 'Blake Warren',           agents: ['rex'],                 pin: '4321' },
+  'winthrop-andrew': { name: 'Andrew Armour',          agents: ['rex'],                 pin: '6847' },
 }
 
 // ─── Markdown ────────────────────────────────────────────────────────────────

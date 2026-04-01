@@ -176,6 +176,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const [input, setInput] = useState('')
   const [inputKey, setInputKey] = useState(0)
   const [ready, setReady] = useState(false)
+  const [freshStart, setFreshStart] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMsgRef = useRef<HTMLDivElement>(null)
@@ -200,20 +201,19 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
     load()
   }, [])
 
-  // Greeting on first load
+  // Greeting on first load or after fresh start
   useEffect(() => {
-    if (!ready) return
+    if (!ready && !freshStart) return
     if (messages.length === 0) {
       const greeting = { role: 'assistant', content: config.chatGreeting(!!savedContext) }
       setMessages([greeting])
-      // History is written by /api/chat automatically via appendMemberThread — no separate write needed
       void fetch('/api/portal-chat-history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug: config.slug, role: 'assistant', content: greeting.content }),
       }).catch(() => {})
     }
-  }, [ready])
+  }, [ready, freshStart])
 
   useEffect(() => {
     if (loading) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -230,6 +230,21 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
         `${f.label}: ${Array.isArray(fields[f.key]) ? fields[f.key].join(', ') : fields[f.key] || 'not specified'}`
       ).join('\n')
     : ''
+
+  function handleStartFresh() {
+    // Clears the visual conversation and sets a fresh-start flag.
+    // Redis history is preserved — Rex's institutional memory stays intact.
+    // A session break marker is written so future loads skip past this point.
+    void fetch('/api/portal-chat-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: config.slug, role: 'system', content: '___SESSION_BREAK___' }),
+    }).catch(() => {})
+    setMessages([])
+    setFreshStart(true)
+    setInput('')
+    setInputKey(k => k + 1)
+  }
 
   async function send() {
     if (!input.trim() || loading) return
@@ -249,7 +264,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent: config.agentId, message: text, history, slug: config.slug, teamMember: memberName, isLead: false, extraContext }),
+        body: JSON.stringify({ agent: config.agentId, message: text, history, slug: config.slug, teamMember: memberName, isLead: false, extraContext, disableTeamContext: !!(config as any).disableTeamContext }),
       })
       const data = await res.json()
       const reply = data.reply || data.text || data.message || 'Something went wrong.'
@@ -266,12 +281,21 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
 
   return (
     <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 120px)', minHeight: '400px' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>Your Access</div>
-        <h2 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '4px' }}>Chat with {config.agentLabel}</h2>
-        <p style={{ fontSize: '13px', color: gray }}>
-          {config.company} context loaded.{savedContext && <span style={{ color: accent }}> Practice context saved ✓</span>}
-        </p>
+      <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+        <div>
+          <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>Your Access</div>
+          <h2 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '4px' }}>Chat with {config.agentLabel}</h2>
+          <p style={{ fontSize: '13px', color: gray }}>
+            {config.company} context loaded.{savedContext && <span style={{ color: accent }}> Practice context saved ✓</span>}
+          </p>
+        </div>
+        <button
+          onClick={handleStartFresh}
+          title="Start a fresh conversation. Your history and context are preserved."
+          style={{ flexShrink: 0, marginTop: '4px', padding: '7px 14px', borderRadius: '8px', border: `1px solid ${border}`, background: 'transparent', color: gray, fontFamily: 'inherit', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+        >
+          ↺ Start Fresh
+        </button>
       </div>
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', background: surface, border: `1px solid ${border}`, borderRadius: '12px 12px 0 0', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

@@ -36,6 +36,7 @@ export interface PortalConfig {
   poweredBy?: string        // footer override — default "Powered by AxiomStream Group"
   whiteLabel?: boolean      // if true, omit ASG branding from chart exports
   memberName?: string       // full name used for Redis member key (e.g. "Ryan Hopper") — falls back to clientName
+  disableTeamContext?: boolean  // if true, suppress cross-member context injection (use for individual clients)
 }
 
 // ─── Client Configs ──────────────────────────────────────────────────────────
@@ -347,6 +348,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       : "Hey Blake — I'm Rex. I've been briefed on Winthrop and your background. What are you working on right now?",
     intakeFields: REX_CRE_INTAKE,
     poweredBy: 'Powered by AxiomStream Group · Built for Winthrop Realty Group',
+    disableTeamContext: true,
   },
 
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────

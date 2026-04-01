@@ -2237,10 +2237,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let ownRecentHistory: AnthropicMessage[] = [];
   let systemContextAddendum = '';
   let userMemory = '';
+  const disableTeamContext = req.body.disableTeamContext === true;
   if (slug) {
     const memberSlug = teamMember.toLowerCase().replace(/\s+/g, '-');
     [teamContext, userMemory] = await Promise.all([
-      buildTeamContext(slug, teamMember),
+      disableTeamContext ? Promise.resolve('') : buildTeamContext(slug, teamMember),
       getUserMemory(slug, teamMember),
       appendMemberThread(slug, teamMember, { member: teamMember, role: 'user', content: message, ts: Date.now() }),
     ]);
@@ -2359,26 +2360,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Winthrop portals: run tool-use search synchronously, return JSON
   // The portal UI checks for json response and handles rendering separately
   if (forceSearch) {
+    let accumulated = '';
     try {
-      const accumulated = await streamAnthropicWithTools(systemPrompt, messages, () => {}, true);
-      const cleanedAccumulated = stripMarkdown(stripAgentPrefix(accumulated));
-      if (slug) {
-        const now = Date.now();
-        await appendMemberThread(slug, teamMember, { member: teamMember, role: 'agent', agent, content: cleanedAccumulated, ts: now });
-        if (isTeamCapture) {
-          await writeTeamIntel(slug, { member: teamMember, agent, content: accumulated, ts: now });
-        }
-        readMemberThread(slug, teamMember, 60).then(thread => {
-          if (thread.length > 0 && thread.length % 5 === 0) {
-            consolidateMemory(slug, teamMember, thread).catch(() => {});
-          }
-        }).catch(() => {});
+      accumulated = await streamAnthropicWithTools(systemPrompt, messages, () => {}, true);
+    } catch (anthropicErr: unknown) {
+      // Anthropic failed — fall back to OpenAI (no tool use, but keeps portal alive)
+      try {
+        accumulated = await callOpenAIFallback(systemPrompt, messages);
+      } catch {
+        const msg = anthropicErr instanceof Error ? anthropicErr.message : 'Unknown error';
+        return res.status(500).json({ error: msg });
       }
-      return res.json({ text: cleanedAccumulated });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      return res.status(500).json({ error: msg });
     }
+    const cleanedAccumulated = stripMarkdown(stripAgentPrefix(accumulated));
+    if (slug) {
+      const now = Date.now();
+      await appendMemberThread(slug, teamMember, { member: teamMember, role: 'agent', agent, content: cleanedAccumulated, ts: now });
+      if (isTeamCapture) {
+        await writeTeamIntel(slug, { member: teamMember, agent, content: accumulated, ts: now });
+      }
+      readMemberThread(slug, teamMember, 60).then(thread => {
+        if (thread.length > 0 && thread.length % 5 === 0) {
+          consolidateMemory(slug, teamMember, thread).catch(() => {});
+        }
+      }).catch(() => {});
+    }
+    return res.json({ text: cleanedAccumulated });
   }
 
   const streaming = req.body?.stream === true;
@@ -2388,31 +2395,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
+    let accumulated = '';
     try {
-      const streamFn = streamAnthropicWithTools;
-      const accumulated = await streamFn(systemPrompt, messages, (text) => {
+      accumulated = await streamAnthropicWithTools(systemPrompt, messages, (text) => {
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }, forceSearch);
-      res.write('data: [DONE]\n\n');
-      res.end();
-      if (slug && accumulated) {
-        const now = Date.now();
-        const cleanedAccumulated = stripAgentPrefix(accumulated);
-        await appendMemberThread(slug, teamMember, { member: teamMember, role: 'agent', agent, content: cleanedAccumulated, ts: now });
-        if (isTeamCapture) {
-          await writeTeamIntel(slug, { member: teamMember, agent, content: accumulated, ts: now });
-        }
-        // Fire-and-forget memory consolidation every 5 messages
-        readMemberThread(slug, teamMember, 60).then(thread => {
-          if (thread.length > 0 && thread.length % 5 === 0) {
-            consolidateMemory(slug, teamMember, thread).catch(() => {});
-          }
-        }).catch(() => {});
+    } catch (anthropicErr: unknown) {
+      // Anthropic streaming failed — fall back to OpenAI non-streaming, emit as single chunk
+      try {
+        const fallbackText = await callOpenAIFallback(systemPrompt, messages);
+        accumulated = fallbackText;
+        res.write(`data: ${JSON.stringify({ text: fallbackText })}\n\n`);
+      } catch {
+        const msg = anthropicErr instanceof Error ? anthropicErr.message : 'Unknown error';
+        res.write(`data: ${JSON.stringify({ error: msg })}\n\n`);
+        res.end();
+        return;
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      res.write(`data: ${JSON.stringify({ error: msg })}\n\n`);
-      res.end();
+    }
+    res.write('data: [DONE]\n\n');
+    res.end();
+    if (slug && accumulated) {
+      const now = Date.now();
+      const cleanedAccumulated = stripAgentPrefix(accumulated);
+      await appendMemberThread(slug, teamMember, { member: teamMember, role: 'agent', agent, content: cleanedAccumulated, ts: now });
+      if (isTeamCapture) {
+        await writeTeamIntel(slug, { member: teamMember, agent, content: accumulated, ts: now });
+      }
+      readMemberThread(slug, teamMember, 60).then(thread => {
+        if (thread.length > 0 && thread.length % 5 === 0) {
+          consolidateMemory(slug, teamMember, thread).catch(() => {});
+        }
+      }).catch(() => {});
     }
     return;
   }

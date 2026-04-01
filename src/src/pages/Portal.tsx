@@ -86,6 +86,19 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
     name: 'Blake Warren — Winthrop Realty Group',
     tier: 'trial',
     products: ['rex'],
+    bundleChat: true,
+  },
+  'winthrop-blake': {
+    name: 'Blake Warren — Winthrop Realty Group',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
+  },
+  'winthrop-andrew': {
+    name: 'Andrew Armour — Winthrop Realty Group',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
   },
   anttip: {
     name: 'Antti Pasila',

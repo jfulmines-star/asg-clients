@@ -142,9 +142,9 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     agentId: 'rex',
     agentLabel: 'Rex',
     accentColor: '#4ADE80',
-    tagline: 'Navy & Coast Guard Capture Strategy',
-    whatWeKnow: 'Field Service Rep, Navy & Coast Guard · Shield Technologies Corporation · Territory: NAVSEA, NAVAIR, NAVSUP, naval depots, USCG Acquisition Directorate · NSN-assigned products on contract vehicles · $23B corrosion market, maritime = highest exposure.',
-    chatPlaceholder: 'Navy/USCG pipeline, buying commands, capture strategy — what are we working on?',
+    tagline: 'Navy, Coast Guard & Commercial Aviation',
+    whatWeKnow: 'Field Service Rep, Navy/Coast Guard/Commercial Aviation · Shield Technologies Corporation · Territory: NAVSEA, NAVAIR, NAVSUP, naval depots, USCG, Commercial MRO · CFM56 + CFM LEAP engine covers · Southwest Airlines active account (Jaime, Christopher Richardson, Megan Kahle) · MRO Americas April 21–23.',
+    chatPlaceholder: 'Southwest pipeline, Navy/USCG capture, MRO accounts — what are we working on?',
     chatGreeting: (saved) => saved
       ? "Ryan — context loaded. What's the priority today?"
       : "Ryan — I'm briefed on your territory: Navy buying commands, Coast Guard, and the depot pipeline. What are we working on?",

@@ -7,7 +7,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
-const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || '';
+const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
 
 async function upstashCmd(cmd: (string | number)[]) {
   const res = await fetch(UPSTASH_URL, {

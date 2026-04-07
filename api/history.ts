@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
-const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || '';
+const UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
 
 async function upstashCmd(cmd: (string | number)[]) {
   const res = await fetch(UPSTASH_URL, {
@@ -29,13 +29,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!slug || !member) return res.status(400).json({ error: 'Missing slug or member' });
 
   try {
-    const result = await upstashCmd(['LRANGE', memberKey(slug, member), -100, -1]);
-    const messages: { member: string; role: string; agent?: string; content: string; ts: number }[] = [];
+    let result = await upstashCmd(['LRANGE', memberKey(slug, member), -100, -1]);
+    let rawMessages = Array.isArray(result.result) ? result.result : [];
 
-    if (Array.isArray(result.result)) {
-      for (const s of result.result) {
-        try { messages.push(JSON.parse(s)); } catch { /* skip */ }
+    // Fallback: if member-name key is empty, check legacy history:{slug} key (old portal format)
+    if (rawMessages.length === 0) {
+      const legacyResult = await upstashCmd(['LRANGE', `history:${slug}`, -100, -1]);
+      if (Array.isArray(legacyResult.result) && legacyResult.result.length > 0) {
+        rawMessages = legacyResult.result;
       }
+    }
+
+    const messages: { member: string; role: string; agent?: string; content: string; ts: number }[] = [];
+    for (const s of rawMessages) {
+      try { messages.push(JSON.parse(s)); } catch { /* skip */ }
     }
 
     res.json({ messages });

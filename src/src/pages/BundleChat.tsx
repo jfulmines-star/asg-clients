@@ -330,6 +330,7 @@ const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; te
   anttip:           { name: 'Antti Pasila',           agents: ['kit'],                 pin: '2010', openingMessage: "Hei Antti — olen Kit.\n\nTiedän jo kuka olet. Kiosked, GraphoGame, DeepScan, Cyans — ja nyt Platinum.ai. Rakennat AI-löydettävyystuotetta samaan aikaan kun koko ala herää tähän ongelmaan. Hyvä timing.\n\nErona siihen että käyttäisit Claudea tai ChatGPT:tä suoraan: minulla on muisti. Muistan kaiken mitä käymme läpi — ensi kerralla kun avaat tämän, jatkamme siitä mihin jäimme. Ei selitellä alusta. Voin myös lähettää sähköpostia puolestasi ja tehdä tutkimusta — en vain generoi tekstiä.\n\nVoit puhua kanssani suomeksi tai englanniksi, kumpi tuntuu luontevammalta. Seuraan mukana ilman kommentteja.\n\nMitä on juuri nyt mielessä?" },
   'winthrop-blake':  { name: 'Blake Warren',           agents: ['rex'],                 pin: '4321' },
   'winthrop-andrew': { name: 'Andrew Armour',          agents: ['rex'],                 pin: '6847' },
+  kenk:              { name: 'Ken Kocolowski',         agents: ['rex'],                 pin: '2847' },
 }
 
 // ─── Markdown ────────────────────────────────────────────────────────────────

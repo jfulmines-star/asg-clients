@@ -10,19 +10,19 @@ const PRODUCT_META: Record<string, { name: string; tagline: string; color: strin
     name: 'Kit',
     tagline: 'Your Personal AI',
     color: '#7C3AED',
-    description: 'Built for you specifically — remembers everything, takes action, works in Finnish or English.',
+    description: 'Built for you specifically - remembers everything, takes action, works in Finnish or English.',
   },
   aria: {
     name: 'Aria',
     tagline: 'Tax & Accounting AI',
     color: '#27B5A3',
-    description: 'IRC research, memo drafting, and ASC 740 analysis — calibrated to your practice.',
+    description: 'IRC research, memo drafting, and ASC 740 analysis - calibrated to your practice.',
   },
   lex: {
     name: 'Lex',
     tagline: 'Legal & Compliance AI',
     color: '#E8B84B',
-    description: 'Case law research, motion drafting, and contract review — calibrated to your firm.',
+    description: 'Case law research, motion drafting, and contract review - calibrated to your firm.',
   },
   rex: {
     name: 'Rex',
@@ -61,14 +61,14 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
   },
   // ── Octant8 ──────────────────────────────────────────────────────────────
   octant8kevin: {
-    name: 'Kevin Gosa — Octant8',
+    name: 'Kevin Gosa - Octant8',
     tier: 'trial',
     products: ['rex'],
     contactEmail: 'Kevin.gosa@octant8.com',
     bundleChat: true,
   },
   octant8bryan: {
-    name: 'Bryan Horvath — Octant8',
+    name: 'Bryan Horvath - Octant8',
     tier: 'trial',
     products: ['rex'],
     contactEmail: 'bryan.horvath@octant8.com',
@@ -83,19 +83,19 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
   },
   // ── Real clients (add as they onboard) ──────────────────────────────────
   blake: {
-    name: 'Blake Warren — Winthrop Realty Group',
+    name: 'Blake Warren - Winthrop Realty Group',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
   },
   'winthrop-blake': {
-    name: 'Blake Warren — Winthrop Realty Group',
+    name: 'Blake Warren - Winthrop Realty Group',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
   },
   'winthrop-andrew': {
-    name: 'Andrew Armour — Winthrop Realty Group',
+    name: 'Andrew Armour - Winthrop Realty Group',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
@@ -108,24 +108,24 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
     bundleChat: true,
   },
   ryanh: {
-    name: 'Ryan Hopper — Shield Technologies',
+    name: 'Ryan Hopper - Shield Technologies',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
   },
   markb: {
-    name: 'Mark Bechtel — Shield Technologies',
+    name: 'Mark Bechtel - Shield Technologies',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
   },
   kenk: {
-    name: 'Ken Kocolowski — RBP Chemical',
+    name: 'Ken Kocolowski - RBP Chemical',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
   },
-  // rj: { name: 'RJ Genovese — Bonadio', tier: 'trial', products: ['aria'] },
+  // rj: { name: 'RJ Genovese - Bonadio', tier: 'trial', products: ['aria'] },
   // jt: { name: 'John Touhey', tier: 'starter', products: ['lex'] },
 }
 
@@ -141,14 +141,13 @@ function tierBadge(tier: ClientConfig['tier']) {
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
-// Ken's portal entry: kenk (PIN: 2847) — restored 2026-04-07
+// Ken's portal entry: kenk (PIN: 2847) - restored 2026-04-07
 export default function Portal() {
   const { clientSlug } = useParams<{ clientSlug: string }>()
   const slug = (clientSlug ?? '').toLowerCase()
   const client = CLIENT_REGISTRY[slug]
-  
-  console.log('PORT slug:', slug, 'found:', !!client, 'registry:', Object.keys(CLIENT_REGISTRY))
 
+  
   if (!client) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>

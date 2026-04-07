@@ -331,6 +331,7 @@ const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; te
   'winthrop-blake':  { name: 'Blake Warren',           agents: ['rex'],                 pin: '4321' },
   'winthrop-andrew': { name: 'Andrew Armour',          agents: ['rex'],                 pin: '6847' },
   kenk:              { name: 'Ken Kocolowski',         agents: ['rex'],                 pin: '2847' },
+  'rex.asg':         { name: 'Ken Kocolowski',         agents: ['rex'],                 pin: '2847' },
 }
 
 // ─── Markdown ────────────────────────────────────────────────────────────────

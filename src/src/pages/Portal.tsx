@@ -146,6 +146,8 @@ export default function Portal() {
   const { clientSlug } = useParams<{ clientSlug: string }>()
   const slug = (clientSlug ?? '').toLowerCase()
   const client = CLIENT_REGISTRY[slug]
+  
+  console.log('PORT slug:', slug, 'found:', !!client, 'registry:', Object.keys(CLIENT_REGISTRY))
 
   if (!client) {
     return (

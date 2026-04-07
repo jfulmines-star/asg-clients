@@ -119,6 +119,12 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
     products: ['rex'],
     bundleChat: true,
   },
+  kenk: {
+    name: 'Ken Kocolowski — RBP Chemical',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
+  },
   // rj: { name: 'RJ Genovese — Bonadio', tier: 'trial', products: ['aria'] },
   // jt: { name: 'John Touhey', tier: 'starter', products: ['lex'] },
 }

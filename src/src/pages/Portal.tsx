@@ -141,6 +141,7 @@ function tierBadge(tier: ClientConfig['tier']) {
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
+// Ken's portal entry: kenk (PIN: 2847) — restored 2026-04-07
 export default function Portal() {
   const { clientSlug } = useParams<{ clientSlug: string }>()
   const slug = (clientSlug ?? '').toLowerCase()

@@ -145,11 +145,6 @@ export default function Portal() {
   const { clientSlug } = useParams<{ clientSlug: string }>()
   const slug = (clientSlug ?? '').toLowerCase()
   const client = CLIENT_REGISTRY[slug]
-  
-  // Debug: Log all available slugs and the requested one
-  console.log('Available slugs:', Object.keys(CLIENT_REGISTRY).sort())
-  console.log('Requested slug:', slug)
-  console.log('Client found:', !!client)
 
   if (!client) {
     return (

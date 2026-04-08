@@ -116,7 +116,6 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 /* Conversation */
 #bt-convo { flex: 1; overflow-y: auto; padding: 32px 24px 16px; scroll-behavior: smooth; }
-#bt-convo > * { max-width: 900px; margin-left: auto; margin-right: auto; width: 100%; }
 #bt-convo::-webkit-scrollbar { width: 4px; }
 #bt-convo::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
 #bt-convo.fs-s .bt-ai-content { font-size: 13px; line-height: 1.75; }
@@ -126,6 +125,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 #bt-convo.fs-l .bt-ai-content { font-size: 17px; line-height: 1.9; }
 #bt-convo.fs-l .bt-user-bubble { font-size: 16px; }
 .bt-msg { margin-bottom: 28px; animation: bt-fadeup .2s ease; }
+.bt-convo-inner { max-width: 900px; margin: 0 auto; width: 100%; }
 @keyframes bt-fadeup { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .bt-user { display: flex; justify-content: flex-end; }
 .bt-user-bubble { background: transparent; border: 1px solid rgba(39,181,163,.15); border-radius: 14px 14px 2px 14px; padding: 12px 16px; max-width: 75%; font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
@@ -1463,6 +1463,7 @@ export default function BundleChat() {
             </div>
           )}
 
+          <div className="bt-convo-inner">
           {thread.map(item => {
             if (item.divider) return (
               <div key={item.id} id="session-divider" className="bt-session-divider">
@@ -1514,6 +1515,7 @@ export default function BundleChat() {
               </div>
             )
           })}
+          </div>
         </div>
 
         {/* Input */}

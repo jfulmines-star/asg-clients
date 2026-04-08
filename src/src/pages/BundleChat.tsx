@@ -116,6 +116,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 /* Conversation */
 #bt-convo { flex: 1; overflow-y: auto; padding: 32px 24px 16px; scroll-behavior: smooth; }
+#bt-convo > * { max-width: 900px; margin-left: auto; margin-right: auto; width: 100%; }
 #bt-convo::-webkit-scrollbar { width: 4px; }
 #bt-convo::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
 #bt-convo.fs-s .bt-ai-content { font-size: 13px; line-height: 1.75; }
@@ -183,7 +184,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .bt-intel-empty { padding: 20px 18px; font-size: 13px; color: var(--text-3); text-align: center; }
 
 /* Welcome */
-.bt-welcome { max-width: 680px; margin: 0 auto; }
+.bt-welcome { max-width: 860px; margin: 0 auto; }
 .bt-how-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; }
 .bt-section-label { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
 .bt-agent-grid { display: grid; gap: 10px; margin-bottom: 16px; }
@@ -195,6 +196,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 /* Input */
 #bt-input-area { border-top: 1px solid var(--border); padding: 14px 24px 10px; flex-shrink: 0; background: var(--bg); }
+.bt-input-wrap-outer { max-width: 900px; margin: 0 auto; }
 .bt-input-wrap { display: flex; align-items: flex-end; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 12px 12px 16px; transition: border-color .15s; }
 .bt-input-wrap:focus-within { border-color: rgba(39,181,163,.4); }
 #bt-input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.6; resize: none; max-height: 160px; min-height: 24px; }
@@ -1516,6 +1518,7 @@ export default function BundleChat() {
 
         {/* Input */}
         <div id="bt-input-area">
+          <div className="bt-input-wrap-outer">
           <div className="bt-input-wrap">
             <textarea id="bt-input" ref={inputRef} placeholder={`Ask ${metas.map(m => m.name).join(' + ')}…`}
               value={input} rows={1} disabled={busy}
@@ -1524,6 +1527,7 @@ export default function BundleChat() {
               onInput={e => { const t = e.target as HTMLTextAreaElement; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 160) + 'px' }}
             />
             <button id="bt-send" onClick={() => sendMessage()} disabled={!input.trim() || busy}>↑</button>
+          </div>
           </div>
           <div id="bt-security-bar">
             <div className="bt-security-slug">

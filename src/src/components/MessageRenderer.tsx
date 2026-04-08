@@ -30,7 +30,7 @@ export default function MessageRenderer({ content, whiteLabel = false }: Message
     } catch {
       // Fallback: show raw block as code
       parts.push(
-        <pre key={`raw-${match.index}`} style={{ background: '#0a0f1e', border: '1px solid #ffffff15', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#94a3b8', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+        <pre key={`raw-${match.index}`} style={{ background: 'transparent', border: '1px solid #ffffff15', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#94a3b8', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
           {`<chart>${raw}</chart>`}
         </pre>
       )

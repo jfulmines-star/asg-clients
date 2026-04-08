@@ -127,7 +127,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .bt-msg { margin-bottom: 28px; animation: bt-fadeup .2s ease; }
 @keyframes bt-fadeup { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .bt-user { display: flex; justify-content: flex-end; }
-.bt-user-bubble { background: var(--user-bg); border: 1px solid rgba(39,181,163,.15); border-radius: 14px 14px 2px 14px; padding: 12px 16px; max-width: 75%; font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+.bt-user-bubble { background: transparent; border: 1px solid rgba(39,181,163,.15); border-radius: 14px 14px 2px 14px; padding: 12px 16px; max-width: 75%; font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
 .bt-ai { display: flex; flex-direction: column; }
 .bt-ai-label { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
 .bt-ai-content { font-size: 15px; line-height: 1.85; color: var(--text); }
@@ -138,8 +138,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .bt-ai-content p { margin-bottom: 12px; }
 .bt-ai-content p:last-child { margin-bottom: 0; }
 .bt-ai-content code { background: transparent; border: none; padding: 0; border-radius: 0; font-size: .9em; color: var(--primary); font-family: monospace; }
-.bt-ai-content ::selection { background: rgba(39,181,163,.15); color: inherit; }
-.bt-ai-content *::selection { background: rgba(39,181,163,.15); color: inherit; }
+.bt-ai-content ::selection { background: transparent; color: inherit; }
+.bt-ai-content *::selection { background: transparent; color: inherit; }
 .bt-typing { display: flex; align-items: center; gap: 5px; padding: 4px 0; }
 .bt-dot-t { width: 5px; height: 5px; border-radius: 50%; opacity: .4; animation: bt-pulse 1.2s ease infinite; }
 .bt-dot-t:nth-child(2){animation-delay:.2s} .bt-dot-t:nth-child(3){animation-delay:.4s}

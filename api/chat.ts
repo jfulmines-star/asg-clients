@@ -294,8 +294,17 @@ FAR/DFARS (Parts 12, 13, 15, 19), contract types (FFP, T&M, IDIQ, BPA, GWAC), so
 ### Other Aviation Platforms Covered
 - UH-60 Black Hawk, UH-72, CH-47 Chinook (see UH60-UH72-CH47 marketing sheets)
 - Gray Eagle UAS (see Gray Eagle marketing sheet — Jul 2025)
-- F-35 (multiple variants — see Envelop F-35 Products sheet)
-- F-18/F-18 Super Hornet (see Envelop F-18 Products sheet)
+- F-35 Covers & Edge Protectors:
+  - PN 122373: F-35 A/C Canopy Cover | PN 122353: Pitot Tube (A/B/C) | PN 122354: Gun Pod (A/B/C)
+  - PN 122356: Right Engine Intake Plug | PN 122357: Left Engine Intake Plug (A/B/C)
+  - PN 122359: Power & Thermal Mgmt System Plug (A/B/C)
+  - PN 122374: F-35 A/C Engine Exhaust Plug | PN 122375: F-35 A/C Engine Exhaust Cover | PN 122023: Tire Cover (F-35C)
+  - Edge Protectors (avail 2026): PN 122346-122349 wing/stab TEs & LEs; FLG & weapons bay door protectors
+  - Coming 2026: PN 122370 EOTS Cover | PN 122371 Nose Tip Cover
+- F/A-18 Hornet (A/B/C/D): PN 122057 Head Box | 122057.1 Head Box w/Pockets | 122058 1-Piece Canopy (A/C) | 122060 Exhaust Cone | 122061 Right Intake | 122063 Left Intake | 122279 HUD
+- F/A-18 E/F Super Hornet: PN 122057/122057.1 Head Box | 122058 2-Piece Canopy (F) | 122064/122065 1-Piece Canopies | 122060 Exhaust Cone | 122066 Left Intake | 122067 Right Intake | 122068 Pitot Tube | 122279 HUD
+  - Edge Protectors: PN 122270 H-Stab TE | 122273 H-Stab LE | 122271 Outer Wing TE | 122272 Inner Wing TE | 122274 Full Set
+- E/A-18G Growler: same as E/F + PN 122103 AN-ALQ-218 Detection Pod | same edge protector set
 - AV-8B Harrier, MV-22 Osprey
 - P8 engine cover
 - Commercial: engine bags for all major U.S. carriers; OEMs: Rolls Royce, CFM International, GE, Pratt & Whitney
@@ -398,8 +407,10 @@ You are Rex — a specialized sales strategy tool built for Shield Technologies 
 ### Other Military Aviation Platforms
 - UH-60 Black Hawk, UH-72 Lakota, CH-47 Chinook (see Jul 2025 marketing sheets)
 - Gray Eagle UAS (Jul 2025 marketing sheet)
-- F-35 (multiple variants — see F-35 Products sheet)
-- F-18/F-18 Super Hornet (see F-18 Products Aug 2025 sheet)
+- F-35 (all variants): Canopy PN 122373 | Pitot Tube 122353 | Gun Pod 122354 | Intake Plugs 122356/122357 | Power/Thermal Plug 122359 | Exhaust Plug/Cover 122374/122375 | Tire Cover 122023 | Edge Protectors PN 122346-122357 + EOTS/Nose Tip coming 2026
+- F/A-18 A/B/C/D Hornet: Head Box 122057 | 1-Piece Canopy 122058 | Exhaust Cone 122060 | Intakes 122061/122063 | HUD 122279
+- F/A-18 E/F Super Hornet: same + 2-Piece Canopy 122058 (F) | 122064/122065 Canopies | Pitot Tube 122068 | Edge Protector Set 122274
+- E/A-18G Growler: full F/A-18 E/F set + Detection Pod PN 122103 (AN-ALQ-218)
 - AV-8B Harrier, MV-22 Osprey, P8 engine cover
 
 ### Commercial Aviation Products

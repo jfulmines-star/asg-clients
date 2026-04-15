@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const PIN = '1604'
 const ACCENT = '#4F6BFF'
@@ -53,6 +53,7 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 
 // ─── Welcome Section ─────────────────────────────────────────────────────────
 function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
+  const isMobile = useIsMobile()
   return (
     <div style={{ maxWidth: '680px' }}>
       <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '12px' }}>
@@ -65,7 +66,7 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
         Lex was configured specifically for your practice — DeValk Power Lair & Warner, NYS family law, divorce, estates, and real estate closings. Drop in a document or ask anything.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
         {[
           { id: 'documents' as Section, icon: '📄', color: ACCENT, title: 'Document Analyzer', desc: 'Drag in any agreement, order, or deed. Lex reads it and gives you the key points, deadlines, and action items.' },
           { id: 'caseresearch' as Section, icon: '⚖️', color: '#34D399', title: 'Case Research', desc: 'NYS statutes, case law, and procedural guidance. Cite-ready output for Monroe, Wayne, and surrounding counties.' },
@@ -623,6 +624,16 @@ function SeanChatSection() {
   )
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return isMobile
+}
+
 // ─── Main Portal ──────────────────────────────────────────────────────────────
 export default function DevalkSeanPortal() {
   const [unlocked, setUnlocked] = useState(false)
@@ -630,6 +641,7 @@ export default function DevalkSeanPortal() {
   const [pinError, setPinError] = useState(false)
   const [activeSection, setActiveSection] = useState<Section>('welcome')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   function handleDigit(i: number, val: string) {
     const d = val.replace(/\D/g, '').slice(-1)
@@ -676,44 +688,68 @@ export default function DevalkSeanPortal() {
     )
   }
 
+  const sidebarVisible = !isMobile || sidebarOpen
+
   return (
     <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Inter', -apple-system, sans-serif", color: '#FAFAFA', display: 'flex' }}>
       {/* Mobile overlay */}
-      {sidebarOpen && <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 40 }} onClick={() => setSidebarOpen(false)} />}
+      {isMobile && sidebarOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 40 }} onClick={() => setSidebarOpen(false)} />
+      )}
 
       {/* Sidebar */}
-      <div style={{ width: '220px', flexShrink: 0, borderRight: `1px solid ${BORDER}`, padding: '24px 0', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: sidebarOpen ? 0 : '-220px', height: '100vh', background: BG, zIndex: 50, transition: 'left 0.2s', '@media (min-width: 768px)': { position: 'relative', left: 0 } as React.CSSProperties }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '4px' }}>AxiomStream</div>
-          <div style={{ fontSize: '18px', fontWeight: 800 }}>Lex</div>
-          <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Legal Intelligence</div>
+      {sidebarVisible && (
+        <div style={{
+          width: '220px', flexShrink: 0,
+          borderRight: `1px solid ${BORDER}`,
+          padding: '24px 0',
+          display: 'flex', flexDirection: 'column',
+          position: isMobile ? 'fixed' : 'relative',
+          top: 0, left: 0,
+          height: isMobile ? '100vh' : 'auto',
+          minHeight: isMobile ? undefined : '100vh',
+          background: BG, zIndex: isMobile ? 50 : 'auto',
+        }}>
+          <div style={{ padding: '0 20px 24px', borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '4px' }}>AxiomStream</div>
+            <div style={{ fontSize: '18px', fontWeight: 800 }}>Lex</div>
+            <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Legal Intelligence</div>
+          </div>
+          <nav style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
+            {NAV_ITEMS.map(item => (
+              <button key={item.id} onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '12px 20px', background: activeSection === item.id ? `${ACCENT}10` : 'none',
+                  border: 'none', borderLeft: `3px solid ${activeSection === item.id ? ACCENT : 'transparent'}`,
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left',
+                }}>
+                <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                <span style={{ fontSize: '14px', fontWeight: activeSection === item.id ? 600 : 400, flex: 1, color: activeSection === item.id ? '#FAFAFA' : GRAY }}>{item.label}</span>
+                {item.tag && <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT, border: `1px solid ${ACCENT}40`, padding: '1px 5px', borderRadius: '4px' }}>{item.tag}</span>}
+              </button>
+            ))}
+          </nav>
+          <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: '11px', color: '#666' }}>Sean D. Lair</div>
+            <div style={{ fontSize: '10px', color: '#444', marginTop: '2px' }}>DeValk Power Lair & Warner</div>
+          </div>
         </div>
-        <nav style={{ flex: 1, padding: '16px 0' }}>
-          {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: 'none', border: 'none', borderLeft: `3px solid ${activeSection === item.id ? ACCENT : 'transparent'}`, background: activeSection === item.id ? `${ACCENT}08` : 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left' }}>
-              <span style={{ fontSize: '16px' }}>{item.icon}</span>
-              <span style={{ fontSize: '13px', fontWeight: activeSection === item.id ? 600 : 400, flex: 1, color: activeSection === item.id ? '#FAFAFA' : GRAY }}>{item.label}</span>
-              {item.tag && <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT, border: `1px solid ${ACCENT}40`, padding: '1px 5px', borderRadius: '4px' }}>{item.tag}</span>}
-            </button>
-          ))}
-        </nav>
-        <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: '11px', color: '#444' }}>Sean D. Lair</div>
-          <div style={{ fontSize: '10px', color: '#333', marginTop: '2px' }}>DeValk Power Lair & Warner</div>
-        </div>
-      </div>
+      )}
 
       {/* Main */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', marginLeft: '220px' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <header style={{ borderBottom: `1px solid ${BORDER}`, padding: '16px 32px', display: 'flex', alignItems: 'center', gap: '16px', background: BG, position: 'sticky', top: 0, zIndex: 10 }}>
-          <button onClick={() => setSidebarOpen(s => !s)} style={{ background: 'none', border: `1px solid ${BORDER}`, borderRadius: '6px', padding: '6px 10px', color: '#555', cursor: 'pointer', display: 'none' }}>☰</button>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#FAFAFA' }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</div>
+        <header style={{ borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '14px 16px' : '16px 32px', display: 'flex', alignItems: 'center', gap: '12px', background: BG, position: 'sticky', top: 0, zIndex: 10 }}>
+          {isMobile && (
+            <button onClick={() => setSidebarOpen(s => !s)} style={{ background: 'none', border: `1px solid ${BORDER}`, borderRadius: '6px', padding: '6px 10px', color: '#888', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }}>☰</button>
+          )}
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#FAFAFA', flex: 1 }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</div>
+          {isMobile && <div style={{ fontSize: '11px', color: '#555' }}>Lex</div>}
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+        <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '32px', overflowY: 'auto' }}>
           {activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}
           {activeSection === 'documents' && <DocumentAnalyzerSection />}
           {activeSection === 'caseresearch' && <CaseResearchSection />}

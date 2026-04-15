@@ -81,8 +81,8 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
             onMouseLeave={e => (e.currentTarget.style.borderColor = BORDER)}
           >
             <div style={{ fontSize: '24px', marginBottom: '10px' }}>{card.icon}</div>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: '#FAFAFA', marginBottom: '6px' }}>{card.title}</div>
-            <div style={{ fontSize: '12px', color: GRAY, lineHeight: 1.6 }}>{card.desc}</div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: '#FAFAFA', marginBottom: '8px' }}>{card.title}</div>
+            <div style={{ fontSize: '14px', color: '#9CA3AF', lineHeight: 1.6 }}>{card.desc}</div>
           </button>
         ))}
       </div>
@@ -663,7 +663,7 @@ export default function DevalkSeanPortal() {
   const [unlocked, setUnlocked] = useState(false)
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
-  const [activeSection, setActiveSection] = useState<Section>('welcome')
+  const [activeSection, setActiveSection] = useState<Section>('chat')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isMobile = useIsMobile()
 

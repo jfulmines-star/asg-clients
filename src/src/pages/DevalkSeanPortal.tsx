@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import mammoth from 'mammoth'
 
 const PIN = '1604'
 const ACCENT = '#4F6BFF'
@@ -125,33 +126,69 @@ function DocumentAnalyzerSection() {
     setDocContent('')
 
     try {
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(',')[1] || ''
+      const isDocx = file.name.toLowerCase().endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      const isDoc = file.name.toLowerCase().endsWith('.doc')
+
+      if (isDocx) {
+        // Extract plain text from docx using mammoth, then send as message text
+        const arrayBuffer = await file.arrayBuffer()
+        const { value: extractedText } = await mammoth.extractRawText({ arrayBuffer })
+        if (!extractedText.trim()) {
+          setResult('Could not extract text from this Word document. Try saving as PDF and uploading again.')
+          setAnalyzing(false)
+          return
+        }
+        const truncated = extractedText.slice(0, 12000) // stay within token limits
+        const docMsg = `Document: "${file.name}"\n\n${truncated}\n\n---\nPlease analyze this document: 1) What type of document is this and what is its purpose. 2) Key legal points, obligations, and rights. 3) Any deadlines, dates, or time-sensitive items. 4) Recommended action items. Plain text only — no markdown, no bold, no headers.`
+        setDocContent(extractedText)
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             agent: 'Lex',
             slug: 'devalk-sean',
-            tenantId: 'devalk-sean',
+            disableTeamContext: true,
             teamMember: 'Sean Lair',
             isLead: true,
-            message: `I am uploading a document called "${file.name}". Please analyze it and provide: 1) A plain-language summary of what this document is and its purpose. 2) Key legal points, obligations, and rights established. 3) Any deadlines, dates, or time-sensitive items. 4) Recommended action items. Format as plain numbered lists — no markdown headers or bold text. Output must be clean enough to paste directly into an email or Word document.`,
+            message: docMsg,
             history: [],
-            documentBase64: base64,
-            documentName: file.name,
-            documentType: file.type,
           }),
         })
         const data = await res.json()
-        const reply = data.reply || data.text || data.message || 'Analysis failed — try again.'
-        setResult(reply)
-        setDocContent(base64)
+        setResult(data.reply || data.text || data.message || 'Analysis failed — try again.')
+      } else if (isDoc) {
+        setResult('Legacy .doc format cannot be read directly. Save the file as .docx or PDF and upload again.')
+      } else {
+        // PDF or image — send base64 via vision/document API
+        const reader = new FileReader()
+        reader.onload = async (e) => {
+          const base64 = (e.target?.result as string).split(',')[1] || ''
+          setDocContent(base64)
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              agent: 'Lex',
+              slug: 'devalk-sean',
+              disableTeamContext: true,
+              teamMember: 'Sean Lair',
+              isLead: true,
+              message: `Analyze this document called "${file.name}": 1) What type is it and what is its purpose. 2) Key legal points, obligations, and rights. 3) Deadlines, dates, time-sensitive items. 4) Recommended action items. Plain text only — no markdown, no bold.`,
+              history: [],
+              documentBase64: base64,
+              documentName: file.name,
+              documentType: file.type,
+            }),
+          })
+          const data = await res.json()
+          setResult(data.reply || data.text || data.message || 'Analysis failed — try again.')
+          setAnalyzing(false)
+        }
+        reader.readAsDataURL(file)
+        return // async path — analyzing(false) set in onload above
       }
-      reader.readAsDataURL(file)
-    } catch {
-      setResult('Error analyzing document. Please try again.')
+    } catch (err) {
+      setResult('Error analyzing document. Try uploading as PDF or pasting the text directly.')
     }
     setAnalyzing(false)
   }
@@ -162,23 +199,35 @@ function DocumentAnalyzerSection() {
     const q = question.trim()
     setQuestion('')
     try {
+      const isTextContent = !fileName.toLowerCase().endsWith('.pdf') && !fileName.match(/\.(png|jpg|jpeg)$/i)
+      const body = isTextContent
+        ? {
+            agent: 'Lex',
+            slug: 'devalk-sean',
+            disableTeamContext: true,
+            teamMember: 'Sean Lair',
+            isLead: true,
+            message: `Document: "${fileName}"\n\n${docContent.slice(0, 8000)}\n\n---\nFollow-up question: ${q}. Plain text answer only, no markdown.`,
+            history: [],
+          }
+        : {
+            agent: 'Lex',
+            slug: 'devalk-sean',
+            disableTeamContext: true,
+            teamMember: 'Sean Lair',
+            isLead: true,
+            message: `Regarding the document "${fileName}": ${q}. Plain text only, no markdown.`,
+            history: [],
+            documentBase64: docContent,
+            documentName: fileName,
+          }
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agent: 'Lex',
-          slug: 'devalk-sean',
-          tenantId: 'devalk-sean',
-          teamMember: 'Sean Lair',
-          isLead: true,
-          message: `Regarding the document "${fileName}": ${q}. Provide a direct answer as plain text suitable for pasting into Word or email. No markdown formatting.`,
-          history: [],
-          documentBase64: docContent,
-          documentName: fileName,
-        }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
-      setResult(prev => prev + '\n\n---\n\nFollow-up: ' + q + '\n\n' + (data.reply || data.text || 'No response'))
+      setResult(prev => prev + '\n\nFollow-up: ' + q + '\n\n' + (data.reply || data.text || 'No response'))
     } catch {
       setResult(prev => prev + '\n\nError on follow-up. Try again.')
     }
@@ -427,7 +476,7 @@ function SeanChatSection() {
         body: JSON.stringify({
           agent: 'Lex',
           slug: 'devalk-sean',
-          tenantId: 'devalk-sean',
+          disableTeamContext: true,
           teamMember: 'Sean Lair',
           isLead: true,
           message: userMsg,
@@ -444,8 +493,36 @@ function SeanChatSection() {
 
   async function uploadFile(file: File) {
     setFileUploading(true)
-    setMessages(prev => [...prev, { role: 'user', content: `📎 Uploading: ${file.name}…` }])
+    setMessages(prev => [...prev, { role: 'user', content: `📎 ${file.name}` }])
     try {
+      const isDocx = file.name.toLowerCase().endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      if (isDocx) {
+        const arrayBuffer = await file.arrayBuffer()
+        const { value: extractedText } = await mammoth.extractRawText({ arrayBuffer })
+        if (!extractedText.trim()) {
+          setMessages(prev => [...prev.slice(0, -1), { role: 'assistant' as const, content: 'Could not read this Word document. Try saving as PDF and uploading again.' }])
+          setFileUploading(false)
+          return
+        }
+        const docMsg = `Document: "${file.name}"\n\n${extractedText.slice(0, 12000)}\n\n---\nSummarize the key legal points, obligations, deadlines, and action items in plain text. No markdown.`
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agent: 'Lex',
+            slug: 'devalk-sean',
+            disableTeamContext: true,
+            teamMember: 'Sean Lair',
+            isLead: true,
+            message: docMsg,
+            history: messages.map(m => ({ role: m.role, content: m.content })),
+          }),
+        })
+        const data = await res.json()
+        setMessages(prev => [...prev.slice(0, -1), { role: 'assistant' as const, content: data.reply || data.text || `Document received: ${file.name}. Ask me anything about it.` }])
+        setFileUploading(false)
+        return
+      }
       const reader = new FileReader()
       reader.onload = async (e) => {
         const base64 = (e.target?.result as string).split(',')[1] || ''
@@ -455,10 +532,10 @@ function SeanChatSection() {
           body: JSON.stringify({
             agent: 'Lex',
             slug: 'devalk-sean',
-            tenantId: 'devalk-sean',
+            disableTeamContext: true,
             teamMember: 'Sean Lair',
             isLead: true,
-            message: `I am uploading "${file.name}". Please analyze it and summarize the key legal points, obligations, deadlines, and action items in plain text — no markdown formatting.`,
+            message: `Analyze "${file.name}": key legal points, obligations, deadlines, action items. Plain text only.`,
             history: messages.map(m => ({ role: m.role, content: m.content })),
             documentBase64: base64,
             documentName: file.name,

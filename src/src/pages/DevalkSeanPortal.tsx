@@ -764,68 +764,71 @@ export default function DevalkSeanPortal() {
     )
   }
 
-  const sidebarVisible = !isMobile || sidebarOpen
-
-  return (
-    <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Inter', -apple-system, sans-serif", color: '#FAFAFA', display: 'flex' }}>
-      {/* Mobile overlay */}
-      {isMobile && sidebarOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 40 }} onClick={() => setSidebarOpen(false)} />
-      )}
-
-      {/* Sidebar */}
-      {sidebarVisible && (
-        <div style={{
-          width: '220px', flexShrink: 0,
-          borderRight: `1px solid ${BORDER}`,
-          padding: '24px 0',
-          display: 'flex', flexDirection: 'column',
-          position: isMobile ? 'fixed' : 'relative',
-          top: 0, left: 0,
-          height: isMobile ? '100vh' : 'auto',
-          minHeight: isMobile ? undefined : '100vh',
-          background: BG, zIndex: isMobile ? 50 : 'auto',
-        }}>
-          <div style={{ padding: '0 20px 24px', borderBottom: `1px solid ${BORDER}` }}>
-            <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '4px' }}>AxiomStream Group</div>
-            <div style={{ fontSize: '18px', fontWeight: 800 }}>Lex</div>
-            <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Legal Intelligence</div>
+  if (isMobile) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: BG, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: '#FAFAFA', display: 'flex', flexDirection: 'column' }}>
+        {/* Top bar */}
+        <header style={{ flexShrink: 0, padding: '16px 20px 12px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0d0d0d' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '22px' }}>{NAV_ITEMS.find(n => n.id === activeSection)?.icon}</span>
+            <span style={{ fontSize: '18px', fontWeight: 700 }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</span>
           </div>
-          <nav style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
-            {NAV_ITEMS.map(item => (
-              <button key={item.id} onClick={() => navigateTo(item.id)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '12px 20px', background: activeSection === item.id ? `${ACCENT}10` : 'none',
-                  border: 'none', borderLeft: `3px solid ${activeSection === item.id ? ACCENT : 'transparent'}`,
-                  cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left',
-                }}>
-                <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                <span style={{ fontSize: '14px', fontWeight: activeSection === item.id ? 600 : 400, flex: 1, color: activeSection === item.id ? '#FAFAFA' : GRAY }}>{item.label}</span>
-                {item.tag && <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT, border: `1px solid ${ACCENT}40`, padding: '1px 5px', borderRadius: '4px' }}>{item.tag}</span>}
-              </button>
-            ))}
-          </nav>
-          <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}` }}>
-            <div style={{ fontSize: '11px', color: '#666' }}>Sean D. Lair</div>
-            <div style={{ fontSize: '10px', color: '#444', marginTop: '2px' }}>DeValk Power Lair & Warner</div>
-          </div>
-        </div>
-      )}
-
-      {/* Main */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <header style={{ borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '14px 16px' : '16px 32px', display: 'flex', alignItems: 'center', gap: '12px', background: BG, position: 'sticky', top: 0, zIndex: 10 }}>
-          {isMobile && (
-            <button onClick={() => setSidebarOpen(s => !s)} style={{ background: 'none', border: `1px solid ${BORDER}`, borderRadius: '6px', padding: '6px 10px', color: '#888', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }}>☰</button>
-          )}
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#FAFAFA', flex: 1 }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</div>
-          {isMobile && <div style={{ fontSize: '11px', color: '#555' }}>Lex</div>}
+          <span style={{ fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>Lex</span>
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '32px', overflowY: 'auto' }}>
+        <main style={{ flex: 1, minHeight: 0, overflowY: activeSection === 'chat' ? 'hidden' : 'auto', padding: activeSection === 'chat' ? '12px 16px 0' : '20px 16px' }}>
+          {activeSection === 'welcome' && <WelcomeSection onNavigate={navigateTo} />}
+          {activeSection === 'documents' && <DocumentAnalyzerSection />}
+          {activeSection === 'nyslaw' && <NYSLawSection />}
+          {activeSection === 'chat' && <SeanChatSection />}
+        </main>
+
+        {/* Bottom tab bar */}
+        <nav style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, background: '#0d0d0d', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          {NAV_ITEMS.map(item => (
+            <button key={item.id} onClick={() => navigateTo(item.id)} style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              padding: '10px 4px 8px', background: 'none', border: 'none', cursor: 'pointer',
+              borderTop: `2px solid ${activeSection === item.id ? ACCENT : 'transparent'}`,
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              <span style={{ fontSize: '22px', lineHeight: 1 }}>{item.icon}</span>
+              <span style={{ fontSize: '11px', fontWeight: 600, marginTop: '4px', color: activeSection === item.id ? ACCENT : '#666' }}>{item.label.split(' ')[0]}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    )
+  }
+
+  // ─── Desktop layout ───
+  return (
+    <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Inter', -apple-system, sans-serif", color: '#FAFAFA', display: 'flex' }}>
+      <div style={{ width: '220px', flexShrink: 0, borderRight: `1px solid ${BORDER}`, padding: '24px 0', display: 'flex', flexDirection: 'column', minHeight: '100vh', background: BG }}>
+        <div style={{ padding: '0 20px 24px', borderBottom: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '4px' }}>AxiomStream Group</div>
+          <div style={{ fontSize: '18px', fontWeight: 800 }}>Lex</div>
+          <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Legal Intelligence</div>
+        </div>
+        <nav style={{ flex: 1, padding: '16px 0' }}>
+          {NAV_ITEMS.map(item => (
+            <button key={item.id} onClick={() => navigateTo(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', background: activeSection === item.id ? `${ACCENT}10` : 'none', border: 'none', borderLeft: `3px solid ${activeSection === item.id ? ACCENT : 'transparent'}`, cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left' }}>
+              <span style={{ fontSize: '18px' }}>{item.icon}</span>
+              <span style={{ fontSize: '14px', fontWeight: activeSection === item.id ? 600 : 400, flex: 1, color: activeSection === item.id ? '#FAFAFA' : GRAY }}>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '11px', color: '#666' }}>Sean D. Lair</div>
+          <div style={{ fontSize: '10px', color: '#444', marginTop: '2px' }}>DeValk Power Lair & Warner</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <header style={{ borderBottom: `1px solid ${BORDER}`, padding: '16px 32px', display: 'flex', alignItems: 'center', background: BG, position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#FAFAFA' }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</div>
+        </header>
+        <main style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
           {activeSection === 'welcome' && <WelcomeSection onNavigate={navigateTo} />}
           {activeSection === 'documents' && <DocumentAnalyzerSection />}
           {activeSection === 'nyslaw' && <NYSLawSection />}

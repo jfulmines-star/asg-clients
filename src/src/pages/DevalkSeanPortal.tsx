@@ -615,6 +615,7 @@ function SeanChatSection() {
           WebkitOverflowScrolling: 'touch',
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: 'flex-end',
           gap: '20px',
           padding: isMobile ? '16px 12px' : '16px',
           background: isMobile ? BG : SURFACE,

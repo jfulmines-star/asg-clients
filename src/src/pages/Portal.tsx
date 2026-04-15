@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom'
 import DevalkSeanPortal from './DevalkSeanPortal'
+import LindsayPortal from './LindsayPortal'
 
 // ─── Client registry ────────────────────────────────────────────────────────
 // Add a new client here when they're onboarded.
@@ -144,6 +145,12 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
     products: ['lex'],
     bundleChat: false,
   },
+  lindsay: {
+    name: 'Lindsay DeLellis - Landmark Wealth Management',
+    tier: 'trial',
+    products: ['aria'],
+    bundleChat: false,
+  },
   // rj: { name: 'RJ Genovese - Bonadio', tier: 'trial', products: ['aria'] },
   // jt: { name: 'John Touhey', tier: 'starter', products: ['lex'] },
 }
@@ -168,6 +175,7 @@ export default function Portal() {
 
   // ── Custom full-page portals ──────────────────────────────────────────────
   if (slug === 'devalk-sean') return <DevalkSeanPortal />
+  if (slug === 'lindsay') return <LindsayPortal />
 
   if (!client) {
     return (

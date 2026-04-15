@@ -710,22 +710,55 @@ export default function DevalkSeanPortal() {
 
   if (!unlocked) {
     return (
-      <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: "'Inter', -apple-system, sans-serif", color: '#FAFAFA' }}>
-        <div style={{ textAlign: 'center', maxWidth: '320px' }}>
-          <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '24px' }}>AxiomStream Group</div>
-          <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚖️</div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Lex</h1>
-          <p style={{ color: '#555', fontSize: '14px', marginBottom: '32px' }}>Legal Intelligence Platform</p>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
+      <div style={{ 
+        position: 'fixed', inset: 0,
+        background: BG, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        padding: '24px',
+        fontFamily: "'Inter', -apple-system, sans-serif", 
+        color: '#FAFAFA',
+        overflowY: 'auto',
+      }}>
+        <div style={{ textAlign: 'center', width: '100%', maxWidth: '340px' }}>
+          <div style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '20px' }}>AxiomStream Group</div>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>⚖️</div>
+          <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '6px' }}>Lex</h1>
+          <p style={{ color: '#888', fontSize: '15px', marginBottom: '36px' }}>Legal Intelligence Platform</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '20px' }}>
             {digits.map((d, i) => (
-              <input key={i} id={`pin-${i}`} type="password" inputMode="numeric" maxLength={1} value={d}
-                onChange={e => handleDigit(i, e.target.value)} onKeyDown={e => handleKeyDown(i, e)} onPaste={handlePaste}
+              <input 
+                key={i} 
+                id={`pin-${i}`} 
+                type="password" 
+                inputMode="numeric" 
+                maxLength={1} 
+                value={d}
+                onChange={e => handleDigit(i, e.target.value)} 
+                onKeyDown={e => handleKeyDown(i, e)} 
+                onPaste={handlePaste}
                 autoFocus={i === 0}
-                style={{ width: '64px', height: '72px', textAlign: 'center', fontSize: '28px', fontWeight: 700, background: '#1a1a1a', border: `2px solid ${pinError ? '#ef4444' : d ? ACCENT : '#555'}`, borderRadius: '12px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', transition: 'border-color 0.15s', caretColor: ACCENT, WebkitTextSecurity: 'disc' } as React.CSSProperties} />
+                style={{ 
+                  width: '68px', 
+                  height: '76px', 
+                  textAlign: 'center', 
+                  fontSize: '32px', 
+                  fontWeight: 700, 
+                  background: '#222', 
+                  border: `2px solid ${pinError ? '#ef4444' : d ? ACCENT : '#666'}`,
+                  borderRadius: '14px', 
+                  color: '#FAFAFA', 
+                  fontFamily: "'Inter', sans-serif", 
+                  outline: 'none', 
+                  transition: 'border-color 0.15s',
+                  boxSizing: 'border-box',
+                } as React.CSSProperties} 
+              />
             ))}
           </div>
-          {pinError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '8px' }}>Incorrect PIN. Try again.</p>}
-          <p style={{ color: '#777', fontSize: '14px', marginTop: '8px' }}>Enter your 4-digit access code</p>
+          {pinError && <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '8px' }}>Incorrect PIN. Try again.</p>}
+          <p style={{ color: '#888', fontSize: '15px' }}>Enter your 4-digit access code</p>
         </div>
       </div>
     )

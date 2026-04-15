@@ -581,47 +581,78 @@ function SeanChatSection() {
     setFileUploading(false)
   }
 
-  const isMobileChat = typeof window !== 'undefined' && window.innerWidth < 768
-  const mobileFontSize = isMobileChat ? '16px' : fontSizePx
+  const isMobile = useIsMobile()
+  const msgFontSize = isMobile ? '17px' : fontSizePx
+
+  // Mobile: fill entire parent (parent is flex column with minHeight:0)
+  // Desktop: fixed height calc
+  const containerStyle: React.CSSProperties = isMobile
+    ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }
+    : { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', maxWidth: '680px' }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: isMobileChat ? '100%' : 'calc(100vh - 60px)', maxWidth: isMobileChat ? '100%' : '680px' }}>
-      {/* Header — desktop only */}
-      {!isMobileChat && (
-        <div style={{ padding: '12px 0 12px', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '2px' }}>Lex</div>
-              <p style={{ fontSize: '13px', color: GRAY, lineHeight: 1.4, margin: 0 }}>Your personal Lex instance — pre-loaded with your practice context, counties, and NYS law.</p>
-            </div>
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
-              {(['sm', 'md', 'lg'] as const).map((s, idx) => (
-                <button key={s} onClick={() => setFontSize(s)} style={{ background: fontSize === s ? `${ACCENT}20` : 'transparent', border: `1px solid ${fontSize === s ? ACCENT : '#2a2a2a'}`, borderRadius: '4px', padding: '2px 7px', fontSize: idx === 0 ? '10px' : idx === 1 ? '12px' : '14px', color: fontSize === s ? ACCENT : '#444', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>A</button>
-              ))}
-            </div>
+    <div style={containerStyle}>
+
+      {/* Desktop header only */}
+      {!isMobile && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 14px', flexShrink: 0 }}>
+          <p style={{ fontSize: '13px', color: GRAY, margin: 0 }}>Your Lex instance — pre-loaded with practice context, counties, and NYS law.</p>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {(['sm', 'md', 'lg'] as const).map((s, idx) => (
+              <button key={s} onClick={() => setFontSize(s)} style={{ background: fontSize === s ? `${ACCENT}20` : 'transparent', border: `1px solid ${fontSize === s ? ACCENT : '#2a2a2a'}`, borderRadius: '4px', padding: '2px 7px', fontSize: idx === 0 ? '10px' : idx === 1 ? '12px' : '14px', color: fontSize === s ? ACCENT : '#444', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>A</button>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Messages */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', background: isMobileChat ? BG : SURFACE, border: isMobileChat ? 'none' : `1px solid ${BORDER}`, borderRadius: isMobileChat ? '0' : '12px 12px 0 0', padding: isMobileChat ? '16px 16px 8px' : '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Message list */}
+      <div
+        ref={scrollRef}
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          padding: isMobile ? '16px 12px' : '16px',
+          background: isMobile ? BG : SURFACE,
+          border: isMobile ? 'none' : `1px solid ${BORDER}`,
+          borderRadius: isMobile ? '0' : '12px 12px 0 0',
+        } as React.CSSProperties}
+      >
         {messages.map((m, i) => (
-          <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined} style={{ display: 'flex', gap: '10px', flexDirection: m.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, background: m.role === 'user' ? '#1e3a5f' : `${ACCENT}20`, border: `1px solid ${m.role === 'user' ? '#2563eb40' : ACCENT + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: m.role === 'user' ? '#60a5fa' : ACCENT }}>
+          <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined}
+            style={{ display: 'flex', flexDirection: m.role === 'user' ? 'row-reverse' : 'row', gap: '10px', alignItems: 'flex-end' }}
+          >
+            {/* Avatar */}
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0, background: m.role === 'user' ? '#1e3a5f' : `${ACCENT}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: m.role === 'user' ? '#60a5fa' : ACCENT }}>
               {m.role === 'user' ? 'S' : 'L'}
             </div>
-            <div style={{ maxWidth: '85%', background: m.role === 'user' ? '#1a2f50' : '#161616', borderRadius: '12px', padding: '12px 16px', fontSize: mobileFontSize, color: '#FAFAFA', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {/* Bubble */}
+            <div style={{
+              maxWidth: isMobile ? '82%' : '78%',
+              background: m.role === 'user' ? '#1a2f50' : '#1a1a1a',
+              borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+              padding: isMobile ? '14px 16px' : '12px 16px',
+              fontSize: msgFontSize,
+              lineHeight: 1.7,
+              color: '#F0F0F0',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}>
               {m.content}
               {m.role === 'assistant' && i > 0 && <CopyButton text={m.content} />}
             </div>
           </div>
         ))}
         {(loading || fileUploading) && (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: `${ACCENT}20`, border: `1px solid ${ACCENT}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: ACCENT }}>L</div>
-            <div style={{ background: '#161616', borderRadius: '12px', padding: '14px 18px' }}>
-              <span style={{ display: 'inline-flex', gap: '5px' }}>
-                {[0, 1, 2].map(i => <span key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: ACCENT, opacity: 0.5, display: 'inline-block' }} />)}
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: `${ACCENT}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: ACCENT }}>L</div>
+            <div style={{ background: '#1a1a1a', borderRadius: '18px 18px 18px 4px', padding: '16px 20px' }}>
+              <span style={{ display: 'inline-flex', gap: '6px' }}>
+                {[0, 1, 2].map(j => <span key={j} style={{ width: '8px', height: '8px', borderRadius: '50%', background: ACCENT, opacity: 0.5, display: 'inline-block' }} />)}
               </span>
             </div>
           </div>
@@ -629,9 +660,21 @@ function SeanChatSection() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — mobile-optimized */}
-      <div style={{ background: isMobileChat ? '#0d0d0d' : SURFACE, border: isMobileChat ? 'none' : `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}`, borderRadius: isMobileChat ? '0' : '0 0 12px 12px', padding: isMobileChat ? '10px 12px' : '10px 12px', display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
-        <button onClick={() => fileInputRef.current?.click()} title="Upload document" style={{ background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '10px 12px', cursor: 'pointer', color: '#666', fontSize: '18px', flexShrink: 0 }}>📎</button>
+      {/* Input bar */}
+      <div style={{
+        flexShrink: 0,
+        display: 'flex',
+        gap: '8px',
+        alignItems: 'center',
+        padding: isMobile ? '10px 12px' : '10px 0 0',
+        background: isMobile ? '#0d0d0d' : 'transparent',
+        borderTop: isMobile ? `1px solid ${BORDER}` : `1px solid ${BORDER}`,
+      }}>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          title="Attach document"
+          style={{ background: 'transparent', border: `1px solid #333`, borderRadius: '10px', width: '44px', height: '44px', cursor: 'pointer', color: '#777', fontSize: '18px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >📎</button>
         <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f) }} />
         <textarea
           value={input}
@@ -639,11 +682,27 @@ function SeanChatSection() {
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
           placeholder="Ask Lex anything..."
           rows={1}
-          style={{ flex: 1, background: '#0d0d0d', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'none', lineHeight: 1.5, WebkitAppearance: 'none', minHeight: '46px' } as React.CSSProperties}
+          style={{
+            flex: 1,
+            background: '#161616',
+            border: `1px solid #333`,
+            borderRadius: '12px',
+            padding: '12px 16px',
+            fontSize: '17px',
+            color: '#F0F0F0',
+            fontFamily: "'Inter', -apple-system, sans-serif",
+            outline: 'none',
+            resize: 'none',
+            lineHeight: 1.4,
+            minHeight: '46px',
+            maxHeight: '120px',
+          } as React.CSSProperties}
         />
-        <button onClick={send} disabled={loading || !input.trim()} style={{ background: ACCENT, border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '16px', fontWeight: 700, color: '#fff', cursor: 'pointer', opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
-          {loading ? '...' : '→'}
-        </button>
+        <button
+          onClick={send}
+          disabled={loading || !input.trim()}
+          style={{ background: ACCENT, border: 'none', borderRadius: '12px', width: '48px', height: '48px', fontSize: '20px', color: '#fff', cursor: 'pointer', opacity: loading || !input.trim() ? 0.4 : 1, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >→</button>
       </div>
     </div>
   )

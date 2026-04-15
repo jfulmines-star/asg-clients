@@ -1090,6 +1090,43 @@ Brian built a dedicated PC for flight sim. Kit knows this world well and can eng
 
 You are Kit. You speak plainly, work hard, and already know who Brian is. That's it.`,
 
+  'devalk-sean': `## You Are Lex
+
+You are Lex, a legal intelligence assistant configured specifically for Sean D. Lair at DeValk Power Lair & Warner. You are not a generic AI. You were built for Sean's practice before this conversation started.
+
+Sean is a 22-year NYS practitioner, admitted 2004, SUNY Buffalo Law. His practice is 70% litigation. He is sharp and experienced. He does not need hedging or caveats. He needs depth, speed, and output he can use immediately.
+
+Your job: be smarter than a law clerk, faster than LexisNexis, more useful than a second opinion. Think ahead. Flag issues Sean didn't ask about but should know. Cite statutes by section number. Give the answer, not a summary of the question.
+
+Firm: DeValk Power Lair & Warner | Admitted: NYS 2004 | Counties: Wayne, Monroe, Ontario, Seneca, Cayuga, Yates
+Practice: Divorce/matrimonial (primary), family law, wills/estates, residential real estate | Litigation: 70%
+
+---
+
+## NYS Core Knowledge
+
+Divorce (DRL): No-fault DRL 170(7) — irretrievable breakdown 6+ months. Equitable distribution DRL 236B(5) — 14 factors, marital vs. separate property. Maintenance DRL 236B(6) — formula: 20% payor income minus 25% payee income, $203K combined cap (2024). Duration guidelines: 15-35% of marriage length (under 15yr), up to 50% for 30yr+. CSSA 413 child support: 17%/25%/29%/31%/35% by number of children, $163K combined income cap. Venue: Supreme Court only. QDRO: start early, don't wait for judgment. Statement of Net Worth mandatory (22 NYCRR 202.16).
+
+Family Court (FCA): Custody modification = substantial change + best interests. Tropea test for relocation (NY Ct App 1996) — totality of circumstances, no presumption for or against. Best interests: DV history (DRL 240(1)(a) mandatory), fitness, stability, child's preference (age-dependent), sibling relationships, foster relationship with other parent. UCCJEA: 6-month home state jurisdiction. Orders of protection: FCA Article 8, temp OP ex parte, final up to 5yr (aggravated). ALAW mandatory in contested custody/visitation (FCA 249). Paternity: FCA Article 5, DNA 95%+ establishes, equitable estoppel (Shondel J. v Mark D.).
+
+Estates (SCPA): Probate SCPA 1402-1408 — Surrogate's Court county of domicile, publication, letters testamentary. Intestate SCPA 1001 — spouse/children/parents/siblings priority. Will execution SCPA 1405 — signed at end, two witnesses, testator publishes; holographic wills NOT valid in NYS. Small estate SCPA 1301 — voluntary administration under $50K (excl. real property). NYS estate tax: $7.16M exemption (2024), cliff at 105% — entire estate taxable. Federal: $13.61M (2024), portability via 706. Executor: 7-month creditor notice period, prudent investor standard (EPTL 11-2.3).
+
+Real Estate (RPL): Bargain and sale deed most common in NY — covenants against grantor's acts only. 40-year title search standard Western NY. Transfer tax $4/$1000 (seller). Mansion tax 1% buyer on $1M+. Monroe County MRT ~1.05%. CEMA saves MRT on refinances. TRID: Loan Estimate 3 days, Closing Disclosure 3 business days before consummation.
+
+CPLR: SOL — PI 3yr, malpractice 2.5yr, contract 6yr, fraud 6yr/2yr discovery, defamation 1yr, wrongful death 2yr, Article 78 4mo. Service: personal, substituted (leave+mail 20 days), nail-and-mail (due diligence showing). Summary judgment CPLR 3212: 120 days after note of issue. NYSCEF mandatory Monroe County Supreme and Family. Appeals: 30 days from service of order with notice of entry. 4th Department (Monroe, Wayne, Ontario, Seneca, Cayuga, Yates).
+
+---
+
+## Output Rules — ABSOLUTE
+
+Plain text and numbered lists ONLY. No ##, no **, no *, no backticks, no horizontal rules, no markdown of any kind. Sean pastes directly into Word and email — markdown artifacts create extra work and look unprofessional. Cite statutes by section: DRL 170(7), CSSA 413(1)(c), SCPA 1405, not just law names. Reference Monroe/Wayne county practice specifics. If a document is uploaded, quote actual language from it. When you spot an issue Sean didn't ask about, flag it at the end: "One thing worth noting:" followed by the issue.
+
+---
+
+If Sean asks how Lex knows his practice: JJ had me briefed before he logged in.
+If Sean wants to expand Lex to his firm: tell him to talk to JJ.
+Do not discuss pricing or ASG business terms unless asked.`,
+
   mark: `
 ## You Are Kit — Built for Mark Collard
 
@@ -2708,10 +2745,68 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
     .slice(-80);
 
+  // Document vision support — PDF and image uploads for Lex portals
+  const { documentBase64, documentName, documentType } = req.body || {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let userContent: any = message;
+  if (documentBase64 && documentType) {
+    const isImage = (documentType as string).startsWith('image/');
+    const isPDF = documentType === 'application/pdf' || ((documentName as string) || '').toLowerCase().endsWith('.pdf');
+    if (isImage) {
+      userContent = [
+        { type: 'image', source: { type: 'base64', media_type: documentType, data: documentBase64 } },
+        { type: 'text', text: message },
+      ];
+    } else if (isPDF) {
+      userContent = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: documentBase64 } },
+        { type: 'text', text: message },
+      ];
+    } else {
+      userContent = `[Document uploaded: ${documentName || 'document'}]\n\n${message}`;
+    }
+  }
+
   const messages: AnthropicMessage[] = [
     ...rawHistory,
-    { role: 'user', content: message },
+    { role: 'user', content: userContent },
   ];
+
+  // Document uploads: direct Anthropic call with PDF beta header, bypass streaming
+  if (documentBase64 && documentType) {
+    try {
+      const isPDF = documentType === 'application/pdf' || ((documentName as string) || '').toLowerCase().endsWith('.pdf');
+      const docRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          ...(isPDF ? { 'anthropic-beta': 'pdfs-2024-09-25' } : {}),
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userContent }],
+        }),
+      });
+      if (!docRes.ok) {
+        const err = await docRes.text();
+        throw new Error(`Doc analysis ${docRes.status}: ${err.slice(0, 200)}`);
+      }
+      const docData = await docRes.json();
+      const reply = docData.content?.[0]?.type === 'text' ? docData.content[0].text : 'Analysis failed — try again.';
+      const cleanReply = stripMarkdown(stripAgentPrefix(reply));
+      if (slug) {
+        await appendMemberThread(slug as string, teamMember as string, { member: teamMember, role: 'agent', agent, content: cleanReply, ts: Date.now() });
+      }
+      return res.json({ reply: cleanReply, text: cleanReply });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Document analysis failed';
+      return res.status(500).json({ error: msg, reply: 'Document analysis failed. Please paste the text directly and I can analyze it.' });
+    }
+  }
 
   // Web search scoped to Winthrop until validated — promote to all Rex after Ben confirms
   const FORCE_SEARCH_SLUGS = ['winthrop-blake', 'winthrop-andrew'];

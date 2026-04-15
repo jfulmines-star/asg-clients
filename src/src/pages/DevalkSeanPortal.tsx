@@ -581,30 +581,35 @@ function SeanChatSection() {
     setFileUploading(false)
   }
 
-  return (
-    <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)', minHeight: '500px' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '8px' }}>Lex</div>
-        <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '8px' }}>Chat with Lex</h2>
-        <p style={{ fontSize: '14px', color: GRAY, lineHeight: 1.6 }}>Your personal Lex instance — pre-loaded with your practice context, counties, and NYS law.</p>
-      </div>
+  const isMobileChat = typeof window !== 'undefined' && window.innerWidth < 768
+  const mobileFontSize = isMobileChat ? '16px' : fontSizePx
 
-      {/* Toolbar */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#0d0d0d', border: `1px solid ${BORDER}`, borderBottom: 'none', borderRadius: '12px 12px 0 0', padding: '8px 14px' }}>
-        <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: '#555', marginRight: '8px' }}>Size</span>
-        {(['sm', 'md', 'lg'] as const).map((s, idx) => (
-          <button key={s} onClick={() => setFontSize(s)} style={{ background: fontSize === s ? `${ACCENT}20` : 'transparent', border: `1px solid ${fontSize === s ? ACCENT : '#333'}`, borderRadius: '6px', padding: '3px 9px', fontSize: idx === 0 ? '11px' : idx === 1 ? '13px' : '15px', color: fontSize === s ? ACCENT : '#555', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontWeight: 700, marginRight: '4px' }}>A</button>
-        ))}
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', maxWidth: '680px' }}>
+      {/* Header — clean, no clutter */}
+      <div style={{ padding: '12px 0 12px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '2px' }}>Lex</div>
+            <p style={{ fontSize: '13px', color: GRAY, lineHeight: 1.4, margin: 0 }}>Your personal Lex instance — pre-loaded with your practice context, counties, and NYS law.</p>
+          </div>
+          {/* Font size — small, tucked right */}
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+            {(['sm', 'md', 'lg'] as const).map((s, idx) => (
+              <button key={s} onClick={() => setFontSize(s)} style={{ background: fontSize === s ? `${ACCENT}20` : 'transparent', border: `1px solid ${fontSize === s ? ACCENT : '#2a2a2a'}`, borderRadius: '4px', padding: '2px 7px', fontSize: idx === 0 ? '10px' : idx === 1 ? '12px' : '14px', color: fontSize === s ? ACCENT : '#444', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>A</button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', background: SURFACE, border: `1px solid ${BORDER}`, borderTop: 'none', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '12px 12px 0 0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.map((m, i) => (
           <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined} style={{ display: 'flex', gap: '10px', flexDirection: m.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0, background: m.role === 'user' ? '#1e3a5f' : `${ACCENT}20`, border: `1px solid ${m.role === 'user' ? '#2563eb40' : ACCENT + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: m.role === 'user' ? '#60a5fa' : ACCENT }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, background: m.role === 'user' ? '#1e3a5f' : `${ACCENT}20`, border: `1px solid ${m.role === 'user' ? '#2563eb40' : ACCENT + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: m.role === 'user' ? '#60a5fa' : ACCENT }}>
               {m.role === 'user' ? 'S' : 'L'}
             </div>
-            <div style={{ maxWidth: '80%', background: m.role === 'user' ? '#1e3a5f' : '#161616', border: `1px solid ${m.role === 'user' ? '#2563eb30' : BORDER}`, borderRadius: '10px', padding: '12px 16px', fontSize: fontSizePx, color: '#FAFAFA', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <div style={{ maxWidth: '85%', background: m.role === 'user' ? '#1a2f50' : '#161616', borderRadius: '12px', padding: '12px 16px', fontSize: mobileFontSize, color: '#FAFAFA', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {m.content}
               {m.role === 'assistant' && <CopyButton text={m.content} />}
             </div>
@@ -612,10 +617,10 @@ function SeanChatSection() {
         ))}
         {(loading || fileUploading) && (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: `${ACCENT}20`, border: `1px solid ${ACCENT}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: ACCENT }}>L</div>
-            <div style={{ background: '#161616', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '12px 16px' }}>
-              <span style={{ display: 'inline-flex', gap: '4px' }}>
-                {[0, 1, 2].map(i => <span key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: ACCENT, opacity: 0.5, display: 'inline-block' }} />)}
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: `${ACCENT}20`, border: `1px solid ${ACCENT}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: ACCENT }}>L</div>
+            <div style={{ background: '#161616', borderRadius: '12px', padding: '14px 18px' }}>
+              <span style={{ display: 'inline-flex', gap: '5px' }}>
+                {[0, 1, 2].map(i => <span key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: ACCENT, opacity: 0.5, display: 'inline-block' }} />)}
               </span>
             </div>
           </div>
@@ -623,9 +628,9 @@ function SeanChatSection() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '12px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-        <button onClick={() => fileInputRef.current?.click()} title="Upload document" style={{ background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '9px 12px', cursor: 'pointer', color: '#555', fontSize: '16px' }}>📎</button>
+      {/* Input — mobile-optimized */}
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '10px 12px', display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
+        <button onClick={() => fileInputRef.current?.click()} title="Upload document" style={{ background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '10px 12px', cursor: 'pointer', color: '#666', fontSize: '18px', flexShrink: 0 }}>📎</button>
         <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f) }} />
         <textarea
           value={input}
@@ -633,9 +638,9 @@ function SeanChatSection() {
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
           placeholder="Ask Lex anything about NYS law, or drop in a document..."
           rows={1}
-          style={{ flex: 1, background: '#0d0d0d', border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '10px 14px', fontSize: '14px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'none', lineHeight: 1.5 }}
+          style={{ flex: 1, background: '#0d0d0d', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'none', lineHeight: 1.5, WebkitAppearance: 'none' } as React.CSSProperties}
         />
-        <button onClick={send} disabled={loading || !input.trim()} style={{ background: ACCENT, border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '14px', fontWeight: 700, color: '#fff', cursor: 'pointer', opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif" }}>
+        <button onClick={send} disabled={loading || !input.trim()} style={{ background: ACCENT, border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '16px', fontWeight: 700, color: '#fff', cursor: 'pointer', opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
           {loading ? '...' : '→'}
         </button>
       </div>
@@ -716,11 +721,11 @@ export default function DevalkSeanPortal() {
               <input key={i} id={`pin-${i}`} type="password" inputMode="numeric" maxLength={1} value={d}
                 onChange={e => handleDigit(i, e.target.value)} onKeyDown={e => handleKeyDown(i, e)} onPaste={handlePaste}
                 autoFocus={i === 0}
-                style={{ width: '52px', height: '60px', textAlign: 'center', fontSize: '24px', fontWeight: 700, background: '#111', border: `2px solid ${pinError ? '#ef4444' : d ? ACCENT : '#333'}`, borderRadius: '10px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', transition: 'border-color 0.15s' }} />
+                style={{ width: '64px', height: '72px', textAlign: 'center', fontSize: '28px', fontWeight: 700, background: '#1a1a1a', border: `2px solid ${pinError ? '#ef4444' : d ? ACCENT : '#555'}`, borderRadius: '12px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', transition: 'border-color 0.15s', caretColor: ACCENT, WebkitTextSecurity: 'disc' } as React.CSSProperties} />
             ))}
           </div>
           {pinError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '8px' }}>Incorrect PIN. Try again.</p>}
-          <p style={{ color: '#444', fontSize: '12px' }}>Enter your 4-digit access code</p>
+          <p style={{ color: '#777', fontSize: '14px', marginTop: '8px' }}>Enter your 4-digit access code</p>
         </div>
       </div>
     )

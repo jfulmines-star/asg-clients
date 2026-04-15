@@ -825,39 +825,99 @@ export default function DevalkSeanPortal() {
   }
 
   if (isMobile) {
+    const isChat = activeSection === 'chat'
     return (
-      <div style={{ position: 'fixed', inset: 0, background: BG, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: '#FAFAFA', display: 'flex', flexDirection: 'column' }}>
-        {/* Top bar */}
-        <header style={{ flexShrink: 0, padding: '16px 20px 12px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0d0d0d' }}>
+      <div style={{
+        position: 'fixed', inset: 0,
+        background: BG,
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        color: '#FAFAFA',
+        display: 'flex',
+        flexDirection: 'column',
+        // Use dvh for proper iOS keyboard handling
+        height: '100dvh' as string,
+      } as React.CSSProperties}>
+
+        {/* Top bar — minimal, always visible */}
+        <header style={{
+          flexShrink: 0,
+          padding: '14px 20px 12px',
+          paddingTop: 'max(14px, env(safe-area-inset-top))',
+          borderBottom: `1px solid ${BORDER}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: '#0d0d0d',
+        } as React.CSSProperties}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '22px' }}>{NAV_ITEMS.find(n => n.id === activeSection)?.icon}</span>
-            <span style={{ fontSize: '18px', fontWeight: 700 }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</span>
+            <span style={{ fontSize: '19px', fontWeight: 700 }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</span>
           </div>
           <span style={{ fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>Lex</span>
         </header>
 
-        {/* Content */}
-        <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: activeSection === 'chat' ? 'hidden' : 'auto', padding: activeSection === 'chat' ? '0' : '20px 16px' }}>
+        {/* Content — fills remaining space, chat gets no extra padding */}
+        <main style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: isChat ? 'hidden' : 'auto',
+          padding: isChat ? '0' : '20px 16px',
+          WebkitOverflowScrolling: 'touch',
+        } as React.CSSProperties}>
           {activeSection === 'welcome' && <WelcomeSection onNavigate={navigateTo} />}
           {activeSection === 'documents' && <DocumentAnalyzerSection />}
           {activeSection === 'nyslaw' && <NYSLawSection />}
           {activeSection === 'chat' && <SeanChatSection />}
         </main>
 
-        {/* Bottom tab bar */}
-        <nav style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, background: '#0d0d0d', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => navigateTo(item.id)} style={{
-              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              padding: '10px 4px 8px', background: 'none', border: 'none', cursor: 'pointer',
-              borderTop: `2px solid ${activeSection === item.id ? ACCENT : 'transparent'}`,
-              fontFamily: "'Inter', sans-serif",
-            }}>
-              <span style={{ fontSize: '22px', lineHeight: 1 }}>{item.icon}</span>
-              <span style={{ fontSize: '11px', fontWeight: 600, marginTop: '4px', color: activeSection === item.id ? ACCENT : '#666' }}>{item.label.split(' ')[0]}</span>
-            </button>
-          ))}
-        </nav>
+        {/* Bottom tab bar — hidden when keyboard open (chat section) */}
+        {!isChat && (
+          <nav style={{
+            flexShrink: 0,
+            borderTop: `1px solid ${BORDER}`,
+            background: '#0d0d0d',
+            display: 'flex',
+            paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+          } as React.CSSProperties}>
+            {NAV_ITEMS.map(item => (
+              <button key={item.id} onClick={() => navigateTo(item.id)} style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '10px 4px 10px', background: 'none', border: 'none', cursor: 'pointer',
+                borderTop: `2px solid ${activeSection === item.id ? ACCENT : 'transparent'}`,
+                fontFamily: "'Inter', sans-serif",
+              }}>
+                <span style={{ fontSize: '24px', lineHeight: 1 }}>{item.icon}</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, marginTop: '4px', color: activeSection === item.id ? ACCENT : '#666' }}>{item.label.split(' ')[0]}</span>
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {/* When in chat, show a small back-to-menu button instead */}
+        {isChat && (
+          <div style={{
+            flexShrink: 0,
+            borderTop: `1px solid ${BORDER}`,
+            background: '#0d0d0d',
+            display: 'flex',
+            justifyContent: 'flex-start',
+            padding: '6px 12px',
+            paddingBottom: 'env(safe-area-inset-bottom, 8px)',
+          } as React.CSSProperties}>
+            {NAV_ITEMS.filter(n => n.id !== 'chat').map(item => (
+              <button key={item.id} onClick={() => navigateTo(item.id)} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                padding: '4px 16px', background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif",
+              }}>
+                <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                <span style={{ fontSize: '10px', color: '#555', marginTop: '2px' }}>{item.label.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     )
   }

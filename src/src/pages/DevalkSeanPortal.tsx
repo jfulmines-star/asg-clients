@@ -586,21 +586,22 @@ function SeanChatSection() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: isMobileChat ? '100%' : 'calc(100vh - 60px)', maxWidth: isMobileChat ? '100%' : '680px' }}>
-      {/* Header — clean, no clutter */}
-      <div style={{ padding: '12px 0 12px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '2px' }}>Lex</div>
-            <p style={{ fontSize: '13px', color: GRAY, lineHeight: 1.4, margin: 0 }}>Your personal Lex instance — pre-loaded with your practice context, counties, and NYS law.</p>
-          </div>
-          {/* Font size — small, tucked right */}
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
-            {(['sm', 'md', 'lg'] as const).map((s, idx) => (
-              <button key={s} onClick={() => setFontSize(s)} style={{ background: fontSize === s ? `${ACCENT}20` : 'transparent', border: `1px solid ${fontSize === s ? ACCENT : '#2a2a2a'}`, borderRadius: '4px', padding: '2px 7px', fontSize: idx === 0 ? '10px' : idx === 1 ? '12px' : '14px', color: fontSize === s ? ACCENT : '#444', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>A</button>
-            ))}
+      {/* Header — desktop only */}
+      {!isMobileChat && (
+        <div style={{ padding: '12px 0 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '2px' }}>Lex</div>
+              <p style={{ fontSize: '13px', color: GRAY, lineHeight: 1.4, margin: 0 }}>Your personal Lex instance — pre-loaded with your practice context, counties, and NYS law.</p>
+            </div>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+              {(['sm', 'md', 'lg'] as const).map((s, idx) => (
+                <button key={s} onClick={() => setFontSize(s)} style={{ background: fontSize === s ? `${ACCENT}20` : 'transparent', border: `1px solid ${fontSize === s ? ACCENT : '#2a2a2a'}`, borderRadius: '4px', padding: '2px 7px', fontSize: idx === 0 ? '10px' : idx === 1 ? '12px' : '14px', color: fontSize === s ? ACCENT : '#444', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>A</button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', background: isMobileChat ? BG : SURFACE, border: isMobileChat ? 'none' : `1px solid ${BORDER}`, borderRadius: isMobileChat ? '0' : '12px 12px 0 0', padding: isMobileChat ? '16px 16px 8px' : '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -636,9 +637,9 @@ function SeanChatSection() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-          placeholder="Ask Lex anything about NYS law, or drop in a document..."
+          placeholder="Ask Lex anything..."
           rows={1}
-          style={{ flex: 1, background: '#0d0d0d', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'none', lineHeight: 1.5, WebkitAppearance: 'none' } as React.CSSProperties}
+          style={{ flex: 1, background: '#0d0d0d', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'none', lineHeight: 1.5, WebkitAppearance: 'none', minHeight: '46px' } as React.CSSProperties}
         />
         <button onClick={send} disabled={loading || !input.trim()} style={{ background: ACCENT, border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '16px', fontWeight: 700, color: '#fff', cursor: 'pointer', opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
           {loading ? '...' : '→'}

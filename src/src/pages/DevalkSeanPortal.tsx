@@ -585,7 +585,7 @@ function SeanChatSection() {
   const mobileFontSize = isMobileChat ? '16px' : fontSizePx
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', maxWidth: '680px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: isMobileChat ? '100%' : 'calc(100vh - 60px)', maxWidth: isMobileChat ? '100%' : '680px' }}>
       {/* Header — clean, no clutter */}
       <div style={{ padding: '12px 0 12px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -603,7 +603,7 @@ function SeanChatSection() {
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '12px 12px 0 0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', background: isMobileChat ? BG : SURFACE, border: isMobileChat ? 'none' : `1px solid ${BORDER}`, borderRadius: isMobileChat ? '0' : '12px 12px 0 0', padding: isMobileChat ? '16px 16px 8px' : '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.map((m, i) => (
           <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined} style={{ display: 'flex', gap: '10px', flexDirection: m.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, background: m.role === 'user' ? '#1e3a5f' : `${ACCENT}20`, border: `1px solid ${m.role === 'user' ? '#2563eb40' : ACCENT + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: m.role === 'user' ? '#60a5fa' : ACCENT }}>
@@ -611,7 +611,7 @@ function SeanChatSection() {
             </div>
             <div style={{ maxWidth: '85%', background: m.role === 'user' ? '#1a2f50' : '#161616', borderRadius: '12px', padding: '12px 16px', fontSize: mobileFontSize, color: '#FAFAFA', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {m.content}
-              {m.role === 'assistant' && <CopyButton text={m.content} />}
+              {m.role === 'assistant' && i > 0 && <CopyButton text={m.content} />}
             </div>
           </div>
         ))}
@@ -629,7 +629,7 @@ function SeanChatSection() {
       </div>
 
       {/* Input — mobile-optimized */}
-      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '10px 12px', display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
+      <div style={{ background: isMobileChat ? '#0d0d0d' : SURFACE, border: isMobileChat ? 'none' : `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}`, borderRadius: isMobileChat ? '0' : '0 0 12px 12px', padding: isMobileChat ? '10px 12px' : '10px 12px', display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
         <button onClick={() => fileInputRef.current?.click()} title="Upload document" style={{ background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '10px 12px', cursor: 'pointer', color: '#666', fontSize: '18px', flexShrink: 0 }}>📎</button>
         <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f) }} />
         <textarea
@@ -777,7 +777,7 @@ export default function DevalkSeanPortal() {
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1, minHeight: 0, overflowY: activeSection === 'chat' ? 'hidden' : 'auto', padding: activeSection === 'chat' ? '12px 16px 0' : '20px 16px' }}>
+        <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: activeSection === 'chat' ? 'hidden' : 'auto', padding: activeSection === 'chat' ? '0' : '20px 16px' }}>
           {activeSection === 'welcome' && <WelcomeSection onNavigate={navigateTo} />}
           {activeSection === 'documents' && <DocumentAnalyzerSection />}
           {activeSection === 'nyslaw' && <NYSLawSection />}

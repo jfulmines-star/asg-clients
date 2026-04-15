@@ -2619,11 +2619,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { agent, message, history = [], teammates = [], slug = '', teamMember = 'Anonymous', isLead = true, tenantId = '' } = req.body || {};
+  const { agent, message, history = [], teammates = [], slug = '', teamMember = 'Anonymous', isLead = true, tenantId = '', disableTeamContext = false } = req.body || {};
+
+  // ─── Personalized opener ────────────────────────────────────────────────────
+  if (message === '__opener__' && slug) {
+    try {
+      const mem = await getUserMemory(slug, teamMember);
+      const firstName = teamMember.split(' ')[0];
+      const openerPrompt = mem
+        ? `You are Lex, an AI legal assistant. The attorney ${teamMember} just opened their portal. Based on what you know about them, send a warm, specific 2-3 sentence greeting. Reference their practice area and any active matters from memory. End with a natural offer to help — no question mark required. Plain text only, no markdown, no bold. Casual but professional — like a trusted colleague who knows their work.\n\nWhat you know about ${firstName}:\n${mem}`
+        : `You are Lex, an AI legal assistant. Send a warm 1-2 sentence greeting to ${firstName}, a NYS family law attorney. Mention you're ready to work through documents, case research, or anything else they need. Plain text only, no markdown.`;
+      const openerRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
+      });
+      const openerData = await openerRes.json();
+      const openerText = openerData.content?.[0]?.type === 'text' ? openerData.content[0].text : `Good to see you, ${firstName}. What are we working on today?`;
+      return res.status(200).json({ reply: openerText, text: openerText });
+    } catch {
+      return res.status(200).json({ reply: `Good to see you. What are we working on today?`, text: `Good to see you. What are we working on today?` });
+    }
+  }
 
   // Detect team capture intent in the user message
   const CAPTURE_PATTERNS = /\b(log\s+(this|that|it)?\s*(for|to)\s+the\s+team|note\s+for\s+(the\s+)?team|share\s+(this|that)?\s*with\s+(the\s+)?team|alert\s+(the\s+)?team|let\s+the\s+team\s+know|capture\s+(this|that)?\s*(for|to)\s+(the\s+)?team)\b/i;
-  const isTeamCapture = slug && CAPTURE_PATTERNS.test(message);
+  const isTeamCapture = slug && !disableTeamContext && CAPTURE_PATTERNS.test(message);
 
   if (!agent || !message) return res.status(400).json({ error: 'Missing agent or message' });
   // Allow portal-specific agent names that pass their own prompt via the message itself
@@ -2637,7 +2658,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (slug) {
     const memberSlug = teamMember.toLowerCase().replace(/\s+/g, '-');
     [teamContext, userMemory] = await Promise.all([
-      buildTeamContext(slug, teamMember),
+      disableTeamContext ? Promise.resolve('') : buildTeamContext(slug, teamMember),
       getUserMemory(slug, teamMember),
       appendMemberThread(slug, teamMember, { member: teamMember, role: 'user', content: message, ts: Date.now() }),
     ]);

@@ -437,10 +437,10 @@ Appeals: CPLR Article 55 — 30 days from service of order with notice of entry.
 // ─── Chat Section ─────────────────────────────────────────────────────────────
 function SeanChatSection() {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', content: "Hey Sean — I'm Lex. I already know your practice. Drop in a document or ask me anything about NYS family law, divorce, real estate, or estates." }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [openerLoaded, setOpenerLoaded] = useState(false)
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md')
   const bottomRef = useRef<HTMLDivElement>(null)
   const lastMsgRef = useRef<HTMLDivElement>(null)
@@ -449,6 +449,35 @@ function SeanChatSection() {
   const [fileUploading, setFileUploading] = useState(false)
 
   const fontSizePx = fontSize === 'sm' ? '13px' : fontSize === 'lg' ? '17px' : '15px'
+
+  useEffect(() => {
+    if (openerLoaded) return
+    setOpenerLoaded(true)
+    setLoading(true)
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agent: 'Lex',
+        slug: 'devalk-sean',
+        disableTeamContext: true,
+        teamMember: 'Sean Lair',
+        isLead: true,
+        message: '__opener__',
+        history: [],
+      }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        const reply = data.reply || data.text || 'Good to see you, Sean. What are we working on today?'
+        setMessages([{ role: 'assistant', content: reply }])
+        setLoading(false)
+      })
+      .catch(() => {
+        setMessages([{ role: 'assistant', content: 'Good to see you, Sean. What are we working on today?' }])
+        setLoading(false)
+      })
+  }, [])
 
   useEffect(() => {
     if (loading) {

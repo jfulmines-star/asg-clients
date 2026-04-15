@@ -2622,13 +2622,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { agent, message, history = [], teammates = [], slug = '', teamMember = 'Anonymous', isLead = true, tenantId = '', disableTeamContext = false } = req.body || {};
 
   // ─── Personalized opener ────────────────────────────────────────────────────
+  // Per-slug opener personas — who Kit is and what they know about this person
+  const OPENER_PERSONAS: Record<string, { role: string; context: string }> = {
+    'mark':             { role: 'Kit, an AI advisor built for Landmark Wealth Management', context: 'Mark Collard is the principal at Landmark Wealth Management in Buffalo, NY. Fee-only fiduciary RIA. Mark is an asset allocator — he selects managers and strategies, not individual stocks for clients. He personally invests and studies individual companies closely. Key analytical lenses: cash flow quality, institutional ownership, volume story, customer concentration risk, debt-to-equity, disruption vectors. Tax efficiency matters deeply. Long-horizon orientation (10-20 years). Clients are HNW individuals, families, institutions, and nonprofits.' },
+    'brian':            { role: 'Kit, an AI advisor built for Landmark Wealth Management', context: 'Brian Laible is an advisor at Landmark Wealth Management in Buffalo, NY. Fee-only fiduciary RIA. Brian works with HNW clients on comprehensive financial planning and investment management.' },
+    'landmark-lindsay': { role: 'Kit, an AI advisor built for Landmark Wealth Management', context: 'Lindsay DeLellis is VP of Advisory Services at Landmark Wealth Management. CDFA credential — handles complex divorce financial planning cases. Background: Ernst & Young (audit + tax), TPG Capital (PE fund accounting), joined Landmark in 2017. Thinks in accounting terms — cares about what numbers actually say. Fee-only fiduciary. Tax efficiency is a core planning lens. High-stakes, emotionally complex engagements.' },
+    'devalk-sean':      { role: 'Lex, an AI legal assistant built for DeValk Power Lair & Warner', context: 'Sean D. Lair is an attorney at DeValk Power Lair & Warner in Monroe and Wayne County, NY. NYS family law — custody, child support (CSSA), divorce, matrimonial law. Prefers plain text output, no markdown.' },
+  };
   if (message === '__opener__' && slug) {
     try {
       const mem = await getUserMemory(slug, teamMember);
       const firstName = teamMember.split(' ')[0];
-      const openerPrompt = mem
-        ? `You are Lex, an AI legal assistant. The attorney ${teamMember} just opened their portal. Based on what you know about them, send a warm, specific 2-3 sentence greeting. Reference their practice area and any active matters from memory. End with a natural offer to help — no question mark required. Plain text only, no markdown, no bold. Casual but professional — like a trusted colleague who knows their work.\n\nWhat you know about ${firstName}:\n${mem}`
-        : `You are Lex, an AI legal assistant. Send a warm 1-2 sentence greeting to ${firstName}, a NYS family law attorney. Mention you're ready to work through documents, case research, or anything else they need. Plain text only, no markdown.`;
+      const persona = OPENER_PERSONAS[slug];
+      const roleDesc = persona?.role || `Kit, an AI assistant`;
+      const baseContext = persona?.context || '';
+      const openerPrompt = `You are ${roleDesc}. ${firstName} just opened their portal. Send a warm, specific 2-3 sentence greeting. ${mem ? `Reference what you know about them from prior sessions where relevant. ` : ''}Plain text only, no markdown, no bold. Casual but professional — like a trusted colleague.${baseContext ? `\n\nContext about ${firstName}:\n${baseContext}` : ''}${mem ? `\n\nMemory from prior sessions:\n${mem}` : ''}`;
       const openerRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },

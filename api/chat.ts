@@ -2172,6 +2172,12 @@ ${teamContext}
 Use this to avoid re-asking what's already been established and to provide coordinated, non-redundant advice.`;
   }
 
+  // Inject current date/time so agent knows what time it is
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'America/New_York' });
+  base += `\n\nCurrent date & time: ${dateStr}, ${timeStr} ET`;
+
     base += GRACEFUL_FAILURE;
   base += MODEL_GUARDRAIL;
   return base;

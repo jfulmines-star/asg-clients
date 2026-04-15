@@ -324,6 +324,8 @@ const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; te
   shield:        { name: 'Shield Technologies',    agents: ['rex'],                 pin: '5591', team: true, teamLabel: 'Shield Technologies Sales' },
   ryanh:         { name: 'Ryan Hopper',            agents: ['rex'],                 pin: '5506' },
   markb:         { name: 'Mark Bechtel',           agents: ['rex'],                 pin: '8821' },
+  'shield-jeffd':   { name: 'Jeff Dicks',              agents: ['rex'],                 pin: '7742' },
+  'shield-jimoaks': { name: 'Jim Oaks',                agents: ['rex'],                 pin: '3381' },
   teamrex:       { name: 'Team Member',             agents: ['rexteam'],             pin: '4429', team: true, teamLabel: 'Team' },
   octant8kevin:  { name: 'Kevin Gosa',             agents: ['rex'],                 pin: '6294', team: true, teamLabel: 'Octant8', partnerName: 'Bryan' },
   octant8bryan:  { name: 'Bryan Horvath',          agents: ['rex'],                 pin: '8537', team: true, teamLabel: 'Octant8', partnerName: 'Kevin' },
@@ -333,6 +335,7 @@ const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; te
   'winthrop-blake':  { name: 'Blake Warren',           agents: ['rex'],                 pin: '4321' },
   'winthrop-andrew': { name: 'Andrew Armour',          agents: ['rex'],                 pin: '6847' },
   kenk:              { name: 'Ken Kocolowski',         agents: ['rex'],                 pin: '2847' },
+  'devalk-sean':     { name: 'Sean Lair',               agents: ['lex'],                 pin: '1604' },
 
 }
 

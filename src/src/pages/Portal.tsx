@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import DevalkSeanPortal from './DevalkSeanPortal'
 
 // ─── Client registry ────────────────────────────────────────────────────────
 // Add a new client here when they're onboarded.
@@ -119,11 +120,29 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
     products: ['rex'],
     bundleChat: true,
   },
+  'shield-jeffd': {
+    name: 'Jeff Dicks - Shield Technologies (CFO)',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
+  },
+  'shield-jimoaks': {
+    name: 'Jim Oaks - Shield Technologies (COO)',
+    tier: 'trial',
+    products: ['rex'],
+    bundleChat: true,
+  },
   kenk: {
     name: 'Ken Kocolowski - RBP Chemical',
     tier: 'trial',
     products: ['rex'],
     bundleChat: true,
+  },
+  'devalk-sean': {
+    name: 'Sean D. Lair - DeValk Power Lair & Warner',
+    tier: 'trial',
+    products: ['lex'],
+    bundleChat: false,
   },
   // rj: { name: 'RJ Genovese - Bonadio', tier: 'trial', products: ['aria'] },
   // jt: { name: 'John Touhey', tier: 'starter', products: ['lex'] },
@@ -147,7 +166,9 @@ export default function Portal() {
   const slug = (clientSlug ?? '').toLowerCase()
   const client = CLIENT_REGISTRY[slug]
 
-  
+  // ── Custom full-page portals ──────────────────────────────────────────────
+  if (slug === 'devalk-sean') return <DevalkSeanPortal />
+
   if (!client) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>

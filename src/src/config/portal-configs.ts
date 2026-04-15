@@ -151,6 +151,44 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     intakeFields: [],
   },
 
+  // ── Shield Technologies — Jeff Dicks (CFO) ───────────────────────────────
+  'shield-jeffd': {
+    slug: 'shield-jeffd',
+    pin: '7742',
+    clientName: 'Jeff',
+    memberName: 'Jeff Dicks',
+    company: 'Shield Technologies Corporation',
+    agentId: 'rex',
+    agentLabel: 'Rex',
+    accentColor: '#4ADE80',
+    tagline: 'Your Rex — Shield business intelligence + advanced accounting',
+    whatWeKnow: 'CFO · Shield Technologies Corporation · Manufacturer of Envelop protective covers — world\'s most advanced tactical environmental protection systems for military equipment, aircraft, and vehicles · Selected by all 5 U.S. military branches + international allies (German Navy, Australian Defence Force, Japan JSDF) since 2003 · 120,000+ covers delivered · 500+ NSN-assigned designs on DLA DIBBS, FEDMALL, GSA MAS, GWAC vehicles · SBIR Phase III status enables direct DoD contracting · Commercial aviation: CFM56-7B and LEAP-1B engine covers; Southwest Airlines, American Airlines, Frontier Airlines · Core value prop: 4-layer patented technology — waterproof + breathable + VCI corrosion inhibition — only system combining all three; up to 95% corrosion reduction · $23B annual DoD corrosion cost; ROI >20:1 per platform · CFO focus: DCAA audit readiness, Cost Accounting Standards (CAS) compliance, NSN-based margin analysis, government contract revenue recognition (DoD contract vehicles), DFARS accounting requirements, indirect cost rate structures (fringe/overhead/G&A), incurred cost submissions, SBIR Phase III financial implications · ASG engagement: AI-assisted financial intelligence, contract accounting, strategic CFO support.',
+    chatPlaceholder: 'Contract accounting, DCAA prep, margin analysis, revenue recognition — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Jeff — context loaded. What's the priority?"
+      : "Jeff — your Rex is tuned specifically to Shield's business — the Envelop product line, government contract vehicles, DoD customers, and the commercial MRO pipeline. I'm also advanced on the accounting side: DCAA audit readiness, Cost Accounting Standards, government contract revenue recognition, indirect cost structures. Where do you want to start?",
+    intakeFields: [],
+  },
+
+  // ── Shield Technologies — Jim Oaks (COO) ────────────────────────────────
+  'shield-jimoaks': {
+    slug: 'shield-jimoaks',
+    pin: '3381',
+    clientName: 'Jim',
+    memberName: 'Jim Oaks',
+    company: 'Shield Technologies Corporation',
+    agentId: 'rex',
+    agentLabel: 'Rex',
+    accentColor: '#4ADE80',
+    tagline: 'COO Intelligence — Operations, Compliance & Capture Strategy',
+    whatWeKnow: 'COO · Shield Technologies Corporation · Manufacturer of Envelop protective covers — world\'s most advanced tactical environmental protection systems for military equipment, aircraft, and vehicles · Selected by all 5 U.S. military branches since 2003 · 120,000+ covers delivered · 500+ NSN-assigned designs · Product: 4-layer patented technology (waterproof outer layer + non-porous membrane blocking SO2/chloride molecules + VCI corrosion inhibitor releasing ions that prevent oxygen bonding + hydrophobic wicking layer) · Performance: USAF 12-month study: 20x more effective than shelters; USN 4-month test: 95% corrosion reduction; German Navy: "Significantly Superior" · Sole-source qualified Army spec PRF13051908 (M777/M119 howitzers) · Made in USA · SBIR Phase III status · International: Australian ADF (59-tank M1A1 fleet, $9.6M AUD 10-year savings), RAAF, JSDF F-35 MRO programs (export license management required under ITAR/EAR) · Commercial: CFM56-7B and LEAP-1B engine covers; Southwest Airlines, American Airlines, Frontier Airlines · COO operational scope: ITAR/EAR export compliance, CMMC 2.0 (NIST 800-171 controls), FAR/DFARS clause compliance, quality management (AS9100/ISO 9001), NSN entry/validation, supply chain (Made in USA) · ASG engagement: operational intelligence, compliance posture, process efficiency, capture support.',
+    chatPlaceholder: 'Compliance, operations, export controls, capture strategy — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Jim — context loaded. What's the priority?"
+      : "Jim — I'm up to speed on Shield's operations: ITAR posture, CMMC 2.0 requirements, FAR/DFARS compliance, and the RAAF/JSDF programs. What do you want to dig into?",
+    intakeFields: [],
+  },
+
   // ── Nancy — JJ's Mom ─────────────────────────────────────────────────────
   nancy: {
     slug: 'nancy',

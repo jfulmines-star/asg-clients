@@ -7,14 +7,13 @@ const SURFACE = '#111111'
 const BORDER = '#1F1F1F'
 const GRAY = '#6B7280'
 
-type Section = 'welcome' | 'documents' | 'caseresearch' | 'nyslaw' | 'chat'
+type Section = 'welcome' | 'documents' | 'nyslaw' | 'chat'
 
 const NAV_ITEMS: { id: Section; label: string; icon: string; tag?: string }[] = [
   { id: 'welcome', label: 'Welcome', icon: '👋' },
-  { id: 'documents', label: 'Document Analyzer', icon: '📄', tag: 'New' },
-  { id: 'caseresearch', label: 'Case Research', icon: '⚖️' },
+  { id: 'documents', label: 'Document Analyzer', icon: '📄' },
   { id: 'nyslaw', label: 'NYS Quick Reference', icon: '📚' },
-  { id: 'chat', label: 'Chat with Lex', icon: '💬', tag: 'Live' },
+  { id: 'chat', label: 'Chat with Lex', icon: '💬' },
 ]
 
 interface ChatMessage { role: 'user' | 'assistant'; content: string }
@@ -57,7 +56,7 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
   return (
     <div style={{ maxWidth: '680px' }}>
       <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '12px' }}>
-        Powered by AxiomStream Group
+        Legal Intelligence Platform
       </div>
       <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', marginBottom: '12px', lineHeight: 1.1 }}>
         Welcome, Sean.
@@ -69,9 +68,8 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
         {[
           { id: 'documents' as Section, icon: '📄', color: ACCENT, title: 'Document Analyzer', desc: 'Drag in any agreement, order, or deed. Lex reads it and gives you the key points, deadlines, and action items.' },
-          { id: 'caseresearch' as Section, icon: '⚖️', color: '#34D399', title: 'Case Research', desc: 'NYS statutes, case law, and procedural guidance. Cite-ready output for Monroe, Wayne, and surrounding counties.' },
           { id: 'nyslaw' as Section, icon: '📚', color: '#A78BFA', title: 'NYS Quick Reference', desc: 'DRL, FCA, CPLR, RPL, SCPA — key rules and deadlines organized by practice area. Copy with one click.' },
-          { id: 'chat' as Section, icon: '💬', color: ACCENT, title: 'Chat with Lex', desc: 'Your personal Lex instance. Already knows your practice, your counties, your 22 years in NYS law.' },
+          { id: 'chat' as Section, icon: '💬', color: ACCENT, title: 'Chat with Lex', desc: 'Your Lex instance. Already knows your practice, your counties, your 22 years in NYS law. Case research, drafting, anything.' },
         ].map(card => (
           <button key={card.id} onClick={() => onNavigate(card.id)} style={{
             background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '12px',
@@ -275,91 +273,6 @@ function DocumentAnalyzerSection() {
 }
 
 // ─── Case Research ────────────────────────────────────────────────────────────
-function CaseResearchSection() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', content: 'Research mode. Ask me about NYS case law, statutes, or procedural rules — I\'ll give you cite-ready guidance for your counties.' }
-  ])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  async function send() {
-    if (!input.trim() || loading) return
-    const userMsg = input.trim()
-    setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
-    setLoading(true)
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agent: 'Lex',
-          slug: 'devalk-sean',
-          tenantId: 'devalk-sean',
-          teamMember: 'Sean Lair',
-          isLead: true,
-          message: `Research mode — NYS case law and statute guidance on: ${userMsg}. Provide specific statute citations, key cases if relevant, and procedural guidance for Monroe/Wayne County practice. Format as clean numbered list — no markdown, plain text only, suitable for pasting into Word.`,
-          history: messages.map(m => ({ role: m.role, content: m.content })),
-        }),
-      })
-      const data = await res.json()
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply || data.text || 'No response — try again.' }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection issue. Try again.' }])
-    }
-    setLoading(false)
-  }
-
-  return (
-    <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)', minHeight: '500px' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '8px' }}>Lex</div>
-        <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '8px' }}>Case Research</h2>
-        <p style={{ fontSize: '14px', color: GRAY, lineHeight: 1.6 }}>NYS statutes, case law, and Monroe/Wayne county procedural guidance. Output is plain text — paste directly into briefs or email.</p>
-      </div>
-
-      <div style={{ flex: 1, overflowY: 'auto', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '12px 12px 0 0', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{ display: 'flex', gap: '10px', flexDirection: m.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, background: m.role === 'user' ? '#1e3a5f' : `${ACCENT}20`, border: `1px solid ${m.role === 'user' ? '#2563eb40' : ACCENT + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: m.role === 'user' ? '#60a5fa' : ACCENT }}>
-              {m.role === 'user' ? 'S' : 'L'}
-            </div>
-            <div style={{ maxWidth: '80%', background: m.role === 'user' ? '#1e3a5f' : '#161616', border: `1px solid ${m.role === 'user' ? '#2563eb30' : BORDER}`, borderRadius: '10px', padding: '12px 16px', fontSize: '14px', color: '#FAFAFA', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {m.content}
-              {m.role === 'assistant' && <CopyButton text={m.content} />}
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: `${ACCENT}20`, border: `1px solid ${ACCENT}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: ACCENT }}>L</div>
-            <div style={{ background: '#161616', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '12px 16px' }}>
-              <span style={{ display: 'inline-flex', gap: '4px' }}>
-                {[0, 1, 2].map(i => <span key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: ACCENT, opacity: 0.5, display: 'inline-block' }} />)}
-              </span>
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '12px', display: 'flex', gap: '8px' }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())}
-          placeholder="Ask about NYS statute, case law, or procedure..."
-          style={{ flex: 1, background: '#0d0d0d', border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '10px 14px', fontSize: '14px', color: '#FAFAFA', fontFamily: "'Inter', sans-serif", outline: 'none' }} />
-        <button onClick={send} disabled={loading || !input.trim()} style={{ background: ACCENT, border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '14px', fontWeight: 700, color: '#fff', cursor: 'pointer', opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif" }}>
-          {loading ? '...' : '→'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // ─── NYS Quick Reference ──────────────────────────────────────────────────────
 function NYSLawSection() {
   const refs = [
@@ -643,6 +556,25 @@ export default function DevalkSeanPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isMobile = useIsMobile()
 
+  // Browser back/forward support within the portal
+  useEffect(() => {
+    if (!unlocked) return
+    const onPop = () => {
+      const hash = window.location.hash.replace('#', '') as Section
+      const valid: Section[] = ['welcome', 'documents', 'nyslaw', 'chat']
+      if (valid.includes(hash)) setActiveSection(hash)
+      else setActiveSection('welcome')
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [unlocked])
+
+  function navigateTo(section: Section) {
+    window.history.pushState({}, '', `#${section}`)
+    setActiveSection(section)
+    setSidebarOpen(false)
+  }
+
   function handleDigit(i: number, val: string) {
     const d = val.replace(/\D/g, '').slice(-1)
     const next = [...digits]; next[i] = d; setDigits(next); setPinError(false)
@@ -669,10 +601,9 @@ export default function DevalkSeanPortal() {
     return (
       <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: "'Inter', -apple-system, sans-serif", color: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', maxWidth: '320px' }}>
-          <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '24px' }}>AxiomStream Group</div>
           <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚖️</div>
           <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Lex</h1>
-          <p style={{ color: '#555', fontSize: '14px', marginBottom: '32px' }}>Legal Intelligence Platform</p>
+          <p style={{ color: '#555', fontSize: '14px', marginBottom: '32px' }}>Legal Intelligence</p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
             {digits.map((d, i) => (
               <input key={i} id={`pin-${i}`} type="password" inputMode="numeric" maxLength={1} value={d}
@@ -711,13 +642,12 @@ export default function DevalkSeanPortal() {
           background: BG, zIndex: isMobile ? 50 : 'auto',
         }}>
           <div style={{ padding: '0 20px 24px', borderBottom: `1px solid ${BORDER}` }}>
-            <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '4px' }}>AxiomStream</div>
             <div style={{ fontSize: '18px', fontWeight: 800 }}>Lex</div>
             <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Legal Intelligence</div>
           </div>
           <nav style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
             {NAV_ITEMS.map(item => (
-              <button key={item.id} onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
+              <button key={item.id} onClick={() => navigateTo(item.id)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '12px 20px', background: activeSection === item.id ? `${ACCENT}10` : 'none',
@@ -750,9 +680,8 @@ export default function DevalkSeanPortal() {
 
         {/* Content */}
         <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '32px', overflowY: 'auto' }}>
-          {activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}
+          {activeSection === 'welcome' && <WelcomeSection onNavigate={navigateTo} />}
           {activeSection === 'documents' && <DocumentAnalyzerSection />}
-          {activeSection === 'caseresearch' && <CaseResearchSection />}
           {activeSection === 'nyslaw' && <NYSLawSection />}
           {activeSection === 'chat' && <SeanChatSection />}
         </main>

@@ -2683,9 +2683,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
     .slice(-30);
 
+  // Document vision support — devalk-sean and any Lex portal
+  // If documentBase64 + documentType are provided, build a multipart content message
+  let userContent: string | Array<{type: string; [key: string]: unknown}> = message;
+  const { documentBase64, documentName, documentType } = req.body || {};
+  if (documentBase64 && documentType) {
+    const isImage = documentType.startsWith('image/');
+    const isPDF = documentType === 'application/pdf' || (documentName || '').toLowerCase().endsWith('.pdf');
+    if (isImage) {
+      // Images: use vision content block
+      userContent = [
+        { type: 'image', source: { type: 'base64', media_type: documentType, data: documentBase64 } },
+        { type: 'text', text: message },
+      ];
+    } else if (isPDF) {
+      // PDFs: Anthropic supports PDF beta via document block
+      userContent = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: documentBase64 } },
+        { type: 'text', text: message },
+      ];
+    } else {
+      // Word/other: prepend document info to message, Lex will work with context
+      userContent = `[Document uploaded: ${documentName || 'document'}]\n\n${message}`;
+    }
+  }
+
   const messages: AnthropicMessage[] = [
     ...rawHistory,
-    { role: 'user', content: message },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { role: 'user', content: userContent as any },
   ];
 
   // Web search scoped to Winthrop until validated — promote to all Rex after Ben confirms
@@ -2721,6 +2747,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }).catch(() => {});
     }
     return res.json({ text: cleanedAccumulated });
+  }
+
+  // Document uploads: use non-streaming direct Anthropic call with PDF beta header
+  const hasDocument = !!(documentBase64 && documentType);
+  if (hasDocument) {
+    try {
+      const isPDF = documentType === 'application/pdf' || (documentName || '').toLowerCase().endsWith('.pdf');
+      const docMessages = [{ role: 'user' as const, content: userContent as string }];
+      const docRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          ...(isPDF ? { 'anthropic-beta': 'pdfs-2024-09-25' } : {}),
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: docMessages,
+        }),
+      });
+      if (!docRes.ok) {
+        const err = await docRes.text();
+        throw new Error(`Doc analysis error ${docRes.status}: ${err.slice(0, 200)}`);
+      }
+      const docData = await docRes.json();
+      const reply = docData.content?.[0]?.type === 'text' ? docData.content[0].text : 'Analysis failed — try again.';
+      const cleanReply = stripMarkdown(stripAgentPrefix(reply));
+      if (slug) {
+        await appendMemberThread(slug, teamMember, { member: teamMember, role: 'agent', agent, content: cleanReply, ts: Date.now() });
+      }
+      return res.json({ reply: cleanReply, text: cleanReply });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Document analysis failed';
+      return res.status(500).json({ error: msg, reply: 'Document analysis failed. Please try again or paste the text directly.' });
+    }
   }
 
   const streaming = req.body?.stream === true;

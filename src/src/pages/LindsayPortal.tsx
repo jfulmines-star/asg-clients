@@ -644,7 +644,7 @@ function AboutYouSection({ form, setForm, saved, setSaved, onNavigate }: {
 
 interface ChatMessage { role: 'user' | 'assistant'; content: string }
 
-const PORTAL_SLUG = 'lindsay'
+const PORTAL_SLUG = 'landmark-lindsay'
 
 async function persistMessages(msgs: ChatMessage[]) {
   // Save full history snapshot — clear then rewrite last 100 turns
@@ -747,7 +747,7 @@ function MarkChatSection({ intake }: { intake: IntakeForm | null }) {
           agent: 'Kit',
           message: userMsg,
           history,
-          slug: 'lindsay',
+          slug: 'landmark-lindsay',
           tenantId: 'lindsay',
           teamMember: 'Lindsay DeLellis',
           isLead: true,

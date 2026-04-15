@@ -56,7 +56,7 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
   return (
     <div style={{ maxWidth: '680px' }}>
       <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '12px' }}>
-        Legal Intelligence Platform
+        Powered by AxiomStream Group
       </div>
       <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', marginBottom: '12px', lineHeight: 1.1 }}>
         Welcome, Sean.
@@ -601,9 +601,10 @@ export default function DevalkSeanPortal() {
     return (
       <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: "'Inter', -apple-system, sans-serif", color: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', maxWidth: '320px' }}>
+          <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '24px' }}>AxiomStream Group</div>
           <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚖️</div>
           <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Lex</h1>
-          <p style={{ color: '#555', fontSize: '14px', marginBottom: '32px' }}>Legal Intelligence</p>
+          <p style={{ color: '#555', fontSize: '14px', marginBottom: '32px' }}>Legal Intelligence Platform</p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
             {digits.map((d, i) => (
               <input key={i} id={`pin-${i}`} type="password" inputMode="numeric" maxLength={1} value={d}
@@ -642,6 +643,7 @@ export default function DevalkSeanPortal() {
           background: BG, zIndex: isMobile ? 50 : 'auto',
         }}>
           <div style={{ padding: '0 20px 24px', borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: ACCENT, fontWeight: 700, marginBottom: '4px' }}>AxiomStream Group</div>
             <div style={{ fontSize: '18px', fontWeight: 800 }}>Lex</div>
             <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Legal Intelligence</div>
           </div>

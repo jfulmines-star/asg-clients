@@ -1,5 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
+  return isMobile
+}
+
 const PIN = '0312' // March 12 — meeting date
 
 const GOLD = '#E8B84B'
@@ -26,6 +36,7 @@ const NAV_ITEMS: { id: Section; label: string; icon: string; tag?: string }[] = 
 ]
 
 export default function MarkPortal() {
+  const isMobile = useIsMobile()
   const [unlocked, setUnlocked] = useState(false)
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
@@ -167,6 +178,68 @@ export default function MarkPortal() {
     )
   }
 
+  // ─── Mobile layout ───
+  if (isMobile) {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, background: BG,
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        color: '#FAFAFA', display: 'flex', flexDirection: 'column',
+        height: '100dvh',
+      } as React.CSSProperties}>
+        <header style={{
+          flexShrink: 0, padding: '14px 20px 12px',
+          paddingTop: 'max(14px, env(safe-area-inset-top))' as string,
+          borderBottom: `1px solid ${BORDER}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: '#0d0d0d',
+        } as React.CSSProperties}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '22px' }}>{NAV_ITEMS.find(n => n.id === activeSection)?.icon}</span>
+            <span style={{ fontSize: '19px', fontWeight: 700 }}>{NAV_ITEMS.find(n => n.id === activeSection)?.label}</span>
+          </div>
+          <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: GOLD, fontWeight: 700 }}>Landmark</span>
+        </header>
+        <main style={{
+          flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+          overflowY: activeSection === 'chat' ? 'hidden' : 'auto',
+          padding: activeSection === 'chat' ? '0' : '20px 16px',
+          WebkitOverflowScrolling: 'touch',
+        } as React.CSSProperties}>
+          {activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}
+          {activeSection === 'stockbrief' && <StockBriefSection />}
+          {activeSection === 'retirement' && <RetirementDemoSection />}
+          {activeSection === 'aboutyou' && <AboutYouSection form={intakeForm} setForm={setIntakeForm} saved={intakeSaved} setSaved={setIntakeSaved} onNavigate={setActiveSection} />}
+          {activeSection === 'chat' && <MarkChatSection intake={intakeSaved ? intakeForm : null} />}
+          {activeSection === 'documents' && <DocumentsSection tenantId="mark" />}
+        </main>
+        <nav style={{
+          flexShrink: 0, borderTop: `1px solid ${BORDER}`, background: '#0d0d0d',
+          display: 'flex', paddingBottom: 'env(safe-area-inset-bottom, 0px)' as string,
+        } as React.CSSProperties}>
+          {NAV_ITEMS.map(item => {
+            const isActive = activeSection === item.id
+            return (
+              <button key={item.id} onClick={() => setActiveSection(item.id)} style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', padding: '10px 2px',
+                background: isActive ? `${GOLD}12` : 'none', border: 'none',
+                borderTop: `2px solid ${isActive ? GOLD : 'transparent'}`,
+                cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'background 0.15s',
+              }}>
+                <span style={{ fontSize: '20px', lineHeight: 1 }}>{item.icon}</span>
+                <span style={{ fontSize: '10px', fontWeight: isActive ? 700 : 500, marginTop: '3px', color: isActive ? GOLD : '#555' }}>
+                  {item.label.split(' ')[0]}
+                </span>
+              </button>
+            )
+          })}
+        </nav>
+      </div>
+    )
+  }
+
+  // ─── Desktop layout ───
   return (
     <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Inter', -apple-system, sans-serif", display: 'flex', flexDirection: 'column' }}>
       {/* Top header */}

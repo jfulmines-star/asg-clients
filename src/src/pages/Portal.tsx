@@ -124,7 +124,7 @@ const CLIENT_REGISTRY: Record<string, ClientConfig> = {
   'shield-jeffd': {
     name: 'Jeff Dicks - Shield Technologies (CFO)',
     tier: 'trial',
-    products: ['rex'],
+    products: ['rex', 'aria'],
     bundleChat: true,
   },
   'shield-jimoaks': {

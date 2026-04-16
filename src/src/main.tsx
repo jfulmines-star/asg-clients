@@ -12,6 +12,7 @@ import AnttipPortal from './pages/AnttipPortal'
 import CampaignPortal from './pages/CampaignPortal'
 import ClientPortalV2 from './pages/ClientPortalV2'
 import RAGDemo from './pages/RAGDemo'
+import BasePortalDemo from './pages/BasePortalDemo'
 import { PORTAL_CONFIGS } from './config/portal-configs'
 import NotFound from './pages/NotFound'
 
@@ -21,6 +22,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Routes>
         {/* RAG Demo — open access for Ben/Nick */}
         <Route path="/rag-demo" element={<RAGDemo />} />
+        {/* BasePortal POC — QA only, not a client portal */}
+        <Route path="/base-demo" element={<BasePortalDemo />} />
         {/* Legacy bespoke portals */}
         <Route path="/mark" element={<MarkPortal />} />
         <Route path="/brian" element={<BrianPortal />} />

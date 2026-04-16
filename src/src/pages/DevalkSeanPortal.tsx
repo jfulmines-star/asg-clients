@@ -121,12 +121,22 @@ function DocumentAnalyzerSection() {
 
   async function analyzeFile(file: File) {
     setFileName(file.name)
-    setAnalyzing(true)
     setResult('')
     setDocContent('')
 
+    // File size check — Vercel body limit is 4.5MB; base64 adds ~33% overhead
+    // Safe limit: 3MB for PDFs/images, no limit for .docx (text-extracted, not sent as binary)
+    const isDocxFile = file.name.toLowerCase().endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    const MAX_BINARY_MB = 3
+    if (!isDocxFile && file.size > MAX_BINARY_MB * 1024 * 1024) {
+      setResult(`This file is ${(file.size / 1024 / 1024).toFixed(1)}MB — too large to upload directly.\n\nOptions:\n1. For a scanned PDF, try compressing it first (use Adobe Acrobat or smallpdf.com).\n2. For a Word doc, save as .docx and upload that instead.\n3. Copy and paste the key sections directly into Chat with Lex.`)
+      return
+    }
+
+    setAnalyzing(true)
+
     try {
-      const isDocx = file.name.toLowerCase().endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      const isDocx = isDocxFile
       const isDoc = file.name.toLowerCase().endsWith('.doc')
 
       if (isDocx) {
@@ -180,15 +190,30 @@ function DocumentAnalyzerSection() {
               documentType: file.type,
             }),
           })
+          if (!res.ok) {
+            if (res.status === 413) {
+              setResult(`File too large for direct upload (${(file.size / 1024 / 1024).toFixed(1)}MB).\n\nTry:\n1. Compress the PDF at smallpdf.com\n2. Upload as .docx instead\n3. Copy the key sections and paste into Chat with Lex`)
+            } else {
+              const errData = await res.json().catch(() => ({}))
+              setResult(errData.reply || `Upload failed (${res.status}). Try a smaller file or paste the text into chat.`)
+            }
+            setAnalyzing(false)
+            return
+          }
           const data = await res.json()
           setResult(data.reply || data.text || data.message || 'Analysis failed — try again.')
+          setAnalyzing(false)
+        }
+        reader.onerror = () => {
+          setResult('Could not read this file. Make sure it\'s not corrupted and try again.')
           setAnalyzing(false)
         }
         reader.readAsDataURL(file)
         return // async path — analyzing(false) set in onload above
       }
     } catch (err) {
-      setResult('Error analyzing document. Try uploading as PDF or pasting the text directly.')
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setResult(`Upload failed: ${msg}\n\nIf the file is large, try compressing it first. Or paste the key text directly into Chat with Lex.`)
     }
     setAnalyzing(false)
   }

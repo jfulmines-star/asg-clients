@@ -20,7 +20,7 @@ const BORDER = '#1F1F1F'
 const GRAY = '#6B7280'
 const LIGHT_GRAY = '#9CA3AF'
 
-type Section = 'welcome' | 'stockbrief' | 'retirement' | 'aboutyou' | 'chat' | 'documents'
+type Section = 'welcome' | 'aboutyou' | 'documents' | 'chat'
 
 interface IntakeForm {
   aiToday: string; topChallenge: string; clientType: string[]; sectors: string[]; horizon: string; notes: string
@@ -28,18 +28,16 @@ interface IntakeForm {
 
 const NAV_ITEMS: { id: Section; label: string; icon: string; tag?: string }[] = [
   { id: 'welcome', label: 'Welcome', icon: '👋' },
-  { id: 'stockbrief', label: 'Stock Brief', icon: '📈', tag: 'Try it' },
-  { id: 'retirement', label: 'Retirement Planner', icon: '🏖️', tag: 'Demo' },
   { id: 'aboutyou', label: 'About You', icon: '🎯' },
-  { id: 'chat', label: 'Chat with Kit', icon: '💬', tag: 'Live' },
   { id: 'documents', label: 'Documents', icon: '📄' },
+  { id: 'chat', label: 'Chat with Kit', icon: '💬', tag: 'Live' },
 ]
 
 export default function LindsayPortal() {
   const [unlocked, setUnlocked] = useState(false)
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
-  const [activeSection, setActiveSection] = useState<Section>('welcome')
+  const [activeSection, setActiveSection] = useState<Section>('chat')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isMobile = useIsMobile()
   const [intakeForm, setIntakeForm] = useState<IntakeForm>({
@@ -220,8 +218,6 @@ export default function LindsayPortal() {
           WebkitOverflowScrolling: 'touch',
         } as React.CSSProperties}>
           {activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}
-          {activeSection === 'stockbrief' && <StockBriefSection />}
-          {activeSection === 'retirement' && <RetirementDemoSection />}
           {activeSection === 'aboutyou' && <AboutYouSection form={intakeForm} setForm={setIntakeForm} saved={intakeSaved} setSaved={setIntakeSaved} onNavigate={setActiveSection} />}
           {activeSection === 'chat' && <MarkChatSection intake={intakeSaved ? intakeForm : null} />}
           {activeSection === 'documents' && <DocumentsSection tenantId="lindsay" />}
@@ -334,8 +330,6 @@ export default function LindsayPortal() {
         {/* Main content */}
         <main style={{ flex: 1, overflowY: 'auto', padding: '48px 48px 80px' }}>
           {activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}
-          {activeSection === 'stockbrief' && <StockBriefSection />}
-          {activeSection === 'retirement' && <RetirementDemoSection />}
           {activeSection === 'aboutyou' && <AboutYouSection form={intakeForm} setForm={setIntakeForm} saved={intakeSaved} setSaved={setIntakeSaved} onNavigate={setActiveSection} />}
           {activeSection === 'chat' && <MarkChatSection intake={intakeSaved ? intakeForm : null} />}
           {activeSection === 'documents' && <DocumentsSection tenantId="lindsay" />}
@@ -400,10 +394,9 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
       {/* Quick cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px', marginBottom: '40px' }}>
         {[
-          { id: 'stockbrief' as Section, icon: '📈', color: GOLD, title: 'Stock Brief', desc: 'Drop in any ticker — get institutional-grade analysis through Landmark\'s lens.' },
-          { id: 'retirement' as Section, icon: '🏖️', color: '#34D399', title: 'Retirement Planner', desc: 'Build a full retirement plan live. Try it with a real client scenario — adjust, regenerate, see the difference.' },
-          { id: 'aboutyou' as Section, icon: '🎯', color: '#A78BFA', title: 'About You', desc: 'A few quick questions so the tools already know your practice before you start.' },
-          { id: 'chat' as Section, icon: '💬', color: GOLD, title: 'Chat with Kit', desc: 'Your own Kit instance, pre-loaded with your practice context and watchlist. Ask anything.' },
+          { id: 'aboutyou' as Section, icon: '🎯', color: '#A78BFA', title: 'About You', desc: 'A few quick questions so Kit already knows your practice before you start.' },
+          { id: 'documents' as Section, icon: '📄', color: TEAL, title: 'Documents', desc: 'Upload your reports, plans, and client materials. Kit reads them and keeps them ready for your conversations.' },
+          { id: 'chat' as Section, icon: '💬', color: GOLD, title: 'Chat with Kit', desc: 'Your Kit instance, pre-loaded with your practice context. Market research, planning analysis, client prep — ask anything.' },
         ].map(card => (
           <button
             key={card.id}

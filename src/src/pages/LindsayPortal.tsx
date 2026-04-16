@@ -128,8 +128,11 @@ export default function LindsayPortal() {
                 <input
                   key={i}
                   id={`pin-${i}`}
-                  type="tel"
+                  type="password"
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                  autoFocus={i === 0}
                   maxLength={1}
                   value={d}
                   onChange={e => handleDigit(i, e.target.value)}
@@ -137,13 +140,15 @@ export default function LindsayPortal() {
                   onPaste={i === 0 ? handlePaste : undefined}
                   style={{
                     width: '60px', height: '68px',
-                    background: '#161616', border: `1.5px solid ${pinError ? '#ef4444' : d ? `${GOLD}60` : BORDER}`,
+                    background: '#222',
+                    border: `2px solid ${pinError ? '#ef4444' : d ? GOLD : '#444'}`,
                     borderRadius: '10px', fontSize: '26px', fontWeight: 700,
                     color: '#FAFAFA', textAlign: 'center', outline: 'none',
                     fontFamily: "'Inter', sans-serif",
                     animation: pinError ? 'shake 0.35s ease' : 'none',
                     transition: 'border-color 0.15s',
-                  }}
+                    boxSizing: 'border-box',
+                  } as React.CSSProperties}
                 />
               ))}
             </div>

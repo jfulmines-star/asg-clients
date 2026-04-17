@@ -329,8 +329,9 @@ const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; te
   teamrex:       { name: 'Team Member',             agents: ['rexteam'],             pin: '4429', team: true, teamLabel: 'Team' },
   octant8kevin:  { name: 'Kevin Gosa',             agents: ['rex'],                 pin: '6294', team: true, teamLabel: 'Octant8', partnerName: 'Bryan' },
   octant8bryan:  { name: 'Bryan Horvath',          agents: ['rex'],                 pin: '8537', team: true, teamLabel: 'Octant8', partnerName: 'Kevin' },
-  dxdmike:       { name: 'Mike Gugino',            agents: ['dxd'],                 pin: '7731' },
-  dxddean:       { name: 'Dean Pratt',             agents: ['dxd'],                 pin: '9284' },
+  // INACTIVE 2026-04-17 — DXD not purchasing at this time (BMB)
+  // dxdmike:       { name: 'Mike Gugino',            agents: ['dxd'],                 pin: '7731' },
+  // dxddean:       { name: 'Dean Pratt',             agents: ['dxd'],                 pin: '9284' },
   anttip:           { name: 'Antti Pasila',           agents: ['kit'],                 pin: '2010', openingMessage: "Hei Antti — olen Kit.\n\nTiedän jo kuka olet. Kiosked, GraphoGame, DeepScan, Cyans — ja nyt Platinum.ai. Rakennat AI-löydettävyystuotetta samaan aikaan kun koko ala herää tähän ongelmaan. Hyvä timing.\n\nErona siihen että käyttäisit Claudea tai ChatGPT:tä suoraan: minulla on muisti. Muistan kaiken mitä käymme läpi — ensi kerralla kun avaat tämän, jatkamme siitä mihin jäimme. Ei selitellä alusta. Voin myös lähettää sähköpostia puolestasi ja tehdä tutkimusta — en vain generoi tekstiä.\n\nVoit puhua kanssani suomeksi tai englanniksi, kumpi tuntuu luontevammalta. Seuraan mukana ilman kommentteja.\n\nMitä on juuri nyt mielessä?" },
   'winthrop-blake':  { name: 'Blake Warren',           agents: ['rex'],                 pin: '4321' },
   'winthrop-andrew': { name: 'Andrew Armour',          agents: ['rex'],                 pin: '6847' },
@@ -373,18 +374,9 @@ function starters(agents: string[], slug = '') {
     "Help me outline my college essay — I don't know where to start.",
     "Make the case for Josh Allen as the best QB in the NFL right now.",
   ]
-  if (slug === 'dxdmike') return [
-    "Help me identify and profile the top 50 school districts in Texas for our drone security program.",
-    "Build me a go-to-market plan for our DaaS offering in the Houston construction market.",
-    "Draft an outbound email sequence for reaching VP Security contacts at critical infrastructure companies.",
-    "What are the most compelling case study angles we should be building for our next funding round?",
-  ]
-  if (slug === 'dxddean') return [
-    "Walk me through the FedRAMP authorization roadmap for a company at our stage.",
-    "What agentic AI frameworks should we be evaluating for our platform right now?",
-    "Help me build a data governance policy for the surveillance data our drone network will collect.",
-    "Evaluate build vs. buy vs. partner for standing up our command and control software layer.",
-  ]
+  // INACTIVE 2026-04-17 — DXD portals disabled (BMB)
+  // if (slug === 'dxdmike') return [...]
+  // if (slug === 'dxddean') return [...]
   if (slug === 'ryanh') return [
     "Walk me through the top NAVSEA buying commands for our NSN-assigned corrosion products.",
     "Help me build a capture strategy for a Coast Guard Acquisition Directorate opportunity.",

@@ -13,6 +13,9 @@ import CampaignPortal from './pages/CampaignPortal'
 import ClientPortalV2 from './pages/ClientPortalV2'
 import RAGDemo from './pages/RAGDemo'
 import BasePortalDemo from './pages/BasePortalDemo'
+import MROLanding from './pages/MROLanding'
+import MRODemo from './pages/MRODemo'
+import ShieldAppShell from './pages/ShieldAppShell'
 import { PORTAL_CONFIGS } from './config/portal-configs'
 import NotFound from './pages/NotFound'
 
@@ -20,6 +23,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
+        {/* MRO demo — trade show pages */}
+        <Route path="/andrew/app" element={<ShieldAppShell slug="andrew" pin="6291" rep="Andy" territory="Sales Strategy & Government Capture Intelligence" />} />
+        <Route path="/ryanh/app" element={<ShieldAppShell slug="ryanh" pin="5506" rep="Ryan" territory="Navy, Coast Guard & Commercial Aviation" />} />
+        <Route path="/mro" element={<MROLanding />} />
+        <Route path="/mro/demo" element={<MRODemo />} />
         {/* RAG Demo — open access for Ben/Nick */}
         <Route path="/rag-demo" element={<RAGDemo />} />
         {/* BasePortal POC — QA only, not a client portal */}

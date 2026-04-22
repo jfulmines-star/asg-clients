@@ -145,7 +145,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       for (let i = 0; i < chunks.length; i++) {
         try {
           const embedding = await createEmbedding(chunks[i]);
-          await fetch(`${SUPABASE_URL}/rest/v1/rag_chunks`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rag_document_chunks`, {
             method: 'POST',
             headers: {
               'apikey': SUPABASE_SERVICE_KEY,

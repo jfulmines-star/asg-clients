@@ -28,7 +28,7 @@ export interface PortalConfig {
   agentLabel: string        // what to call the agent ("Rex", "Aria", etc.)
   accentColor: string       // primary accent hex
   tagline: string           // one line under the agent name on welcome
-  whatWeKnow: string        // pre-loaded context blurb on welcome card
+  whatWeKnow: string | Array<{ label: string; value: string }>  // pre-loaded context — string or labeled grid
   chatPlaceholder: string   // textarea placeholder in chat
   chatGreeting: (hasSavedContext: boolean) => string
   intakeFields: IntakeField[]
@@ -390,8 +390,8 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
   },
 
   // ── Terry Kurtenbach — Kelyniam Global ──────────────────────────────────
-  terry: {
-    slug: 'terry',
+  'kelyniam-terry': {
+    slug: 'kelyniam-terry',
     pin: '5545',
     clientName: 'Terry',
     memberName: 'Terry Kurtenbach',
@@ -400,7 +400,16 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     agentLabel: 'Rex',
     accentColor: '#4ADE80',
     tagline: 'Kelyniam Global · Cranial Implant Sales Strategy & Market Expansion',
-    whatWeKnow: `Terry Kurtenbach · Former Deloitte Tax Partner (37 years, Milwaukee) · Investor & operator across four ventures: Kelyniam Global (cranial implants), Obsidian Financial Advisors (CPA practice), CLP Capital (private investment), Anshin Farm · Kelyniam: custom PEEK cranial implants, OTC-traded (KLYG), 24-hour delivery from OR spec to implant in surgeon's hands · Sales model: rep meets surgeon in OR → captures cranial specs → engineering builds CAD model → surgeon approves → 3D-printed implant ships · Currently operating in 13 states; expansion target: all 50 states · 12 high-performing sales reps + new national sales director (onboarded April 2026) · Salesforce, QuickBooks, Teams stack · Sales focus: neurosurgeons and cranial/reconstructive surgeons at Level I trauma centers and academic medical centers nationwide`,
+    whatWeKnow: [
+      { label: 'Background', value: 'Former Deloitte Tax Partner · 37 years · Milwaukee office · Healthcare industry focus' },
+      { label: 'Role at Kelyniam', value: 'Investor & strategic advisor · 22% ownership stake · Stepping back from CFO role (March 2026)' },
+      { label: 'The Product', value: 'Custom PEEK cranial implants · 3D-printed · 24-hour OR-to-delivery cycle · Only US manufacturer at this speed' },
+      { label: 'Sales Model', value: 'Rep meets surgeon in OR → captures cranial specs → engineering builds CAD → surgeon approves → implant ships' },
+      { label: 'Current Scale', value: '~350 implants/year · $3.5M ARR · 13 states · 12 high-performing reps + new national sales director' },
+      { label: 'Expansion Target', value: 'All 50 states · Can double output without adding headcount · Trauma centers + academic medical centers' },
+      { label: 'Tech Stack', value: 'Salesforce · QuickBooks · Microsoft Teams' },
+      { label: 'Other Ventures', value: 'Obsidian Financial Advisors (CPA practice) · CLP Capital (private investment) · Anshin Farm' },
+    ],
     chatPlaceholder: 'Surgeon targets, hospital systems, sales strategy, OR access — what are we working on?',
     chatGreeting: (saved) => saved
       ? "Terry — context loaded. What are we working on today?"

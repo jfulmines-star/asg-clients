@@ -61,8 +61,19 @@ function WelcomeSection({ config, accent, intakeSaved, onNavigate, tv = DEFAULT_
         {config.tagline}
       </p>
       <div style={{ background: `${accent}08`, border: `1px solid ${accent}25`, borderRadius: '10px', padding: '20px 24px', marginBottom: '32px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: accent, marginBottom: '8px' }}>Your Context</div>
-        <div style={{ fontSize: '13px', color: LIGHT_GRAY, lineHeight: '1.7' }}>{config.whatWeKnow}</div>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: accent, marginBottom: '12px' }}>Your Context</div>
+        {typeof config.whatWeKnow === 'string' ? (
+          <div style={{ fontSize: '13px', color: LIGHT_GRAY, lineHeight: '1.7' }}>{config.whatWeKnow}</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
+            {(config.whatWeKnow as Array<{ label: string; value: string }>).map(item => (
+              <div key={item.label} style={{ background: SURFACE, borderRadius: '6px', padding: '10px 12px', border: `1px solid ${BORDER}` }}>
+                <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '3px' }}>{item.label}</div>
+                <div style={{ fontSize: '12px', color: LIGHT_GRAY, lineHeight: '1.5' }}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
         <button onClick={() => onNavigate('chat')} style={{ background: accent, color: tv.BG, border: 'none', borderRadius: '10px', padding: '16px 28px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>

@@ -296,7 +296,7 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
 
       <div style={{ background: `${GREEN}08`, border: `1px solid ${GREEN}25`, borderRadius: '10px', padding: '20px 24px', marginBottom: '32px' }}>
         <div style={{ fontSize: '13px', fontWeight: 700, color: GREEN, marginBottom: '8px' }}>
-          What We Already Know About You
+          Your Context
         </div>
         <div style={{ fontSize: '13px', color: LIGHT_GRAY, lineHeight: '1.7' }}>
           VP at Winthrop Realty Group · Houston, TX · South Texas College of Law · $25M+ in acquisitions · 2.5M+ sq ft across office, industrial, retail, multifamily, and land · Clients include publicly traded REITs, national companies, law firms, and institutional developers.

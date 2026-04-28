@@ -128,7 +128,7 @@ function IntakeSection({ config, accent, fields, setFields, onSave, tv = DEFAULT
     setFields({ ...fields, [key]: cur.includes(val) ? cur.filter(v => v !== val) : [...cur, val] })
   }
   const labelStyle = { fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const, color: GRAY, display: 'block', marginBottom: '10px' }
-  const inputStyle = { width: '100%', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '12px 16px', fontSize: '14px', color: '#FAFAFA', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }
+  const inputStyle = { width: '100%', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '12px 16px', fontSize: '14px', color: LIGHT_GRAY, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }
   return (
     <div style={{ maxWidth: '600px' }}>
       <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: '#A78BFA', fontWeight: 700, marginBottom: '16px' }}>Quick Context — 2 Minutes</div>
@@ -468,7 +468,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
                 onChange={e => handleDigit(i, e.target.value)}
                 onKeyDown={e => handleKeyDown(i, e)}
                 onPaste={i === 0 ? handlePaste : undefined}
-                style={{ width: '56px', height: '64px', textAlign: 'center', fontSize: '24px', fontWeight: 800, background: theme.surface, border: `2px solid ${pinError ? '#EF4444' : d ? accent : theme.border}`, borderRadius: '10px', color: '#FAFAFA', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s' }}
+                style={{ width: '56px', height: '64px', textAlign: 'center', fontSize: '24px', fontWeight: 800, background: theme.surface, border: `2px solid ${pinError ? '#EF4444' : d ? accent : theme.border}`, borderRadius: '10px', color: theme.text, fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s' }}
               />
             ))}
           </div>
@@ -480,7 +480,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: theme.bg, color: '#FAFAFA', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: theme.bg, color: theme.text, fontFamily: "'Inter', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; }`}</style>
       {/* Header */}

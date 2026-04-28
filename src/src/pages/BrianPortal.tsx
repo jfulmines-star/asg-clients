@@ -361,7 +361,7 @@ function WelcomeSection({ onNavigate }: { onNavigate: (s: Section) => void }) {
       {/* What we already know — specific to Mark */}
       <div style={{ background: `${TEAL}08`, border: `1px solid ${TEAL}20`, borderRadius: '10px', padding: '20px 24px', marginBottom: '36px' }}>
         <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', color: TEAL, fontWeight: 700, marginBottom: '14px' }}>
-          What We Already Know About You
+          Your Context
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
           {[

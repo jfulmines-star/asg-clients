@@ -36,7 +36,7 @@ export function WelcomeSection({ config, accent, tv, navigateTo, intake }: Modul
         }}
       >
         <div style={{ fontSize: 13, fontWeight: 700, color: accent, marginBottom: 12 }}>
-          What We Already Know About You
+          Your Context
         </div>
         {typeof whatWeKnow === 'string' ? (
           <div style={{ fontSize: 13, color: tv.lightGray, lineHeight: 1.7 }}>{whatWeKnow}</div>

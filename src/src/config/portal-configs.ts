@@ -397,7 +397,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     memberName: 'Terry Kurtenbach',
     company: 'Kelyniam Global',
     agentId: 'rex',
-    agentLabel: 'Rex',
+    agentLabel: 'Kit',
     accentColor: '#4ADE80',
     tagline: 'Kelyniam Global · Cranial Implant Sales Strategy & Market Expansion',
     whatWeKnow: [
@@ -418,22 +418,22 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       {
         icon: '🧠',
         title: 'Built for Kelyniam\'s Sales Motion',
-        body: 'Rex was configured specifically for the Kelyniam rep model — OR-first access, surgeon relationship building, and the 24-hour implant cycle. It thinks like a sales strategist who knows your product cold.',
+        body: 'Kit was configured specifically for the Kelyniam rep model — OR-first access, surgeon relationship building, and the 24-hour implant cycle. It thinks like a sales strategist who knows your product cold.',
       },
       {
         icon: '🗺️',
         title: 'Market Expansion Intelligence',
-        body: 'Ask Rex to map target hospitals, identify neurosurgeons at Level I trauma centers in new states, research competitive implant providers, or size the opportunity in a specific geography. Real research, fast.',
+        body: 'Ask Kit to map target hospitals, identify neurosurgeons at Level I trauma centers in new states, research competitive implant providers, or size the opportunity in a specific geography. Real research, fast.',
       },
       {
         icon: '📋',
         title: 'Account Strategy & Pipeline',
-        body: 'From first OR introduction to closed account — Rex helps you plan the approach, draft outreach, prepare for surgeon conversations, and track what\'s working across your territory.',
+        body: 'From first OR introduction to closed account — Kit helps you plan the approach, draft outreach, prepare for surgeon conversations, and track what\'s working across your territory.',
       },
       {
         icon: '⚡',
         title: 'The ASG Model',
-        body: 'AxiomStream Group builds purpose-specific AI for businesses in motion. Rex was built for Kelyniam\'s products, Kelyniam\'s sales process, and Kelyniam\'s expansion goals — not a generic tool.',
+        body: 'AxiomStream Group builds purpose-specific AI for businesses in motion. Kit was built for Kelyniam\'s products, Kelyniam\'s sales process, and Kelyniam\'s expansion goals — not a generic tool.',
       },
     ],
     intakeFields: [

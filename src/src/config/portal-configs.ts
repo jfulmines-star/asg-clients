@@ -482,7 +482,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     ],
     poweredBy: 'Powered by AxiomStream Group · Built for Kelyniam Global',
     disableTeamContext: true,
-    enableDocuments: true,
+    enableInlineUpload: true,
   },
 
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────

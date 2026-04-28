@@ -189,6 +189,8 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const [ready, setReady] = useState(false)
   const [freshStart, setFreshStart] = useState(false)
   const [ragDocNames, setRagDocNames] = useState<string[]>([])
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done'>('idle')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch uploaded RAG docs for this portal so Kit knows about them in the main chat
   useEffect(() => {
@@ -284,6 +286,22 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
     setInputKey(k => k + 1)
   }
 
+  async function handleInlineUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // Reset input so the same file can be re-selected if needed
+    e.target.value = ''
+    setUploadStatus('uploading')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('tenantId', config.slug)
+      await fetch('/api/rag-upload', { method: 'POST', body: formData })
+    } catch {}
+    setUploadStatus('done')
+    setTimeout(() => setUploadStatus('idle'), 2000)
+  }
+
   async function send() {
     if (!input.trim() || loading) return
     const text = input.trim()
@@ -361,6 +379,25 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
       </div>
 
       <div style={{ background: surface, border: `1px solid ${border}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '12px', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+        {!!(config as any).enableInlineUpload && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.pptx,.ppt"
+              style={{ display: 'none' }}
+              onChange={handleInlineUpload}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadStatus === 'uploading'}
+              title="Attach a file"
+              style={{ height: '44px', background: 'transparent', border: `1px solid ${border}`, borderRadius: '10px', padding: '0 12px', cursor: 'pointer', color: accent, flexShrink: 0, fontSize: '18px', transition: 'opacity 0.15s', opacity: uploadStatus === 'uploading' ? 0.6 : 1 }}
+            >
+              {uploadStatus === 'idle' ? '📎' : uploadStatus === 'uploading' ? '⏳' : '✓'}
+            </button>
+          </>
+        )}
         <textarea
           key={inputKey}
           value={input}

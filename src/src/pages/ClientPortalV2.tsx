@@ -188,6 +188,20 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const [inputKey, setInputKey] = useState(0)
   const [ready, setReady] = useState(false)
   const [freshStart, setFreshStart] = useState(false)
+  const [ragDocNames, setRagDocNames] = useState<string[]>([])
+
+  // Fetch uploaded RAG docs for this portal so Kit knows about them in the main chat
+  useEffect(() => {
+    const enableDocs = !!(config as any).enableDocuments
+    if (!enableDocs) return
+    fetch(`/api/rag-documents?tenantId=${encodeURIComponent(config.slug)}`)
+      .then(r => r.ok ? r.json() : [])
+      .then((data: any) => {
+        const raw = Array.isArray(data) ? data : (data.documents || data.docs || [])
+        setRagDocNames(raw.map((d: any) => d.name || d.filename).filter(Boolean))
+      })
+      .catch(() => {})
+  }, [config.slug])
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMsgRef = useRef<HTMLDivElement>(null)
@@ -244,11 +258,16 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
     }
   }, [messages])
 
-  const extraContext = fields
-    ? '\n\n## Practice Context\n' + config.intakeFields.map((f: any) =>
-        `${f.label}: ${Array.isArray(fields[f.key]) ? fields[f.key].join(', ') : fields[f.key] || 'not specified'}`
-      ).join('\n')
-    : ''
+  const extraContext = [
+    fields
+      ? '\n\n## Practice Context\n' + config.intakeFields.map((f: any) =>
+          `${f.label}: ${Array.isArray(fields[f.key]) ? fields[f.key].join(', ') : fields[f.key] || 'not specified'}`
+        ).join('\n')
+      : '',
+    ragDocNames.length > 0
+      ? `\n\n## Uploaded Documents\nThe user has uploaded the following documents to their Knowledge Base. You have access to these via the Documents tab and can reference them in any conversation.\n${ragDocNames.map((n, i) => `  ${i + 1}. ${n}`).join('\n')}`
+      : '',
+  ].join('')
 
   function handleStartFresh() {
     // Clears the visual conversation and sets a fresh-start flag.
@@ -275,7 +294,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
     // User message is saved by /api/chat — no separate write needed
 
     const ts = Date.now()
-    setMessages(prev => [...prev, { role: 'assistant', content: '⚡ Searching live data sources...', _id: ts }])
+    // Use animated dots indicator only — no static loading message bubble
     setLoading(true)
 
     try {
@@ -288,9 +307,9 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
       const data = await res.json()
       const reply = data.reply || data.text || data.message || 'Something went wrong.'
       // Assistant reply is saved by /api/chat — no separate write needed
-      setMessages(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: reply }])
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
     } catch {
-      setMessages(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: 'Connection issue. Try again.' }])
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection issue. Try again.' }])
     }
     setLoading(false)
   }
@@ -369,6 +388,245 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   )
 }
 
+// ─── Document upload section ──────────────────────────────────────────────────
+interface DocFile { name: string; size: number; content: string; mimeType: string; uploadedAt: string }
+
+function formatBytes(n: number) {
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const ACCEPTED_TYPES = '.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.pptx,.ppt'
+
+function DocumentsSection({ config, accent, themeMode, fontSize, tv }: {
+  config: PortalConfig; accent: string; themeMode: string; fontSize: number; tv: typeof DEFAULT_TV
+}) {
+  const bg = themeMode === 'light' ? '#F8F9FA' : tv.BG
+  const surface = themeMode === 'light' ? '#FFFFFF' : tv.SURFACE
+  const border = themeMode === 'light' ? '#E5E7EB' : tv.BORDER
+  const gray = tv.GRAY
+  const text = themeMode === 'light' ? '#111827' : '#FAFAFA'
+  const muted = themeMode === 'light' ? '#6B7280' : tv.LIGHT_GRAY
+
+  const [files, setFiles] = useState<DocFile[]>([])
+  const [selected, setSelected] = useState<DocFile | null>(null)
+  const [docMsgs, setDocMsgs] = useState<{ role: string; content: string; _id?: number }[]>([])
+  const [docInput, setDocInput] = useState('')
+  const [docLoading, setDocLoading] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const lastRef = useRef<HTMLDivElement>(null)
+  const memberName = (config as any).memberName || config.clientName
+
+  useEffect(() => {
+    if (lastRef.current) lastRef.current.scrollIntoView({ behavior: 'smooth' })
+  }, [docMsgs])
+
+  async function readFile(file: File): Promise<DocFile> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      const isText = /text\/|\.txt|\.csv|\.md/.test(file.type + file.name)
+      reader.onload = () => {
+        resolve({
+          name: file.name,
+          size: file.size,
+          content: reader.result as string,
+          mimeType: file.type || 'application/octet-stream',
+          uploadedAt: new Date().toISOString(),
+        })
+      }
+      reader.onerror = reject
+      if (isText) reader.readAsText(file)
+      else reader.readAsDataURL(file)
+    })
+  }
+
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList) return
+    const newDocs: DocFile[] = []
+    for (const f of Array.from(fileList)) {
+      try { newDocs.push(await readFile(f)) } catch { /* skip */ }
+    }
+    setFiles(prev => {
+      const existing = new Set(prev.map(f => f.name))
+      return [...prev, ...newDocs.filter(d => !existing.has(d.name))]
+    })
+    if (newDocs.length > 0 && !selected) setSelected(newDocs[0])
+  }
+
+  function buildDocContext(doc: DocFile): string {
+    // For images and PDFs, we use the vision/document API path instead — this is only for other file types
+    const preview = typeof doc.content === 'string' && !doc.content.startsWith('data:')
+      ? doc.content.slice(0, 8000)
+      : `[Binary file: ${doc.name}]`
+    return `## Document: ${doc.name}\nSize: ${formatBytes(doc.size)}\n\n${preview}`
+  }
+
+  async function sendDocMsg() {
+    if (!docInput.trim() || !selected || docLoading) return
+    const text = docInput.trim()
+    setDocInput('')
+    setDocMsgs(prev => [...prev, { role: 'user', content: text }])
+    setDocLoading(true)
+    try {
+      const history = docMsgs.map(m => ({ role: m.role, content: m.content }))
+      const isImage = selected.mimeType.startsWith('image/')
+      const isPDF = selected.mimeType === 'application/pdf' || selected.name.toLowerCase().endsWith('.pdf')
+
+      // For images and PDFs, extract the raw base64 data and use the vision/document API path
+      let bodyPayload: Record<string, unknown> = {
+        agent: config.agentId,
+        message: text,
+        history,
+        slug: config.slug,
+        teamMember: memberName,
+        isLead: false,
+        disableTeamContext: true,
+        extraContext: `\n\n## Document Analysis Mode\nUser has shared a document and is asking questions about it.`,
+      }
+
+      if ((isImage || isPDF) && typeof selected.content === 'string' && selected.content.startsWith('data:')) {
+        // Strip the data URL prefix to get raw base64
+        const base64Data = selected.content.split(',')[1] || ''
+        bodyPayload = {
+          ...bodyPayload,
+          documentBase64: base64Data,
+          documentType: selected.mimeType,
+          documentName: selected.name,
+        }
+      } else if (!isImage && !isPDF) {
+        // Text/other files: include content in extraContext
+        bodyPayload.extraContext = `\n\n## Document Analysis Mode\nUser has uploaded a document and is asking questions about it.\n\n${buildDocContext(selected)}`
+      }
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyPayload),
+      })
+      const data = await res.json()
+      setDocMsgs(prev => [...prev, { role: 'assistant', content: data.reply || data.text || data.message || 'Something went wrong.' }])
+    } catch {
+      setDocMsgs(prev => [...prev, { role: 'assistant', content: 'Connection issue. Try again.' }])
+    }
+    setDocLoading(false)
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: '20px', height: 'calc(100vh - 140px)', minHeight: '500px' }}>
+      {/* Left: file list + upload */}
+      <div style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {/* Drop zone */}
+        <div
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files) }}
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            border: `2px dashed ${dragging ? accent : border}`,
+            borderRadius: '10px',
+            padding: '20px 12px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            background: dragging ? `${accent}08` : surface,
+            transition: 'all 0.15s',
+          }}
+        >
+          <div style={{ fontSize: '28px', marginBottom: '8px' }}>📎</div>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: accent, marginBottom: '4px' }}>Drop files or click</div>
+          <div style={{ fontSize: '11px', color: muted, lineHeight: '1.5' }}>PDF · DOCX · XLS · CSV · TXT · PNG · JPG</div>
+          <input ref={fileInputRef} type="file" multiple accept={ACCEPTED_TYPES} style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
+        </div>
+
+        {/* File list */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {files.length === 0 && (
+            <div style={{ textAlign: 'center', color: muted, fontSize: '12px', padding: '20px 8px', lineHeight: '1.7' }}>
+              No documents yet.<br />Upload one to get started.
+            </div>
+          )}
+          {files.map((f, i) => (
+            <div key={i} onClick={() => { setSelected(f); setDocMsgs([]) }}
+              style={{
+                padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '4px',
+                background: selected?.name === f.name ? `${accent}15` : 'transparent',
+                border: `1px solid ${selected?.name === f.name ? accent + '40' : 'transparent'}`,
+                transition: 'all 0.15s',
+              }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: selected?.name === f.name ? accent : text, wordBreak: 'break-word', lineHeight: '1.3', marginBottom: '3px' }}>{f.name}</div>
+              <div style={{ fontSize: '11px', color: muted }}>{formatBytes(f.size)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right: document chat */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: surface, border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden' }}>
+        {/* Header */}
+        <div style={{ padding: '14px 18px', borderBottom: `1px solid ${border}`, background: `${accent}08` }}>
+          {selected
+            ? <><div style={{ fontSize: '13px', fontWeight: 700, color: accent }}>{selected.name}</div><div style={{ fontSize: '11px', color: muted }}>Ask {config.agentLabel} anything about this document</div></>
+            : <div style={{ fontSize: '13px', color: muted }}>Upload a document to start asking questions</div>
+          }
+        </div>
+
+        {/* Messages */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {!selected && (
+            <div style={{ textAlign: 'center', color: muted, fontSize: '13px', marginTop: '40px', lineHeight: '1.7' }}>
+              Select or upload a document on the left,<br />then ask {config.agentLabel} anything about it.
+            </div>
+          )}
+          {docMsgs.map((msg, i) => (
+            <div key={i} ref={i === docMsgs.length - 1 ? lastRef : undefined}
+              style={{ display: 'flex', gap: '8px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
+              {msg.role === 'assistant' && (
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: `${accent}20`, border: `1px solid ${accent}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent, flexShrink: 0 }}>
+                  {config.agentLabel.charAt(0)}
+                </div>
+              )}
+              <div style={{ maxWidth: '75%', background: msg.role === 'user' ? accent : `${accent}10`, border: `1px solid ${msg.role === 'user' ? 'transparent' : accent + '25'}`, borderRadius: '10px', padding: '10px 14px', fontSize: `${fontSize}px`, color: msg.role === 'user' ? '#fff' : text, lineHeight: '1.6' }}>
+                <MessageContent content={msg.content} />
+              </div>
+            </div>
+          ))}
+          {docLoading && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: `${accent}20`, border: `1px solid ${accent}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent }}>
+                {config.agentLabel.charAt(0)}
+              </div>
+              <div style={{ background: `${accent}10`, border: `1px solid ${accent}25`, borderRadius: '10px', padding: '12px 16px' }}>
+                <span style={{ display: 'inline-flex', gap: '4px' }}>
+                  {[0,1,2].map(i => <span key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: accent, opacity: 0.5, animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div style={{ padding: '12px', borderTop: `1px solid ${border}`, display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+          <textarea
+            value={docInput}
+            onChange={e => setDocInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDocMsg() } }}
+            placeholder={selected ? `Ask about ${selected.name}...` : 'Upload a document first...'}
+            disabled={!selected}
+            rows={2}
+            style={{ flex: 1, background: themeMode === 'light' ? '#F9FAFB' : '#0d0d0d', border: `1px solid ${border}`, borderRadius: '8px', padding: '10px 14px', fontSize: `${fontSize}px`, color: text, fontFamily: 'inherit', outline: 'none', resize: 'none', lineHeight: '1.5', opacity: selected ? 1 : 0.5 }}
+          />
+          <button onClick={sendDocMsg} disabled={!docInput.trim() || !selected || docLoading}
+            style={{ width: '44px', height: '44px', borderRadius: '50%', background: accent, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: (!docInput.trim() || !selected || docLoading) ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+            <span style={{ fontSize: '18px', color: '#fff', fontWeight: 900 }}>↑</span>
+          </button>
+        </div>
+        <style>{`@keyframes bounce{0%,80%,100%{transform:scale(0.8);opacity:0.4}40%{transform:scale(1.1);opacity:1}}`}</style>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   const accent = config.accentColor
@@ -443,14 +701,20 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
     setSavedContext(ctx); setIntakeSaved(true); setSection('chat')
   }
 
+  const enableDocuments = !!(config as any).enableDocuments
+
   const navItems = config.intakeFields.length > 0
     ? [
         { id: 'welcome', label: 'Welcome', icon: '👋' },
         { id: 'about', label: `About ${config.agentLabel}`, icon: '⚡' },
         ...(!intakeSaved ? [{ id: 'intake', label: 'Your Practice', icon: '🏢' }] : []),
         { id: 'chat', label: `Chat with ${config.agentLabel}`, icon: '💬', tag: 'Live' },
+        ...(enableDocuments ? [{ id: 'documents', label: 'Documents', icon: '📁' }] : []),
       ]
-    : [{ id: 'chat', label: `Chat with ${config.agentLabel}`, icon: '💬', tag: 'Live' }]
+    : [
+        { id: 'chat', label: `Chat with ${config.agentLabel}`, icon: '💬', tag: 'Live' },
+        ...(enableDocuments ? [{ id: 'documents', label: 'Documents', icon: '📁' }] : []),
+      ]
 
   if (!unlocked) {
     return (
@@ -558,7 +822,13 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
           {section === 'welcome' && <WelcomeSection config={config} accent={accent} intakeSaved={intakeSaved} onNavigate={setSection} tv={tv} />}
           {section === 'about' && <AboutSection config={config} accent={accent} tv={tv} />}
           {section === 'intake' && !intakeSaved && <IntakeSection config={config} accent={accent} fields={fields} setFields={setFields} onSave={handleSaveIntake} tv={tv} />}
-          {section === 'chat' && <ChatSection config={config} accent={accent} savedContext={intakeSaved ? savedContext : null} fields={intakeSaved ? fields : null} fontSize={FONT_SIZE[textSize]} themeMode={themeMode} tv={tv} preloadedHistory={preloadedHistory} />}
+          {/* Keep ChatSection mounted once visited so history survives tab switches */}
+          <div style={{ display: section === 'chat' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
+            <ChatSection config={config} accent={accent} savedContext={intakeSaved ? savedContext : null} fields={intakeSaved ? fields : null} fontSize={FONT_SIZE[textSize]} themeMode={themeMode} tv={tv} preloadedHistory={preloadedHistory} />
+          </div>
+          {enableDocuments && section === 'documents' && (
+            <DocumentsSection config={config} accent={accent} themeMode={themeMode} fontSize={FONT_SIZE[textSize]} tv={tv} />
+          )}
         </div>
       </div>
     </div>

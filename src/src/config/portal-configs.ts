@@ -396,10 +396,10 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     clientName: 'Terry',
     memberName: 'Terry Kurtenbach',
     company: 'Kelyniam Global',
-    agentId: 'rex',
+    agentId: 'kit',
     agentLabel: 'Kit',
     accentColor: '#4ADE80',
-    tagline: 'Kelyniam Global · Cranial Implant Sales Strategy & Market Expansion',
+    tagline: 'Kelyniam Global · Sales Strategy · Tax & Financial Intelligence · Executive Operations',
     whatWeKnow: [
       { label: 'Background', value: 'Former Deloitte Tax Partner · 37 years · Milwaukee office · Healthcare industry focus' },
       { label: 'Role at Kelyniam', value: 'Investor & strategic advisor · 22% ownership stake · Stepping back from CFO role (March 2026)' },
@@ -416,24 +416,34 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       : "Terry — I've been briefed on Kelyniam, the 24-hour cranial implant process, and your expansion targets. Where do you want to start — building out your surgeon target list, refining the sales approach, or mapping the path to all 50 states?",
     aboutPoints: [
       {
-        icon: '🧠',
-        title: 'Built for Kelyniam\'s Sales Motion',
-        body: 'Kit was configured specifically for the Kelyniam rep model — OR-first access, surgeon relationship building, and the 24-hour implant cycle. It thinks like a sales strategist who knows your product cold.',
-      },
-      {
         icon: '🗺️',
-        title: 'Market Expansion Intelligence',
-        body: 'Ask Kit to map target hospitals, identify neurosurgeons at Level I trauma centers in new states, research competitive implant providers, or size the opportunity in a specific geography. Real research, fast.',
+        title: 'Sales Strategy & Market Expansion',
+        body: 'Kit knows the Kelyniam rep model cold — OR-first access, surgeon relationship building, 24-hour cycle. Ask it to map target hospitals, identify neurosurgeons at Level I trauma centers in new states, size a geography, or build a rep territory playbook.',
       },
       {
-        icon: '📋',
-        title: 'Account Strategy & Pipeline',
-        body: 'From first OR introduction to closed account — Kit helps you plan the approach, draft outreach, prepare for surgeon conversations, and track what\'s working across your territory.',
+        icon: '🧾',
+        title: 'Tax Strategy — Senior Partner Level',
+        body: 'Terry spent 37 years as a Global Managing Tax Partner at Deloitte. Kit operates at that level — entity structure, pass-through treatment, M&A tax diligence, OTC company tax positioning, healthcare industry tax issues, and multi-venture planning across Kelyniam, Obsidian, CLP Capital, and Anshin Farm.',
+      },
+      {
+        icon: '⚖️',
+        title: 'Legal & Regulatory Intelligence',
+        body: 'FDA 510(k) classification, CPT reimbursement codes, OTC securities obligations, hospital GPO contract terms, OR liability — Kit has the regulatory and legal context to help you think through risk before it becomes expensive.',
+      },
+      {
+        icon: '📊',
+        title: 'CFO-Level Financial Analysis',
+        body: 'Kit was briefed on KLYG\'s financials, margin structure, and capital position. Use it to model growth scenarios, think through pricing strategy, analyze cost structure, or prep for a board conversation.',
+      },
+      {
+        icon: '⚙️',
+        title: 'Executive Operations',
+        body: 'Org design, rep performance analysis, vendor decisions, operational bottlenecks — Kit thinks at the operator level. You\'ve built businesses. This is the thinking partner that matches your depth.',
       },
       {
         icon: '⚡',
-        title: 'The ASG Model',
-        body: 'AxiomStream Group builds purpose-specific AI for businesses in motion. Kit was built for Kelyniam\'s products, Kelyniam\'s sales process, and Kelyniam\'s expansion goals — not a generic tool.',
+        title: 'Purpose-Built by ASG',
+        body: 'AxiomStream Group doesn\'t deploy generic tools. Kit was built specifically for Terry and Kelyniam — your product, your financials, your team, your goals. Everything is in context before you type the first word.',
       },
     ],
     intakeFields: [
@@ -472,6 +482,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     ],
     poweredBy: 'Powered by AxiomStream Group · Built for Kelyniam Global',
     disableTeamContext: true,
+    enableDocuments: true,
   },
 
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────

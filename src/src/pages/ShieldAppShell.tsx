@@ -21,13 +21,25 @@ interface DocFile {
   mimeType: string
 }
 
-const PORTAL_META: Record<string, { chatGreeting: (s: boolean) => string; chatPlaceholder: string; memberName: string }> = {
+interface PortalMeta {
+  chatGreeting: (s: boolean) => string
+  chatPlaceholder: string
+  memberName: string
+  hotAccounts: string[]
+  nextAction: string
+  intelBadge: string
+}
+
+const PORTAL_META: Record<string, PortalMeta> = {
   andrew: {
     memberName: 'Andy Parks',
     chatPlaceholder: 'Pipeline, capture strategy, account targeting, outreach — what are we working on?',
     chatGreeting: (saved) => saved
       ? "Andy — context loaded. What's the priority today?"
       : "Andy — I've been briefed on Shield, the Envelop line, and your government and commercial pipeline. Where do you want to start — pipeline hygiene, capture strategy, or the Southwest play?",
+    hotAccounts: ['Southwest Airlines', 'Army / Marine Corps DoD', 'MRO Americas Leads'],
+    nextAction: 'MRO Americas floor — Day 1 today. Tier 1 targets: AkzoNobel, Mankiewicz, BAE Systems.',
+    intelBadge: '🔴 MRO Live',
   },
   ryanh: {
     memberName: 'Ryan Hopper',
@@ -35,6 +47,9 @@ const PORTAL_META: Record<string, { chatGreeting: (s: boolean) => string; chatPl
     chatGreeting: (saved) => saved
       ? "Ryan — context loaded. What's the priority today?"
       : "Ryan — I'm briefed on your territory: Navy buying commands, Coast Guard, and the depot pipeline. What are we working on?",
+    hotAccounts: ['Southwest Airlines (Jaime / Christopher / Megan)', 'NAVSEA / NAVAIR depots', 'USCG MRO accounts'],
+    nextAction: 'MRO Americas floor — April 21–23 Orlando. CFM56 + LEAP focus. Southwest close in play.',
+    intelBadge: '🔴 MRO Live',
   },
 }
 
@@ -144,6 +159,64 @@ function DocumentsTab({ light, colors }: { light: boolean; colors: ReturnType<ty
     for (const f of Array.from(list)) {
       const ext = f.name.split('.').pop()?.toLowerCase() || ''
       if (!ok.includes(ext)) continue
+
+      // Business card OCR: try to extract contact info from image uploads
+      if (f.type.startsWith('image/')) {
+        try {
+          setDocLoading(true)
+          const ts = Date.now()
+          setDocMsgs(prev => [...prev, { role: 'assistant', content: '📇 Reading card...', _id: ts }])
+          setSel(null)
+
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+              const result = reader.result as string
+              // Strip the data URL prefix (e.g. "data:image/png;base64,")
+              const b64 = result.split(',')[1]
+              resolve(b64)
+            }
+            reader.onerror = reject
+            reader.readAsDataURL(f)
+          })
+
+          const res = await fetch('/api/extract-card', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64, mimeType: f.type }),
+          })
+
+          if (res.ok) {
+            const card = await res.json() as { name?: string | null; title?: string | null; company?: string | null; email?: string | null; phone?: string | null; website?: string | null; address?: string | null }
+            const hasData = card.name || card.email || card.phone || card.company
+            if (hasData) {
+              const lines = [
+                '📇 Business card scanned:',
+                card.name    ? `Name: ${card.name}`       : null,
+                card.title   ? `Title: ${card.title}`     : null,
+                card.company ? `Company: ${card.company}` : null,
+                card.email   ? `Email: ${card.email}`     : null,
+                card.phone   ? `Phone: ${card.phone}`     : null,
+                card.website ? `Website: ${card.website}` : null,
+                card.address ? `Address: ${card.address}` : null,
+                '',
+                'What would you like to do with this contact?',
+              ].filter(l => l !== null)
+              const cardMsg = lines.join('\n')
+              setDocMsgs(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: cardMsg }])
+              setDocLoading(false)
+              continue // skip normal file handling
+            }
+          }
+          // OCR failed or no data — fall through to normal file handling
+          setDocMsgs(prev => prev.filter(m => m._id !== ts))
+          setDocLoading(false)
+        } catch {
+          setDocLoading(false)
+          // fall through to normal file handling
+        }
+      }
+
       const { content, mimeType } = await readFileText(f)
       const doc: DocFile = { name: f.name, size: f.size, uploadedAt: new Date().toISOString(), content, mimeType }
       try { sessionStorage.setItem(`rex-doc-${f.name}`, JSON.stringify(doc)) } catch { /**/ }
@@ -194,7 +267,7 @@ function DocumentsTab({ light, colors }: { light: boolean; colors: ReturnType<ty
           onClick={() => fileRef.current?.click()}
           style={{ border: `2px dashed ${dragging ? accent : border}`, borderRadius: '12px', padding: '28px 20px', textAlign: 'center', cursor: 'pointer', background: dragging ? `${accent}08` : surface, transition: 'all 0.15s' }}
         >
-          <input ref={fileRef} type="file" multiple accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style={{ display: 'none' }} onChange={e => e.target.files && handleFiles(e.target.files)} />
+          <input ref={fileRef} type="file" multiple accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.xls,.xlsx,.csv" style={{ display: 'none' }} onChange={e => e.target.files && handleFiles(e.target.files)} />
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}><UploadIcon color={accent} /></div>
           <div style={{ fontSize: '14px', fontWeight: 700, color: text, marginBottom: '4px' }}>Drop files here or click to upload</div>
           <div style={{ fontSize: '12px', color: muted }}>PDF · DOCX · TXT · PNG · JPG</div>
@@ -230,8 +303,8 @@ function DocumentsTab({ light, colors }: { light: boolean; colors: ReturnType<ty
           <div style={{ flex: 1, minHeight: 0, maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', background: surface, border: `1px solid ${border}`, borderRadius: '10px 10px 0 0', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {docMsgs.map((msg, i) => (
               <div key={i} ref={i === docMsgs.length - 1 ? lastRef : undefined} style={{ display: 'flex', gap: '8px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-                <div style={{ width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? '#1e3a5f' : `${accent}20`, border: `1px solid ${msg.role === 'user' ? '#2563eb40' : accent + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 800, color: msg.role === 'user' ? '#60a5fa' : accent }}>{msg.role === 'user' ? 'Y' : 'R'}</div>
-                <div style={{ maxWidth: '85%', minWidth: 0, background: msg.role === 'user' ? '#1e3a5f' : (light ? '#F3F4F6' : '#1a2035'), border: `1px solid ${msg.role === 'user' ? '#2563eb30' : border}`, borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: light ? (msg.role === 'user' ? '#fff' : '#111827') : '#f8fafc', lineHeight: '1.7', borderLeft: msg.role === 'assistant' ? `3px solid ${accent}` : undefined }}>
+                <div style={{ width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? (light ? accent + '25' : '#1e3a5f') : `${accent}20`, border: `1px solid ${accent}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 800, color: accent }}>{msg.role === 'user' ? 'Y' : 'R'}</div>
+                <div style={{ maxWidth: '85%', minWidth: 0, background: msg.role === 'user' ? (light ? '#e8edf5' : '#1e3a5f') : (light ? '#F3F4F6' : '#1a2035'), border: `1px solid ${msg.role === 'user' ? (light ? 'rgba(0,0,0,0.1)' : '#2563eb30') : border}`, borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: msg.role === 'user' ? (light ? '#0f172a' : '#e0f2fe') : (light ? '#111827' : '#f8fafc'), lineHeight: '1.7', borderLeft: msg.role === 'assistant' ? `3px solid ${accent}` : undefined }}>
                   <MsgContent content={msg.content} light={light} />
                 </div>
               </div>
@@ -257,6 +330,193 @@ function DocumentsTab({ light, colors }: { light: boolean; colors: ReturnType<ty
   )
 }
 
+function DiningTab({ light, colors, accent }: { light: boolean; colors: ReturnType<typeof getColors>; accent: string }) {
+  const { surface, border, text, muted, inputBg } = colors
+  const [city, setCity] = useState('')
+  const [inputVal, setInputVal] = useState('')
+  const [msgs, setMsgs] = useState<Array<{ role: 'user' | 'assistant'; content: string; _id?: number }>>([])
+  const [loading, setLoading] = useState(false)
+  const [inputKey, setInputKey] = useState(0)
+  const lastRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { if (msgs.length) lastRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [msgs])
+
+  async function askRex(question: string) {
+    if (!question.trim() || loading) return
+    const text = question.trim()
+    setInputVal(''); setInputKey(k => k + 1)
+    setMsgs(prev => [...prev, { role: 'user', content: text }])
+    const ts = Date.now()
+    setMsgs(prev => [...prev, { role: 'assistant', content: '🍽️ Finding the best spots...', _id: ts }])
+    setLoading(true)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agent: 'rex',
+          message: text,
+          history: msgs.filter(m => !m._id).map(m => ({ role: m.role, content: m.content })),
+          slug: 'dining',
+          teamMember: 'Shield Rep',
+          isLead: false,
+          disableTeamContext: true,
+          extraContext: `\n\n## Dining Concierge Mode\nYou are Rex, a world-class dining concierge for the Shield Technologies sales team. They work hard and play hard — they entertain clients and love exceptional meals whenever they travel. Your job is to give specific, confident restaurant recommendations: name, neighborhood, why it's right for them, what to order, and whether it's good for a client dinner vs. a team night out. No generic lists. Be the friend who actually knows. If they give you a city, give 3–5 picks across different vibes (power lunch, client entertainment, late night, hidden gem). Always include one "trust me on this one" pick.`,
+        }),
+      })
+      const data = await res.json()
+      const reply = data.reply || data.text || data.message || 'Try again.'
+      setMsgs(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: reply }])
+    } catch {
+      setMsgs(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: 'Connection issue. Try again.' }])
+    }
+    setLoading(false)
+  }
+
+  function quickHit(c: string) { setCity(c); askRex(`Best restaurants in ${c} — client dinner, team night out, and a hidden gem`) }
+
+  const quickCities = ['Orlando', 'Dallas', 'Chicago', 'Washington DC', 'San Diego', 'New York', 'Huntsville AL']
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <div style={{ marginBottom: '12px', flexShrink: 0 }}>
+        <div style={{ fontSize: '15px', fontWeight: 800, color: text, marginBottom: '2px' }}>Dining Concierge</div>
+        <div style={{ fontSize: '12px', color: muted }}>Rex knows where to eat. Drop a city — client dinner, team night, hidden gem.</div>
+      </div>
+      {msgs.length === 0 && (
+        <div style={{ flexShrink: 0, marginBottom: '12px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: muted, marginBottom: '8px' }}>Quick hit</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {quickCities.map(c => (
+              <button key={c} onClick={() => quickHit(c)} style={{ padding: '7px 14px', borderRadius: '20px', border: `1px solid ${border}`, background: surface, color: text, fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '12px' }}>
+        {msgs.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '32px 20px', color: muted, fontSize: '13px', lineHeight: '1.8' }}>
+            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🍽️</div>
+            Pick a city above or ask anything.<br />
+            <span style={{ fontSize: '12px' }}>"Best steak in Dallas for closing a deal" · "Late night in Chicago after a flight"</span>
+          </div>
+        )}
+        {msgs.map((msg, i) => (
+          <div key={i} ref={i === msgs.length - 1 ? lastRef : undefined} style={{ display: 'flex', gap: '8px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
+            <div style={{ width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? (light ? accent + '25' : '#1e3a5f') : `${accent}20`, border: `1px solid ${accent}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent }}>{msg.role === 'user' ? 'Y' : '🍽️'}</div>
+            <div style={{ maxWidth: '85%', minWidth: 0, background: msg.role === 'user' ? (light ? '#e8edf5' : '#1e3a5f') : surface, border: `1px solid ${msg.role === 'user' ? (light ? 'rgba(0,0,0,0.1)' : '#2563eb30') : border}`, borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: msg.role === 'user' ? (light ? '#0f172a' : '#e0f2fe') : text, lineHeight: '1.75', borderLeft: msg.role === 'assistant' ? `3px solid ${accent}` : undefined }}>
+              {msg._id ? <span style={{ display: 'inline-flex', gap: '4px' }}>{[0,1,2].map(j => <span key={j} style={{ width: '5px', height: '5px', borderRadius: '50%', background: accent, opacity: 0.5, animation: `rexbounce 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}</span> : <MsgContent content={msg.content} light={light} />}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ flexShrink: 0, background: surface, border: `1px solid ${border}`, borderRadius: '10px', padding: '8px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+        <textarea key={inputKey} value={inputVal} onChange={e => setInputVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askRex(inputVal) } }} placeholder='City, vibe, occasion — Rex will handle the rest...' rows={2} style={{ flex: 1, background: inputBg, border: `1.5px solid ${border}`, borderRadius: '8px', padding: '8px 12px', fontSize: '13px', color: text, fontFamily: 'inherit', outline: 'none', resize: 'none', lineHeight: '1.5' }} />
+        <button onClick={() => askRex(inputVal)} disabled={!inputVal.trim() || loading} style={{ width: '38px', height: '38px', borderRadius: '50%', background: accent, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: !inputVal.trim() || loading ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+          <span style={{ fontSize: '16px', color: '#0a0f1e', fontWeight: 900 }}>↑</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+interface ReleaseNote {
+  version: string
+  date: string
+  badge: 'new' | 'improvement' | 'fix'
+  title: string
+  items: string[]
+}
+
+const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: '1.3',
+    date: 'Apr 23, 2026',
+    badge: 'new',
+    title: 'Business Card Capture',
+    items: [
+      'Drop or upload a photo of any business card in the Documents tab',
+      'Rex instantly extracts name, title, company, email, phone, and address',
+      'Ask Rex follow-up questions about the contact or next steps',
+    ],
+  },
+  {
+    version: '1.2',
+    date: 'Apr 22, 2026',
+    badge: 'new',
+    title: 'Document Upload & Q&A',
+    items: [
+      'Upload PDFs, Word docs, and text files directly in the Documents tab',
+      'Ask Rex anything about the document — specs, contracts, RFPs, briefs',
+      'XLS, XLSX, and CSV files now supported',
+      'Drag-and-drop support added',
+    ],
+  },
+  {
+    version: '1.1',
+    date: 'Apr 22, 2026',
+    badge: 'fix',
+    title: 'Light Mode Polish',
+    items: [
+      'Fixed chat bubble colors in light mode — all text now fully readable',
+      'Consistent styling across both light and dark themes',
+    ],
+  },
+  {
+    version: '1.0',
+    date: 'Apr 9, 2026',
+    badge: 'new',
+    title: 'Rex Portal Launch',
+    items: [
+      'Live sales AI briefed on Shield Technologies, Envelop product line, and your territory',
+      'Hot account tracking with live intel banner',
+      'Persistent chat history across sessions',
+      'Light/dark mode toggle',
+      'Secured access via personal PIN',
+    ],
+  },
+]
+
+function badgeStyle(badge: ReleaseNote['badge'], accent: string) {
+  if (badge === 'new') return { bg: accent + '20', color: accent, label: 'NEW' }
+  if (badge === 'improvement') return { bg: '#60a5fa20', color: '#60a5fa', label: 'IMPROVED' }
+  return { bg: '#f59e0b20', color: '#f59e0b', label: 'FIX' }
+}
+
+function UpdatesTab({ light, colors, accent }: { light: boolean; colors: ReturnType<typeof getColors>; accent: string }) {
+  const { surface, border, text, muted } = colors
+  return (
+    <div style={{ maxWidth: '640px', margin: '0 auto', width: '100%', padding: '4px 0 24px' }}>
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: text, marginBottom: '4px' }}>Rex Release Notes</div>
+        <div style={{ fontSize: '13px', color: muted }}>Updates shipped to your portal by AxiomStream Group</div>
+      </div>
+      {RELEASE_NOTES.map((r) => {
+        const bs = badgeStyle(r.badge, accent)
+        return (
+          <div key={r.version} style={{ marginBottom: '16px', background: surface, border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 18px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#0a0f1e', background: accent, padding: '2px 8px', borderRadius: '20px', letterSpacing: '0.5px' }}>v{r.version}</span>
+              <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', color: bs.color, background: bs.bg, padding: '2px 8px', borderRadius: '20px' }}>{bs.label}</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: text, flex: 1 }}>{r.title}</span>
+              <span style={{ fontSize: '12px', color: muted, flexShrink: 0 }}>{r.date}</span>
+            </div>
+            <ul style={{ margin: 0, padding: '12px 18px 12px 36px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {r.items.map((item, i) => (
+                <li key={i} style={{ fontSize: '13px', color: light ? '#374151' : '#cbd5e1', lineHeight: '1.6' }}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      })}
+      <div style={{ textAlign: 'center', fontSize: '12px', color: muted, marginTop: '8px' }}>
+        Powered by <span style={{ color: accent, fontWeight: 700 }}>AxiomStream Group</span>
+      </div>
+    </div>
+  )
+}
+
 export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellProps) {
   const meta = PORTAL_META[slug] ?? PORTAL_META['andrew']
   const accent = '#4ADE80'
@@ -264,7 +524,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const [unlocked, setUnlocked] = useState(false)
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
-  const [activeTab, setActiveTab] = useState<'chat' | 'documents'>('chat')
+  const [activeTab, setActiveTab] = useState<'chat' | 'documents' | 'updates' | 'dining'>('chat')
   const [lightMode, setLightMode] = useState(false)
   const colors = getColors(lightMode)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -274,7 +534,8 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const [inputKey, setInputKey] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMsgRef = useRef<HTMLDivElement>(null)
-  const historyKey = `rex:${slug}`
+  // Andy uses 'history:andrew', Ryan uses 'portal-v2-history:ryanh'
+  const historyKey = slug === 'andrew' ? `history:andrew` : `portal-v2-history:${slug}`
 
   useEffect(() => {
     if (!unlocked) return
@@ -297,9 +558,9 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   useEffect(() => {
     if (!chatReady) return
     if (messages.length === 0) {
+      // No history — show greeting locally only (don't write to Upstash to avoid duplicates)
       const greeting: ChatMessage = { role: 'assistant', content: meta.chatGreeting(false) }
       setMessages([greeting])
-      void upstashRpush(historyKey, JSON.stringify({ role: 'assistant', content: greeting.content, ts: Date.now() }))
     }
   }, [chatReady])
 
@@ -396,6 +657,8 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const navItems = [
     { id: 'chat' as const, label: 'Chat', icon: '💬' },
     { id: 'documents' as const, label: 'Documents', icon: '📁' },
+    { id: 'dining' as const, label: 'Dining', icon: '🍽️' },
+    { id: 'updates' as const, label: 'What\'s New', icon: '🆕' },
   ]
 
   return (
@@ -416,29 +679,39 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
       <div style={{ width: '220px', flexShrink: 0, background: sidebar, borderRight: `1px solid ${border}`, display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
         {/* Logo */}
         <div style={{ padding: '0 18px 20px', borderBottom: `1px solid ${border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <ShieldIcon size={18} color={accent} />
-            <span style={{ fontSize: '20px', fontWeight: 900, color: accent, letterSpacing: '-0.5px' }}>REX</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <ShieldIcon size={20} color={accent} />
+            <span style={{ fontSize: '22px', fontWeight: 900, color: accent, letterSpacing: '-0.5px' }}>REX</span>
           </div>
-          <div style={{ fontSize: '12px', fontWeight: 700, color: textColor }}>{rep}</div>
-          <div style={{ fontSize: '11px', color: muted, marginTop: '1px' }}>Shield Technologies</div>
+          <div style={{ fontSize: '15px', fontWeight: 800, color: textColor }}>{rep}</div>
+          <div style={{ fontSize: '13px', color: muted, marginTop: '2px' }}>Shield Technologies</div>
         </div>
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '12px 10px' }}>
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 10px', borderRadius: '8px', border: 'none', background: activeTab === item.id ? `${accent}18` : 'transparent', color: activeTab === item.id ? accent : muted, fontSize: '13px', fontWeight: activeTab === item.id ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', marginBottom: '2px', textAlign: 'left' }}>
-              <span style={{ fontSize: '15px' }}>{item.icon}</span>
+            <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '8px', border: 'none', background: activeTab === item.id ? `${accent}18` : 'transparent', color: activeTab === item.id ? accent : muted, fontSize: '14px', fontWeight: activeTab === item.id ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', marginBottom: '4px', textAlign: 'left' }}>
+              <span style={{ fontSize: '16px' }}>{item.icon}</span>
               {item.label}
-              {activeTab === item.id && <span style={{ marginLeft: 'auto', width: '4px', height: '4px', borderRadius: '50%', background: accent }} />}
+              {activeTab === item.id && <span style={{ marginLeft: 'auto', width: '5px', height: '5px', borderRadius: '50%', background: accent }} />}
             </button>
           ))}
         </nav>
 
+        {/* Hot accounts */}
+        <div style={{ padding: '12px 18px', borderTop: `1px solid ${border}`, marginBottom: '4px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: accent, marginBottom: '8px' }}>Hot Accounts</div>
+          {meta.hotAccounts.map((a, i) => (
+            <div key={i} style={{ fontSize: '12px', color: textColor, lineHeight: '1.6', display: 'flex', gap: '6px', marginBottom: '2px' }}>
+              <span style={{ color: accent, flexShrink: 0 }}>›</span>{a}
+            </div>
+          ))}
+        </div>
+
         {/* Territory */}
-        <div style={{ padding: '12px 18px', borderTop: `1px solid ${border}`, marginBottom: '8px' }}>
-          <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: muted, marginBottom: '4px' }}>Territory</div>
-          <div style={{ fontSize: '11px', color: textColor, lineHeight: '1.5' }}>{territory}</div>
+        <div style={{ padding: '8px 18px', marginBottom: '4px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: muted, marginBottom: '4px' }}>Territory</div>
+          <div style={{ fontSize: '12px', color: textColor, lineHeight: '1.5' }}>{territory}</div>
         </div>
 
         {/* Light/Dark toggle */}
@@ -457,7 +730,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
           <span style={{ fontSize: '16px' }}>{navItems.find(n => n.id === activeTab)?.icon}</span>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 700, color: textColor }}>{navItems.find(n => n.id === activeTab)?.label}</div>
-            <div style={{ fontSize: '11px', color: muted }}>{activeTab === 'chat' ? 'Rex — your sales AI' : 'Upload documents · Ask Rex anything'}</div>
+            <div style={{ fontSize: '11px', color: muted }}>{activeTab === 'chat' ? 'Rex — your sales AI' : activeTab === 'documents' ? 'Upload documents · Ask Rex anything' : activeTab === 'dining' ? 'Where to eat — client dinners, team nights, hidden gems' : 'Portal updates from AxiomStream Group'}</div>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 6px #22c55e80' }} />
@@ -466,17 +739,35 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: activeTab === 'documents' ? '16px' : '0' }}>
-          {activeTab === 'chat' ? (
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: activeTab !== 'chat' ? '16px' : '0' }}>
+          {activeTab === 'updates' ? (
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <UpdatesTab light={lightMode} colors={colors} accent={accent} />
+            </div>
+          ) : activeTab === 'dining' ? (
+            <DiningTab light={lightMode} colors={colors} accent={accent} />
+          ) : activeTab === 'chat' ? (
             <>
+              {/* Intel banner */}
+              <div style={{ flexShrink: 0, margin: '12px 20px 0', padding: '12px 16px', borderRadius: '10px', background: `${accent}0d`, border: `1px solid ${accent}30`, display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '18px', flexShrink: 0 }}>⚡</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '1px' }}>Live Intel</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#0a0f1e', background: accent, padding: '1px 7px', borderRadius: '20px' }}>{meta.intelBadge.replace(/^[^ ]+ /, '')}</span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: textColor, lineHeight: '1.6' }}>{meta.nextAction}</div>
+                </div>
+              </div>
+
               {/* Messages */}
-              <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px' }}>
+              <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 20px 20px' }}>
                 {messages.map((msg, i) => (
                   <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined} style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? '#1e3a5f' : `${accent}20`, border: `1.5px solid ${msg.role === 'user' ? '#2563eb50' : accent + '50'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: msg.role === 'user' ? '#93c5fd' : accent }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? (lightMode ? accent + '25' : '#1e3a5f') : `${accent}20`, border: `1.5px solid ${accent}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent }}>
                       {msg.role === 'user' ? rep[0].toUpperCase() : <ShieldIcon size={14} color={accent} />}
                     </div>
-                    <div style={{ maxWidth: '72%', minWidth: 0, background: msg.role === 'user' ? (lightMode ? '#1e40af' : '#1e3a5f') : surface, border: `1px solid ${msg.role === 'user' ? '#2563eb30' : border}`, borderRadius: msg.role === 'user' ? '14px 4px 14px 14px' : '4px 14px 14px 14px', padding: '11px 16px', fontSize: '13.5px', color: msg.role === 'user' ? '#e0f2fe' : textColor, lineHeight: '1.75', borderLeft: msg.role === 'assistant' ? `3px solid ${accent}` : undefined, boxShadow: msg._id ? `0 0 0 1px ${accent}30` : undefined }}>
+                    <div style={{ maxWidth: '72%', minWidth: 0, background: msg.role === 'user' ? (lightMode ? '#e8edf5' : '#1e3a5f') : surface, border: `1px solid ${msg.role === 'user' ? (lightMode ? 'rgba(0,0,0,0.1)' : '#2563eb30') : border}`, borderRadius: msg.role === 'user' ? '14px 4px 14px 14px' : '4px 14px 14px 14px', padding: '11px 16px', fontSize: '13.5px', color: msg.role === 'user' ? (lightMode ? '#0f172a' : '#e0f2fe') : textColor, lineHeight: '1.75', borderLeft: msg.role === 'assistant' ? `3px solid ${accent}` : undefined, boxShadow: msg._id ? `0 0 0 1px ${accent}30` : undefined }}>
                       {msg._id
                         ? <span style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>{[0,1,2].map(j => <span key={j} style={{ width: '5px', height: '5px', borderRadius: '50%', background: accent, opacity: 0.6, animation: `rexbounce 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}</span>
                         : <MsgContent content={msg.content} light={lightMode} />

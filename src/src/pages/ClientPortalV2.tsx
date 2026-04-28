@@ -61,7 +61,7 @@ function WelcomeSection({ config, accent, intakeSaved, onNavigate, tv = DEFAULT_
         {config.tagline}
       </p>
       <div style={{ background: `${accent}08`, border: `1px solid ${accent}25`, borderRadius: '10px', padding: '20px 24px', marginBottom: '32px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: accent, marginBottom: '8px' }}>What We Already Know About You</div>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: accent, marginBottom: '8px' }}>Your Context</div>
         <div style={{ fontSize: '13px', color: LIGHT_GRAY, lineHeight: '1.7' }}>{config.whatWeKnow}</div>
       </div>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>

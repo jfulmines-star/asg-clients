@@ -18,6 +18,8 @@ import MRODemo from './pages/MRODemo'
 import ShieldAppShell from './pages/ShieldAppShell'
 import { PORTAL_CONFIGS } from './config/portal-configs'
 import NotFound from './pages/NotFound'
+import { ASGPortalBase } from './portal/ASGPortalBase'
+import { ANDREW_CONFIG, RYANH_CONFIG, GNOLES_CONFIG } from './config/shield-portal-configs'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -43,6 +45,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* Generic templates */}
         <Route path="/ria" element={<RIAPortal />} />
         <Route path="/campaign" element={<CampaignPortal />} />
+        {/* Opus portals — Shield Technologies (Andrew Parks + Ryan Hopper) + FNS (Greg Noles) */}
+        <Route path="/andrew" element={<ASGPortalBase config={ANDREW_CONFIG} />} />
+        <Route path="/ryanh" element={<ASGPortalBase config={RYANH_CONFIG} />} />
+        <Route path="/gnoles" element={<ASGPortalBase config={GNOLES_CONFIG} />} />
         {/* V2 data-driven portals */}
         {Object.values(PORTAL_CONFIGS).map(cfg => (
           <Route key={cfg.slug} path={`/${cfg.slug}`} element={<ClientPortalV2 config={cfg} />} />

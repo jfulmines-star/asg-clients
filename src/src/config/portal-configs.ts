@@ -389,6 +389,82 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     disableTeamContext: true,
   },
 
+  // ── Terry Kurtenbach — Kelyniam Global ──────────────────────────────────
+  terry: {
+    slug: 'terry',
+    pin: '5545',
+    clientName: 'Terry',
+    memberName: 'Terry Kurtenbach',
+    company: 'Kelyniam Global',
+    agentId: 'rex',
+    agentLabel: 'Rex',
+    accentColor: '#4ADE80',
+    tagline: 'Kelyniam Global · Cranial Implant Sales Strategy & Market Expansion',
+    whatWeKnow: `Terry Kurtenbach · Former Deloitte Tax Partner (37 years, Milwaukee) · Investor & operator across four ventures: Kelyniam Global (cranial implants), Obsidian Financial Advisors (CPA practice), CLP Capital (private investment), Anshin Farm · Kelyniam: custom PEEK cranial implants, OTC-traded (KLYG), 24-hour delivery from OR spec to implant in surgeon's hands · Sales model: rep meets surgeon in OR → captures cranial specs → engineering builds CAD model → surgeon approves → 3D-printed implant ships · Currently operating in 13 states; expansion target: all 50 states · 12 high-performing sales reps + new national sales director (onboarded April 2026) · Salesforce, QuickBooks, Teams stack · Sales focus: neurosurgeons and cranial/reconstructive surgeons at Level I trauma centers and academic medical centers nationwide`,
+    chatPlaceholder: 'Surgeon targets, hospital systems, sales strategy, OR access — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Terry — context loaded. What are we working on today?"
+      : "Terry — I've been briefed on Kelyniam, the 24-hour cranial implant process, and your expansion targets. Where do you want to start — building out your surgeon target list, refining the sales approach, or mapping the path to all 50 states?",
+    aboutPoints: [
+      {
+        icon: '🧠',
+        title: 'Built for Kelyniam\'s Sales Motion',
+        body: 'Rex was configured specifically for the Kelyniam rep model — OR-first access, surgeon relationship building, and the 24-hour implant cycle. It thinks like a sales strategist who knows your product cold.',
+      },
+      {
+        icon: '🗺️',
+        title: 'Market Expansion Intelligence',
+        body: 'Ask Rex to map target hospitals, identify neurosurgeons at Level I trauma centers in new states, research competitive implant providers, or size the opportunity in a specific geography. Real research, fast.',
+      },
+      {
+        icon: '📋',
+        title: 'Account Strategy & Pipeline',
+        body: 'From first OR introduction to closed account — Rex helps you plan the approach, draft outreach, prepare for surgeon conversations, and track what\'s working across your territory.',
+      },
+      {
+        icon: '⚡',
+        title: 'The ASG Model',
+        body: 'AxiomStream Group builds purpose-specific AI for businesses in motion. Rex was built for Kelyniam\'s products, Kelyniam\'s sales process, and Kelyniam\'s expansion goals — not a generic tool.',
+      },
+    ],
+    intakeFields: [
+      {
+        key: 'territory',
+        label: 'Primary sales territory or target geography',
+        type: 'text',
+        placeholder: 'e.g. Midwest, Southeast, national...',
+      },
+      {
+        key: 'surgeonTypes',
+        label: 'Surgeon specialties you\'re targeting',
+        type: 'chips',
+        options: ['Neurosurgery', 'Cranial/Reconstructive', 'Maxillofacial', 'Trauma', 'Pediatric Neurosurgery', 'Plastic Surgery'],
+        default: 'Neurosurgery,Cranial/Reconstructive,Trauma',
+      },
+      {
+        key: 'facilityTypes',
+        label: 'Facility types in your pipeline',
+        type: 'chips',
+        options: ['Level I Trauma Centers', 'Academic Medical Centers', 'Community Hospitals', 'VA Facilities', 'Military / DoD'],
+        default: 'Level I Trauma Centers,Academic Medical Centers',
+      },
+      {
+        key: 'currentAccounts',
+        label: 'Current accounts or hospitals you\'re active in',
+        type: 'textarea',
+        placeholder: 'List hospitals, surgeons, or systems you\'re already working with...',
+      },
+      {
+        key: 'notes',
+        label: 'Anything else about your pipeline or priorities?',
+        type: 'textarea',
+        placeholder: 'Key accounts to break into, competitive situations, approval processes...',
+      },
+    ],
+    poweredBy: 'Powered by AxiomStream Group · Built for Kelyniam Global',
+    disableTeamContext: true,
+  },
+
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────
   'winthrop-andrew': {
     slug: 'winthrop-andrew',

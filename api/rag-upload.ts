@@ -44,8 +44,59 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   }
 }
 
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.tif'];
+
+function isImageFile(filename: string): boolean {
+  return IMAGE_EXTENSIONS.includes(path.extname(filename).toLowerCase());
+}
+
+async function extractTextFromImage(buffer: Buffer, filename: string): Promise<string> {
+  const ext = path.extname(filename).toLowerCase().replace('.', '');
+  const mimeMap: Record<string, string> = {
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+    gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp',
+    tiff: 'image/tiff', tif: 'image/tiff',
+  };
+  const mimeType = mimeMap[ext] || 'image/png';
+  const base64 = buffer.toString('base64');
+
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 4096,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Extract ALL text from this image exactly as it appears. Include every word, number, label, and piece of text visible. If it is a table or spreadsheet, preserve the structure. If it is a chart or diagram, describe what it shows and include any text labels. Output only the extracted content — no preamble, no commentary.',
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:${mimeType};base64,${base64}`, detail: 'high' },
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  if (!r.ok) throw new Error(`OCR vision call failed: ${await r.text()}`);
+  const d = await r.json();
+  const text = d.choices?.[0]?.message?.content || '';
+  if (!text || text.trim().length < 5) throw new Error('No text extracted from image');
+  return text;
+}
+
 async function extractText(buffer: Buffer, filename: string): Promise<string> {
   const ext = path.extname(filename).toLowerCase();
+  if (isImageFile(filename)) return extractTextFromImage(buffer, filename);
   if (ext === '.pdf') return extractTextFromPDF(buffer);
   if (['.txt', '.md', '.csv'].includes(ext)) return buffer.toString('utf-8');
   if (['.doc', '.docx'].includes(ext)) {
@@ -102,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (!extractedText || extractedText.trim().length < 10) {
-    return res.status(422).json({ error: 'Could not extract text from file. Please try a different format.' });
+    return res.status(422).json({ error: 'Could not extract content from file. For images, ensure the image contains readable text. For documents, try PDF or DOCX format.' });
   }
 
   // Create document record in Supabase

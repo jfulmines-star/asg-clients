@@ -193,8 +193,9 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch uploaded RAG docs for this portal so Kit knows about them in the main chat
+  // Works for both enableDocuments and enableInlineUpload portals
   useEffect(() => {
-    const enableDocs = !!(config as any).enableDocuments
+    const enableDocs = !!(config as any).enableDocuments || !!(config as any).enableInlineUpload
     if (!enableDocs) return
     fetch(`/api/rag-documents?tenantId=${encodeURIComponent(config.slug)}`)
       .then(r => r.ok ? r.json() : [])
@@ -267,7 +268,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
         ).join('\n')
       : '',
     ragDocNames.length > 0
-      ? `\n\n## Uploaded Documents\nThe user has uploaded the following documents to their Knowledge Base. You have access to these via the Documents tab and can reference them in any conversation.\n${ragDocNames.map((n, i) => `  ${i + 1}. ${n}`).join('\n')}`
+      ? `\n\n## Uploaded Documents\nThe user has uploaded the following documents to their Knowledge Base. You have full access to these and should reference them proactively in conversation.\n${ragDocNames.map((n, i) => `  ${i + 1}. ${n}`).join('\n')}`
       : '',
   ].join('')
 
@@ -292,12 +293,33 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
     // Reset input so the same file can be re-selected if needed
     e.target.value = ''
     setUploadStatus('uploading')
+    // Show user message indicating upload
+    const uploadMsg = { role: 'user', content: `📎 ${file.name}` }
+    setMessages(prev => [...prev, uploadMsg])
     try {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('tenantId', config.slug)
-      await fetch('/api/rag-upload', { method: 'POST', body: formData })
-    } catch {}
+      const res = await fetch('/api/rag-upload', { method: 'POST', body: formData })
+      const ok = res.ok
+      // Confirmation from Kit in chat
+      const confirmMsg = ok
+        ? { role: 'assistant', content: `Got it — I've processed **${file.name}**. Ask me anything about it.` }
+        : { role: 'assistant', content: `There was a problem uploading **${file.name}**. Please try again.` }
+      setMessages(prev => [...prev, confirmMsg])
+      // Refresh RAG doc list so Kit's context is updated
+      if (ok) {
+        fetch(`/api/rag-documents?tenantId=${encodeURIComponent(config.slug)}`)
+          .then(r => r.ok ? r.json() : [])
+          .then((data: any) => {
+            const raw = Array.isArray(data) ? data : (data.documents || data.docs || [])
+            setRagDocNames(raw.map((d: any) => d.name || d.filename).filter(Boolean))
+          })
+          .catch(() => {})
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: `There was a problem uploading **${file.name}**. Please try again.` }])
+    }
     setUploadStatus('done')
     setTimeout(() => setUploadStatus('idle'), 2000)
   }

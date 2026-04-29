@@ -189,6 +189,25 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     intakeFields: [],
   },
 
+  // ── Shield Technologies — Caleb Sabroski (Chief Engineer) ───────────────
+  'shield-caleb': {
+    slug: 'shield-caleb',
+    pin: '4829',
+    clientName: 'Caleb',
+    memberName: 'Caleb Sabroski',
+    company: 'Shield Technologies Corporation',
+    agentId: 'rex',
+    agentLabel: 'Rex',
+    accentColor: '#4ADE80',
+    tagline: 'Chief Engineer Intelligence — Materials Science, Design & DoD Engineering',
+    whatWeKnow: 'Chief Engineer · Shield Technologies Corporation · 9 years designing and engineering Envelop protective covers — the world\'s most advanced tactical environmental protection systems for military equipment, aircraft, and vehicles · Envelop product: 4-layer patented technology — waterproof outer shell + non-porous membrane blocking SO2/chloride molecules + VCI corrosion inhibitor releasing ions that prevent oxygen bonding + hydrophobic wicking layer · Performance validated: USAF 12-month study 20x more effective than shelters; USN 4-month test 95% corrosion reduction; German Navy "Significantly Superior" · 120,000+ covers delivered · 500+ NSN-assigned designs across all 5 U.S. military branches + international allies (Australian ADF, RAAF, JSDF) · Custom cover design expertise: SolidWorks 3D modeling, industrial sewing and softgoods construction, textile science, pattern engineering for complex military geometries (aircraft, vehicles, weapons systems) · Materials science depth: multi-layer technical textile construction, vapor phase corrosion inhibition chemistry, waterproof-breathable membrane technology, UV/impact resistance, environmental performance testing · Manufacturing process: custom fabrication from design spec through production; MIL-SPEC compliance; quality management (ISO 9001 principles); supply chain coordination · Engineering background: Mechanical Designer at Continental Hydraulics (hydraulic power unit design, SolidWorks, AutoCAD, hydraulic schematics, ERP/BOM management); Mechanical Drafter experience across food packaging, HVAC, custom sheet metal fabrication · Education: BS Industrial Engineering (ABET accredited, Dunwoody); Fashion/Apparel Design (textile science concentration, Minneapolis College); Six Sigma Green Belt (University of St. Thomas); Lean Six Sigma Yellow Belt · Export control awareness: custom designs for international military programs require ITAR/EAR license management — coordinate with Jim Oaks on any international custom design requests · Commercial aviation: CFM56-7B and LEAP-1B engine cover design; Southwest Airlines, American Airlines, Frontier Airlines · ASG engagement: engineering intelligence, custom design support, materials research, DoD specification lookup, competitive technical analysis.',
+    chatPlaceholder: 'Custom cover design, materials questions, MIL-SPEC lookup, engineering analysis — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Caleb — context loaded. What are we engineering today?"
+      : "Caleb — your Rex is tuned to Shield's engineering side: Envelop materials science, custom cover design, DoD MIL-SPEC requirements, and the full product technical stack. I can help with design research, spec lookup, materials analysis, competitive technical comparisons, and documentation. I also have full context on the Shield business — customers, contract vehicles, international programs. What do you want to dig into?",
+    intakeFields: [],
+  },
+
   // ── Nancy — JJ's Mom ─────────────────────────────────────────────────────
   nancy: {
     slug: 'nancy',

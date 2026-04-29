@@ -220,6 +220,116 @@ export const RYANH_CONFIG: PortalConfig = {
   ],
 }
 
+// ─── CALEB SABROSKI — Shield Technologies / Chief Engineer ───────────────────
+// asg-clients.vercel.app/shield-caleb
+// Caleb Sabroski — Chief Engineer, Shield Technologies. 9 years designing Envelop covers.
+// SolidWorks, textile science, DoD MIL-SPEC, Six Sigma Green Belt. Full engineering + business context.
+
+export const CALEB_CONFIG: PortalConfig = {
+  slug: 'shield-caleb',
+  pin: '4829',
+  clientName: 'Caleb Sabroski',
+  company: 'Shield Technologies',
+  memberName: 'Caleb',
+  agentLabel: 'Rex',
+  agentId: 'rex',
+  accentColor: '#4ADE80',
+  themeMode: 'dark',
+  tagline:
+    "Private access to Rex — your Shield Engineering AI, pre-loaded with Envelop materials science, " +
+    "DoD specifications, and design context. Every conversation starts from there.",
+  whatWeKnow: [
+    { label: 'Engineer',  value: 'Caleb Sabroski — Chief Engineer' },
+    { label: 'Firm',      value: 'Shield Technologies Corporation' },
+    { label: 'Focus',     value: 'Custom cover design · Materials science · DoD MIL-SPEC · SolidWorks' },
+    { label: 'Product',   value: 'Envelop protective covers — 4-layer patented technology' },
+  ],
+  poweredBy: 'AxiomStream Group · Rex',
+
+  intakeLabel: 'Current Projects — 2 Minutes',
+  intakeTitle: 'Load Your Engineering Context',
+  intakeSubtitle: 'Give Rex your active design projects, open specs, and technical priorities. Takes 2 minutes. Every conversation after this starts smarter.',
+
+  chat: {
+    transport: 'api-proxy',
+    placeholder: 'Custom cover design, materials question, MIL-SPEC lookup, engineering analysis…',
+    greeting: (savedContext) =>
+      savedContext
+        ? "Caleb — Rex here, your engineering context loaded. What are we working on?"
+        : "Hey Caleb. Rex here — your Shield engineering instance. Load your current projects in the intake, or just ask me anything now. I've got full context on Envelop materials science, DoD specs, and the full product line.",
+    apiEndpoint: '/api/chat',
+    historyEndpoint: '/api/history',
+    persistEndpoint: '/api/portal-chat-history',
+  },
+
+  intakeFields: [
+    {
+      key: 'activeDesigns',
+      label: 'Active design projects',
+      type: 'textarea',
+      placeholder: 'Custom cover for X platform, spec request from Y, redesign of Z…',
+    },
+    {
+      key: 'openSpecs',
+      label: 'Open MIL-SPECs or RFPs you are working against',
+      type: 'textarea',
+      placeholder: 'Spec numbers, platform types, submission deadlines…',
+    },
+    {
+      key: 'technicalChallenges',
+      label: 'Current technical challenges',
+      type: 'chips',
+      options: ['Complex geometry', 'Material selection', 'VCI chemistry', 'ITAR coordination', 'Weight/bulk constraints', 'Custom color/marking', 'Production tooling', 'Testing requirements'],
+    },
+    {
+      key: 'platforms',
+      label: 'Platforms you are designing for right now',
+      type: 'textarea',
+      placeholder: 'Aircraft type, vehicle, weapons system, engine…',
+    },
+  ],
+
+  modules: ['welcome', 'chat', 'documents', 'dining'],
+
+  moduleOptions: {
+    documents: {
+      tenantId: 'shield-caleb',
+      description:
+        'Upload CAD specs, MIL-SPEC documents, material datasheets, or any file you want Rex to reference in engineering conversations.',
+    },
+  },
+
+  aboutPoints: [
+    {
+      icon: '🔬',
+      title: 'Engineering Context Loaded',
+      body:
+        'Rex opens already knowing Envelop\'s 4-layer materials science, DoD MIL-SPEC requirements, ' +
+        'and the full product technical stack. Skip the background — start where the engineering is.',
+    },
+    {
+      icon: '📐',
+      title: 'Design Intelligence',
+      body:
+        'Ask Rex about material selection, geometric constraints, manufacturing considerations, ' +
+        'or competitive technical analysis. It thinks like an engineer.',
+    },
+    {
+      icon: '📋',
+      title: 'Spec Lookup on Demand',
+      body:
+        'Get DoD MIL-SPEC references, NSN lookup support, ITAR/EAR framework guidance, ' +
+        'and technical documentation — fast.',
+    },
+    {
+      icon: '📂',
+      title: 'Docs in the Room',
+      body:
+        'Upload datasheets, CAD specs, or meeting notes. Rex references them in every conversation.',
+    },
+  ],
+}
+
 // ─── GNOLES — Fiber Network Services / Rex ───────────────────────────────────
 // clients.axiomstreamgroup.com/gnoles
 // Greg Noles — Owner, Fiber Network Services. Rex agent, orange accent.

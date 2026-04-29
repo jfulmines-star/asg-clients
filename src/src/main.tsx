@@ -19,7 +19,7 @@ import ShieldAppShell from './pages/ShieldAppShell'
 import { PORTAL_CONFIGS } from './config/portal-configs'
 import NotFound from './pages/NotFound'
 import { ASGPortalBase } from './portal/ASGPortalBase'
-import { ANDREW_CONFIG, RYANH_CONFIG, GNOLES_CONFIG } from './config/shield-portal-configs'
+import { ANDREW_CONFIG, RYANH_CONFIG, GNOLES_CONFIG, CALEB_CONFIG } from './config/shield-portal-configs'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -28,6 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* MRO demo — trade show pages */}
         <Route path="/andrew/app" element={<ShieldAppShell slug="andrew" pin="6291" rep="Andy" territory="Sales Strategy & Government Capture Intelligence" />} />
         <Route path="/ryanh/app" element={<ShieldAppShell slug="ryanh" pin="5506" rep="Ryan" territory="Navy, Coast Guard & Commercial Aviation" />} />
+        <Route path="/shield-caleb/app" element={<ShieldAppShell slug="shield-caleb" pin="4829" rep="Caleb" territory="Engineering, Materials Science & Custom Design" />} />
         <Route path="/mro" element={<MROLanding />} />
         <Route path="/mro/demo" element={<MRODemo />} />
         {/* RAG Demo — open access for Ben/Nick */}
@@ -48,6 +49,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* Opus portals — Shield Technologies (Andrew Parks + Ryan Hopper) + FNS (Greg Noles) */}
         <Route path="/andrew" element={<ASGPortalBase config={ANDREW_CONFIG} />} />
         <Route path="/ryanh" element={<ASGPortalBase config={RYANH_CONFIG} />} />
+        <Route path="/shield-caleb" element={<ASGPortalBase config={CALEB_CONFIG} />} />
         <Route path="/gnoles" element={<ASGPortalBase config={GNOLES_CONFIG} />} />
         <Route path="/terry" element={<Navigate to="/kelyniam-terry" replace />} />
         {/* V2 data-driven portals */}

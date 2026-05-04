@@ -51,7 +51,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/ryanh" element={<ASGPortalBase config={RYANH_CONFIG} />} />
         <Route path="/shield-caleb" element={<ASGPortalBase config={CALEB_CONFIG} />} />
         <Route path="/gnoles" element={<ASGPortalBase config={GNOLES_CONFIG} />} />
-        <Route path="/terry" element={<Navigate to="/kelyniam-terry" replace />} />
+        {/* /terry shortcut removed — all portals use /client-person format only */}
         {/* V2 data-driven portals */}
         {Object.values(PORTAL_CONFIGS).map(cfg => (
           <Route key={cfg.slug} path={`/${cfg.slug}`} element={<ClientPortalV2 config={cfg} />} />

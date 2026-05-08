@@ -225,22 +225,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     poweredBy: 'Built for you by AxiomStream Group · JJ\'s company',
   },
 
-  // ── Jill — JJ's person ───────────────────────────────────────────────────
-  jill: {
-    slug: 'jill',
-    pin: '3131',
-    clientName: 'Jill',
-    company: 'Personal',
-    agentId: 'kit',
-    agentLabel: 'Kit',
-    accentColor: '#2563EB',
-    tagline: 'Your personal AI from AxiomStream Group',
-    whatWeKnow: '',
-    chatPlaceholder: 'Type or speak your message...',
-    chatGreeting: () => "Hi Jill! JJ set this up for you — think of it as your own personal assistant. You can ask me anything: travel planning, advice, research, whatever. I already know a bit about you, so no need to start from scratch. What's on your mind?",
-    intakeFields: [],
-    poweredBy: 'Built for you by AxiomStream Group · JJ\'s company',
-  },
+  // jill removed from PORTAL_CONFIGS — routes through BundleChat only (PIN 0714)
 
   // ── Doug Goeckel — Niagara Frontier Orthopaedic / DePuy Synthes ─────────
   dougg: {

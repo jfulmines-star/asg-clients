@@ -41,6 +41,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/anttip" element={<AnttipPortal />} />
         {/* Personal portals — go straight to chat, no product landing page */}
         <Route path="/lilyg" element={<Navigate to="/lilyg/chat" replace />} />
+        <Route path="/jill" element={<Navigate to="/jill/chat" replace />} />
+        <Route path="/j" element={<Navigate to="/jill/chat" replace />} />
         <Route path="/jj" element={<JJPortal />} />
         <Route path="/lindsay" element={<LindsayPortal />} />
         {/* Generic templates */}

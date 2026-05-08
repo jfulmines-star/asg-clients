@@ -230,7 +230,15 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   /* Layout */
   #bt-convo { padding: 20px 14px 12px; }
   #bt-input-area { padding: 10px 12px 8px; }
-  .bt-gate-card { padding: 36px 24px 32px; }
+  /* Gate card — full-width friendly on small screens */
+  #bt-gate { padding: 16px; }
+  .bt-gate-card { padding: 32px 20px 28px; max-width: 100%; border-radius: 16px; }
+  .bt-gate-product { font-size: 24px; }
+  .bt-gate-sub { font-size: 13px; margin-bottom: 28px; }
+  .bt-pin-digit { width: 52px; height: 60px; font-size: 22px; border-radius: 8px; }
+  .bt-pin-inputs { gap: 8px; }
+  .bt-unlock { font-size: 16px; padding: 15px; }
+  .bt-wordmark { margin-bottom: 32px; }
 
   /* Hide desktop chrome */
   .bt-asg { display: none; }
@@ -317,9 +325,10 @@ const AGENTS: Record<string, { name: string; domain: string; color: string; vers
 }
 
 // ─── Client registry ──────────────────────────────────────────────────────────
-const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; team?: boolean; teamLabel?: string; partnerName?: string; openingMessage?: string }> = {
+const REGISTRY: Record<string, { name: string; agents: string[]; pin: string; team?: boolean; teamLabel?: string; partnerName?: string; openingMessage?: string; docs?: boolean }> = {
   jj:            { name: 'JJ Fulmines',           agents: ['aria', 'lex', 'rex'],  pin: '2847' },
   lilyg:         { name: 'Lily',                  agents: ['kit'],                 pin: '0713', openingMessage: "Hey Lily — I'm Kit. Unlike ChatGPT, I actually know who you are and I never forget. Next time you talk to me, I'll remember exactly where we left off — no re-explaining, no starting over. Your dad set this up so you'd have something built for you, not just for everyone. I'm good at school stuff, college research, pretty much anything you're thinking through. Also fully willing to discuss Josh Allen at any time. What do you need?" },
+  jill:          { name: 'Jill',                  agents: ['kit'],                 pin: '0714', docs: true, openingMessage: "Hey Jill 👋 Can you stop with ChatGPT? I'm better, and you know it. I'm Kit — JJ set this up for you. I know about Mayfield, I know about Harpie, I know you're heading to San Diego in a few weeks, and I know you're working with the grief group curriculum. This is your space. Upload documents, ask me anything, make me earn it. What do you need?" },
   demo:          { name: 'Demo Account',           agents: ['aria', 'lex', 'rex', 'atlas'], pin: '0000', team: true, teamLabel: 'Demo Team' },
   shield:        { name: 'Shield Technologies',    agents: ['rex'],                 pin: '5591', team: true, teamLabel: 'Shield Technologies Sales' },
   ryanh:         { name: 'Ryan Hopper',            agents: ['rex'],                 pin: '5506' },
@@ -1071,7 +1080,7 @@ export default function BundleChat() {
           <div id="bt-sidebar" className={sidebarCollapsed ? 'collapsed' : mobileSidebarOpen ? 'mobile-open' : ''}>
             <div className="bt-sidebar-head">
               <div className="bt-sidebar-workspace">{config.teamLabel ?? config.name ?? slug}</div>
-              {slug !== 'lilyg' && (
+              {(slug !== 'lilyg' && slug !== 'jill') && (
                 <button className="bt-new-chat-btn" onClick={() => startNewChat()}>
                   <span>✏️</span> New chat
                 </button>

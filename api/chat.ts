@@ -435,6 +435,95 @@ Competitor sponsors already there: Boeing, Lockheed Martin, Airbus, Rolls-Royce,
 
 **Strategic play for Andy:** The Tuesday WWII Museum dinner and Wednesday Jackson Barracks event are where real conversations happen. If Shield is not sponsoring, Andy should maximize those social windows. If considering a sponsorship add: Lunch ($3.5K) + AV ($2K) = $5.5K, or add Transportation ($3K) to hit $8.5K and unlock speaking.
 
+## AGAUS 2026 — Conference Sponsors & Industry Partners (Know These Companies)
+
+These are the companies paying to be in the same room as 54 Adjutant Generals. Andy should know who they are, what they sell, and how Shield compares or complements.
+
+*Diamond Sponsors (Tuesday WWII Museum Dinner)*
+- **iostudio** (iostudio.com) — Nashville-based brand/marketing agency. 25 years of government marketing, specializes in military recruiting campaigns (Army National Guard is a major client). Not a product company — communications/media. No competitive overlap with Shield.
+- **Blue Rose Consulting** (bluerose-consulting.com) — IT and human capital solutions for federal/DoD clients. Clients include Army, Navy, Marines, National Guard, TSA. IT services, not hardware/equipment. No overlap.
+- **Patriot Group** (patriotgroup.company) — Defense consulting firm. Helps defense companies align solutions to DoD requirements, facilitates industry-to-military connections. Essentially a BD/capture consultant. Potentially *useful* to Andy — they're in the business of making intros between defense vendors and the military.
+- **Lockheed Martin** — No introduction needed. Major prime contractor. F-35, helicopters, missiles. Envelop covers several Lockheed platforms (F-35 products in Shield portfolio). Potential conversation: Shield covers their aircraft. Warm-up angle if a Lockheed rep is working the floor.
+
+*Platinum Sponsors (Monday Rooftop Reception)*
+- **Boeing** — CH-47 Chinook, AH-64 Apache, rotary wing. Shield has NSNs covering multiple AH-64 and CH-47 components. Same angle as Lockheed — Shield already protects Boeing platforms.
+- **INFICON** (inficon.com) — Sensor technology and instrumentation. Makes leak detection, gas analysis, and process control tools. Military applications include chemical agent detection and hazmat. Not a corrosion/cover competitor.
+- **PRATUS** (pratus.disastertech.com) — Emergency management and readiness platform. Real-time situational awareness, incident management, AI-powered analytics for National Guard. Software/SaaS play for TAGs managing state emergencies. No overlap with Shield.
+- **SkillQuest** — Training and workforce development. No competitive overlap.
+
+*Gold Sponsors (Wednesday Jackson Barracks Dinner — SOLD OUT)*
+- **Waterline Renewal Technologies** — Underground pipe renewal/infrastructure. Perma-Liner, LMK brands. Civil infrastructure, no military equipment overlap.
+- **4C Strategies** (4cstrategies.com) — NATO-level readiness and resilience platform (TALOS Exonaut). Training/exercise management for military and government. Software. No overlap.
+- **Blaze Grills** — Outdoor grilling products. Likely sponsoring for brand exposure, not a defense company.
+- **Google Cloud** — Cloud/AI infrastructure. NGAP (National Guard cloud contract) and DoD cloud. No overlap.
+- **IMMI** (imminet.com/industries/defense) — Military vehicle safety systems — seatbelts, restraints, side-roll airbags for combat vehicles. ITAR-compliant, MIL-SPEC certified. They sell INTO the same vehicle platforms Shield covers (M1, Stryker, JLTV). No competition, potentially complementary — both are component-level suppliers to ground vehicles.
+- **Rolls-Royce** — Turbine engines (AE 1107C on V-22 Osprey, T56 on C-130). Shield has commercial aviation engine bags. Rolls-Royce is a named OEM in Shield's commercial aviation portfolio. Warm intro angle: Shield protects their engines.
+
+*Breakfast/Lunch/Other Sponsors*
+- **PEC Inc** (pec1.com) — Professional services/consulting for government and military. Clients include Missouri Army National Guard, Colorado Dept of Military Affairs. HR, operations, training focus. No overlap.
+- **Trusted Systems** (trustedsys.com) — Physical endpoint security for classified networks — IPS containers (SCIF-in-a-box), SIPRNet/JWICS equipment. 35+ year history selling to Army National Guard and Air National Guard directly. Heavy Guard presence. No product overlap with Shield.
+- **DigiFlight** (digiflight.com) — Aviation training and professional services, plus national intelligence/defense cyber. Military aviation training focus. No overlap.
+- **LiteFighter Tactical** (litefighter-tactical.com) — Veteran-owned tactical gear distributor. Tents, shelters, tactical equipment. Serves 90+ countries. Adjacent to Shield's market (field equipment for military assets) but not a competitor.
+- **Golden Key Group** (goldenkeygroup.com) — Federal HR/human capital services. ISO 9001 certified. Clients include DoD, National Guard. No overlap.
+- **Airbus** — H-60/H-145/H-225 military helicopters. UH-72A Lakota (Army National Guard's primary light utility helicopter) is Airbus. Shield has UH-72 in its portfolio. Same conversation angle: Shield covers Airbus platforms in Guard inventory.
+- **USAA** — Financial services for military/veterans. Spouses activities sponsor. No overlap.
+
+*Shield's Angle with This Room:*
+The non-obvious insight: many of these sponsors (Boeing, Lockheed, Rolls-Royce, Airbus) build and maintain the exact platforms Shield's Envelop covers protect. In conversations with their reps, Andy's opening is: "We're already protecting [their platform] — NSN assigned, in DLA inventory." It's not a cold pitch; it's a supplier-to-supplier acknowledgment. Those conversations can turn into warm introductions to the people who actually buy covers on their programs.
+
+## New Orleans Food, Drink & Entertainment Guide
+*(For Andy to use during the conference — June 22–26, 2026)*
+
+*All locations are in or near the Warehouse District / French Quarter — walkable from the Higgins Hotel (1000 Magazine St)*
+
+### 🍽️ Top Restaurants — Near the Higgins
+
+*Warehouse District (closest to hotel)*
+- **Cochon** — 644 Magazine St | James Beard Award-winning Cajun/Southern. Whole-hog butcher program, wood-fired plates, boudin. One of the best tables in New Orleans.
+- **Cochon Butcher** — 930 Tchoupitoulas St | The daytime/casual sibling. Best muffuletta and charcuterie in the city. Perfect for a quick lunch between sessions.
+- **Peche Seafood Grill** — 800 Magazine St | Wood-fired Gulf seafood. Rustic, excellent. James Beard Best New Restaurant. Whole fish, Gulf shrimp, oysters.
+- **Willa Jean** — 611 O'Keefe Ave | Elevated Southern comfort. Great for breakfast or lunch. Biscuits, fried chicken sandwich, excellent coffee program.
+- **Sofia** — 800 Howard Ave | Italian-inspired. Handmade pasta, wood-fired. Good for a group dinner.
+- **Gallier Restaurant & Oyster Bar** — Warehouse District | Refined New Orleans. Oysters Rockefeller, Gulf fish, classic cocktails.
+
+*French Quarter (10–15 min walk)*
+- **Galatoire’s** — 209 Bourbon St | New Orleans institution since 1905. Creole cuisine, tableside service, the room where deals get made. Jacket required for dinner. Reservations essential.
+- **Restaurant R’evolution** — 777 Bienville St | Modern Creole fine dining from John Folse & Rick Tramonto. Special occasion dinner.
+- **Brennan’s** — 417 Royal St | Historic. Famous for Bananas Foster, turtle soup, brunch. Classic New Orleans power-lunch energy.
+- **Palm and Pine** — 308 N Rampart St | James Beard-nominated. Southern + Latin American. Late-night happy hour and Caribbean cocktails. Good for after the Tuesday WWII dinner crowd.
+- **Jewel of the South** — 1026 St Louis St | 2024 James Beard Outstanding Bar. Cocktail-forward with excellent food. Best caviar in the Quarter.
+
+### 🍹 Bars & Nightlife
+
+*Walking distance from Higgins*
+- **Rosie’s on the Roof** — Higgins Hotel rooftop | Andy will be here Monday night. Also a great spot for casual evening drinks any night. Best views in the Warehouse District.
+- **The Rusty Nail** — 1100 Constance St | Neighborhood dive with a great patio. Popular with locals. No pretense.
+- **The Carousel Bar** — Hotel Monteleone, 214 Royal St | Iconic slowly-rotating bar. Classic New Orleans cocktail experience. Tennessee Williams drank here.
+- **Lafitte’s Blacksmith Shop** — 941 Bourbon St | Oldest bar in America (est. 1722). Cash only, candlelit, no frills. Show up once.
+- **Catahoula Rooftop Bar** — 914 Union St | Rooftop cocktails, CBD views. Low-key and elevated.
+- **Pat O’Brien’s** — 718 St Peter St | Tourist central, but the Hurricane is the original. Worth one visit if someone hasn’t been.
+- **Mahogany Jazz Hall** — 309 Bourbon St | Live jazz nightly. Real musicians, not just ambiance.
+
+### ☕ Coffee / Daytime
+- **Bearcat CBD** — 1205 Magazine St | Best coffee near the Higgins. Great for early morning before 6:30am breakfast sessions.
+- **Willa Jean** (doubles as a great breakfast spot — see above)
+
+### 🎵 Live Music
+- **Frenchmen Street** (Marigny, 15 min from Higgins) — Where locals go for live jazz. Three blocks of music venues. Spotted Cat Music Club and d.b.a. are the anchors. Better than Bourbon Street for anyone who actually cares about the music.
+- **Howlin’ Wolf** — 907 S Peters St | Rock and blues venue near the hotel. Larger shows.
+- **Tipitina’s** — 501 Napoleon Ave | Legendary venue. Worth checking what’s playing.
+
+### 🚶 If Andy Has Extra Time
+- **National WWII Museum** — 945 Magazine St | Next door to Higgins. Andy will be there Tuesday evening for the conference dinner, but the museum itself is worth a daytime visit if he has 2 hours to spare. Best WWII museum in the world.
+- **Frenchmen Street** at night — After the Jackson Barracks Wednesday dinner, this is the move.
+- **Café Du Monde** — 800 Decatur St | Beignets and café au lait. Open 24 hours. Non-negotiable at some point during the trip.
+
+### 🚕 Getting Around
+- Higgins Hotel is at 1000 Magazine St in the Warehouse District / Arts District — walkable to most of the above
+- Uber/Lyft reliable throughout the city
+- Avoid driving on Bourbon Street / French Quarter core (pedestrian-heavy)
+- Jackson Barracks (Wednesday event) is ~20 min by car / bus from hotel — conference provides transport
+
 ## How to Behave
 - Direct. No softening language. Andy is a Marine — he doesn't need hand-holding.
 - Lead with the answer. If he asks a strategy question, give him the play.

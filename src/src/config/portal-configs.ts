@@ -652,6 +652,76 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     disableTeamContext: true,
   },
 
+  // ── RBP Chemical — Ken Kocolowski (Sales Manager) ─────────────────────────
+  'rbp-ken': {
+    slug: 'rbp-ken',
+    pin: '3819',
+    clientName: 'Ken',
+    memberName: 'Ken Kocolowski',
+    company: 'RBP Chemical Technology',
+    agentId: 'rex',
+    agentLabel: 'Rex',
+    accentColor: '#D4A017',
+    tagline: 'Sales Intelligence · RBP Chemical Technology',
+    whatWeKnow: 'Ken Kocolowski · Sales Manager · RBP Chemical Technology · West Allis (Milwaukee), WI · Manages ~7 field reps across RBP\'s four primary verticals: Pressroom/Printing (fountain solutions, press washes, flexo, blankets, additives), Medical Implant Devices (nitinol and cobalt-chrome electropolishing, room-temp Nitinol EP, FDA/EH&S documentation), Electronics/PCB (developing, resist stripping, copper cleaning, through-hole and electrolytic plating, etching, waste treatment — aerospace, medical, defense, consumer), Toll Blending/Industrial Finishing (custom formulation, scale-up, blending, packaging, warehouse, JIT delivery, ISO 9001) · Additional verticals: Mining, Automotive, Custom Chemistry · RBP ISO 9001:2015 certified · ~200 employees · 48,000 sq ft Milwaukee facility + Chennai India manufacturing · Distribution: factory-trained reps + distributors in North America and Asia · Top prospect accounts: Quad, Medtronic, Boston Scientific, TTM Technologies, Zimmer Biomet, Sanmina, Integer Holdings, Pioneer Metal Finishing, Cabot Microelectronics, LSC Communications · ASG is building RBP\'s full digital and growth infrastructure: HubSpot CRM, Apollo prospect engine, Google Ads, automated reporting, website management · Rex is purpose-built for Ken\'s sales team — each rep gets their own vertical-specific tool.',
+    chatPlaceholder: 'Pipeline, prospect research, outreach, objection handling, vertical intel — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Ken — context loaded. What's the priority today?"
+      : "Ken — I'm Rex. I've been briefed on RBP's products, your verticals, and your buyer types. I work best when I know what you're working on — pipeline, a specific account, outreach for a vertical, or something else entirely. What's the priority?",
+    intakeFields: [
+      {
+        key: 'activeVerticals',
+        label: 'Which verticals are you focusing on right now?',
+        type: 'chips',
+        options: ['Pressroom / Printing', 'Medical Implant Devices', 'Electronics / PCB', 'Toll Blending', 'Industrial Finishing', 'Mining', 'Automotive'],
+        default: 'Pressroom / Printing,Medical Implant Devices',
+      },
+      {
+        key: 'pipelinePriority',
+        label: 'Biggest pipeline challenge right now',
+        type: 'chips',
+        options: ['Not enough qualified leads', 'Deals stalling after first meeting', 'Reps need better outreach', 'Competitive pressure', 'Need visibility into rep activity'],
+        default: 'Not enough qualified leads',
+      },
+      {
+        key: 'targetAccount',
+        label: 'Any specific account or prospect you want to go after first?',
+        type: 'text',
+        placeholder: 'Company name, vertical, or region...',
+      },
+      {
+        key: 'context',
+        label: 'Anything else Rex should know about where your team is right now?',
+        type: 'textarea',
+        placeholder: 'Rep coverage gaps, a deal in progress, a vertical you want to break into...',
+      },
+    ],
+    aboutPoints: [
+      {
+        icon: '\u25A0',
+        title: 'Built for RBP Sales',
+        body: 'Rex knows your products, your verticals, and your buyer types. Not a generic tool — pre-loaded with RBP chemistry, competitive positioning, and prospect data before you typed anything.',
+      },
+      {
+        icon: '\u25A0',
+        title: 'Prospect Intelligence',
+        body: 'Ask Rex to find buyers in any vertical, draft outreach for a specific account, or build a target list for a rep. Apollo-sourced data, RBP-specific positioning.',
+      },
+      {
+        icon: '\u25A0',
+        title: 'Your Team Gets Their Own Rex',
+        body: 'Each rep on your team gets a vertical-specific version — loaded with their products, their buyers, and their objection handling. Built the same way, pointed at their world.',
+      },
+      {
+        icon: '\u25A0',
+        title: 'Pipeline Visibility',
+        body: 'Rex connects to HubSpot. Ask about deal status, rep activity, or which accounts need follow-up — without digging through the CRM yourself.',
+      },
+    ],
+    poweredBy: 'Powered by AxiomStream Group · Built for RBP Chemical Technology',
+    disableTeamContext: true,
+  },
+
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────
   'winthrop-andrew': {
     slug: 'winthrop-andrew',

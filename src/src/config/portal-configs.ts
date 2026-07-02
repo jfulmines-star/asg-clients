@@ -489,6 +489,169 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     enableInlineUpload: true,
   },
 
+  // ── Ernie Elitynski — RBP Chemical Technology ─────────────────────────────
+  'rbp-ernie': {
+    slug: 'rbp-ernie',
+    pin: '4872',
+    clientName: 'Ernie',
+    memberName: 'Ernie Elitynski',
+    company: 'RBP Chemical Technology',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#2563EB',
+    tagline: 'RBP Chemical Technology · Sales Strategy · Market Intelligence · Growth Operations',
+    whatWeKnow: [
+      { label: 'Company', value: 'RBP Chemical Technology — specialty chemical manufacturer. Industrial cleaning, surface treatment, and maintenance chemical products including SurfaceMax line.' },
+      { label: 'Your Role', value: 'President — day-to-day operations, sales, and growth strategy. Working with AxiomStream Group to build a full digital and growth function.' },
+      { label: 'Target Buyers', value: 'Plant managers, facilities directors, purchasing managers, and maintenance supervisors at industrial manufacturers, oil & gas, facilities management companies, and municipal operations.' },
+      { label: 'Products', value: 'SurfaceMax (55-gal drum, industrial surface cleaner/treatment) and broader specialty chemical line. B2B focus — industrial buyers, not consumer.' },
+      { label: 'Growth Priorities', value: 'New business development, better prospecting than current ZoomInfo approach, CRM to track pipeline, unified reporting across sales and finance, digital marketing to generate inbound leads.' },
+      { label: 'Current Gaps', value: 'No CRM in place. Reporting is manual. Lead gen is list-based with no outreach system. Google Ads not actively managed. No unified view of business performance.' },
+      { label: 'ASG Engagement', value: 'AxiomStream Group is the embedded Head of Digital & Growth for RBP — running reporting, marketing, lead gen, CRM, AI workflows, and channel management.' },
+      { label: 'Amazon', value: 'Amazon is a channel being tested — not a core revenue pillar. SurfaceMax listing in progress. Not the focus of growth strategy.' },
+    ],
+    chatPlaceholder: 'Sales targets, prospect research, market intel, reporting questions, growth strategy — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Ernie — context loaded. What are we working on today?"
+      : "Ernie — I've been briefed on RBP, your product line, your target buyers, and where ASG is taking the growth function. Ask me anything — prospect research, market intel, sales strategy, reporting questions, or what your competitive landscape looks like. Where do you want to start?",
+    aboutPoints: [
+      {
+        icon: '🎯',
+        title: 'Sales Strategy & Prospect Intelligence',
+        body: 'Kit knows your buyer personas cold — plant managers, purchasing directors, facilities supervisors at industrial companies. Ask it to build a target list, research a prospect, draft outreach, or identify the right contact at a company you want to land.',
+      },
+      {
+        icon: '📊',
+        title: 'Business Intelligence & Reporting',
+        body: 'Kit has context on your reporting gaps and what a unified finance-to-sales dashboard looks like for RBP. Ask it to help you think through KPIs, interpret performance data, or structure a business review.',
+      },
+      {
+        icon: '🌐',
+        title: 'Market & Competitive Intelligence',
+        body: 'Industrial chemical market, competitor positioning, pricing dynamics, buyer trends — Kit can research and synthesize faster than any analyst. Use it to prep for a sales call, size a new vertical, or understand who you are competing against.',
+      },
+      {
+        icon: '📢',
+        title: 'Marketing & Digital Growth',
+        body: 'Google Ads strategy, content ideas, SEO opportunities, lead gen campaign planning — Kit works alongside the ASG team running your digital function. Use it to pressure-test ideas or get a second read on marketing decisions.',
+      },
+      {
+        icon: '🤖',
+        title: 'AI-Powered Operations',
+        body: 'Outreach drafts, meeting prep, product copy, internal communications, analysis — Kit handles the operational work so you stay at the strategy level. Ask it to draft anything, research anything, or summarize anything.',
+      },
+      {
+        icon: '⚡',
+        title: 'Purpose-Built for RBP',
+        body: 'This isn\'t a generic AI tool. Kit was briefed on RBP\'s products, market, buyers, and growth priorities before you typed the first word. Everything is in context.',
+      },
+    ],
+    intakeFields: [
+      {
+        key: 'focusVerticals',
+        label: 'Which verticals or industries are you most focused on right now?',
+        type: 'chips',
+        options: ['Manufacturing', 'Oil & Gas', 'Facilities Management', 'Municipal / Government', 'Food & Beverage', 'Transportation / Fleet', 'Construction', 'Agriculture'],
+        default: 'Manufacturing,Oil & Gas,Facilities Management',
+      },
+      {
+        key: 'topProspect',
+        label: 'A company or account you\'re trying to crack right now',
+        type: 'text',
+        placeholder: 'Company name — Kit will research them before you ask...',
+      },
+      {
+        key: 'biggestChallenge',
+        label: 'Biggest growth challenge right now',
+        type: 'textarea',
+        placeholder: 'Finding new customers, closing faster, getting in front of the right buyer...',
+      },
+    ],
+    poweredBy: 'Powered by AxiomStream Group · Built for RBP Chemical Technology',
+    disableTeamContext: true,
+  },
+
+  // ── Dan — RBP Chemical Technology (Owner) ────────────────────────────────
+  'rbp-dan': {
+    slug: 'rbp-dan',
+    pin: '7391',
+    clientName: 'Dan',
+    memberName: 'Dan RBP',
+    company: 'RBP Chemical Technology',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#1B2A4A',
+    tagline: 'RBP Chemical Technology · Business Performance · Growth Strategy · Executive Operations',
+    whatWeKnow: [
+      { label: 'Company', value: 'RBP Chemical Technology — specialty chemical manufacturer. Industrial cleaning, surface treatment, and maintenance chemical products. B2B focused, industrial buyers.' },
+      { label: 'Your Role', value: 'Owner. You see the full picture — financial performance, operational health, sales pipeline, and growth direction. Working with AxiomStream Group to build a real digital and growth function.' },
+      { label: 'ASG Engagement', value: 'AxiomStream Group is functioning as RBP\'s embedded Head of Digital & Growth — running reporting, CRM, lead gen, marketing, AI workflows, and channel management. JJ Fulmines is the operator.' },
+      { label: 'Growth Priorities', value: 'Business development at scale, pipeline visibility, unified financial and sales reporting, and a lead gen system that actually works — replacing the ZoomInfo-spreadsheet approach with a real engine.' },
+      { label: 'Current Gaps', value: 'No CRM. Manual reporting across finance and sales. No systematic outbound. Digital marketing not optimized. No unified view of business performance week to week.' },
+      { label: 'Target Buyers', value: 'Plant managers, purchasing directors, and facilities supervisors at industrial manufacturers, oil & gas companies, and facilities management firms.' },
+      { label: 'Products', value: 'SurfaceMax and full specialty chemical line. Amazon is a channel being tested — not a revenue pillar. Core business is B2B industrial.' },
+    ],
+    chatPlaceholder: 'Business performance, pipeline, growth strategy, financial questions, market intel — what do you need?',
+    chatGreeting: (saved) => saved
+      ? "Dan — context loaded. What are we looking at today?"
+      : "Dan — I've been briefed on RBP, your business, and what ASG is building for you. Ask me anything — business performance questions, growth strategy, market intelligence, pipeline analysis, or what a properly run digital function looks like in practice. What\'s on your mind?",
+    aboutPoints: [
+      {
+        icon: '📊',
+        title: 'Business Performance & Reporting',
+        body: 'Kit has context on what unified reporting looks like for RBP — finance, sales, and marketing in one view. Ask it to help structure a business review, interpret performance data, build a KPI framework, or think through what you should be measuring weekly.',
+      },
+      {
+        icon: '💰',
+        title: 'Growth Strategy & Revenue',
+        body: 'Where is the next $1M coming from? New verticals, new channels, better conversion on existing leads, pricing strategy — Kit thinks at the owner level. Use it to pressure-test ideas, size opportunities, or build the business case for a strategic move.',
+      },
+      {
+        icon: '🎯',
+        title: 'Sales Pipeline & Business Development',
+        body: 'Kit knows your buyer personas, your current gaps, and what a systematic lead gen and CRM operation looks like. Ask it to help think through pipeline strategy, prioritize accounts, or understand what\'s blocking deals.',
+      },
+      {
+        icon: '🏭',
+        title: 'Market & Competitive Intelligence',
+        body: 'Industrial chemical market dynamics, competitor positioning, pricing pressure, new vertical opportunities — Kit researches and synthesizes at a level that used to require a strategy firm. Ask it anything about your market.',
+      },
+      {
+        icon: '🤖',
+        title: 'AI-Powered Operations',
+        body: 'The ASG engagement runs on AI infrastructure — automated reporting, outreach, content, and analysis. Kit is part of that system. Use it to understand what\'s being built, pressure-test the approach, or get answers you\'d normally wait a week for.',
+      },
+      {
+        icon: '⚡',
+        title: 'Purpose-Built for RBP',
+        body: 'Not a generic tool. Kit was briefed on RBP — your products, market, buyers, financials context, and what ASG is building — before you typed the first word.',
+      },
+    ],
+    intakeFields: [
+      {
+        key: 'biggestPriority',
+        label: 'Biggest priority for RBP right now',
+        type: 'chips',
+        options: ['New Business / Revenue Growth', 'Pipeline Visibility', 'Operational Efficiency', 'Reporting & Analytics', 'New Market Expansion', 'Team & Hiring'],
+        default: 'New Business / Revenue Growth,Pipeline Visibility',
+      },
+      {
+        key: 'revenueGoal',
+        label: 'Revenue target you\'re working toward',
+        type: 'text',
+        placeholder: 'e.g. $5M this year, double in 3 years...',
+      },
+      {
+        key: 'context',
+        label: 'Anything else Kit should know about where RBP is right now',
+        type: 'textarea',
+        placeholder: 'Current challenges, recent wins, things that are broken...',
+      },
+    ],
+    poweredBy: 'Powered by AxiomStream Group · Built for RBP Chemical Technology',
+    disableTeamContext: true,
+  },
+
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────
   'winthrop-andrew': {
     slug: 'winthrop-andrew',

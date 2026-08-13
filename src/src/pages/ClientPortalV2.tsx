@@ -750,8 +750,18 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
     if (text.length === 4) { const d = text.split(''); setDigits(d); setTimeout(() => checkPin(d), 80) }
   }
   function checkPin(d = digits) {
-    if (d.join('') === config.pin) { setUnlocked(true) }
-    else { setPinError(true); setDigits(['', '', '', '']); setTimeout(() => (document.getElementById('pin-0') as HTMLInputElement)?.focus(), 80) }
+    const entered = d.join('')
+    const pinMap = (config as any).pinMap as Record<string, Partial<typeof config>> | undefined
+    if (pinMap && pinMap[entered]) {
+      // Multi-PIN portal: merge per-person overrides into config
+      const overrides = pinMap[entered]
+      Object.assign(config, overrides)
+      setUnlocked(true)
+    } else if (entered === config.pin) {
+      setUnlocked(true)
+    } else {
+      setPinError(true); setDigits(['', '', '', '']); setTimeout(() => (document.getElementById('pin-0') as HTMLInputElement)?.focus(), 80)
+    }
   }
   function handleSaveIntake(e: React.FormEvent) {
     e.preventDefault()

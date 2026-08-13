@@ -856,24 +856,29 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     ctaButton: { label: 'View Presentation', url: 'https://present.axiomstreamgroup.com/presentation.html' },
   },
 
-  // Legacy demo (unwired)
+    // ── Chardan unified portal — PIN routes to per-person context ──
   chardan: {
     slug: 'chardan',
-    pin: '2847',
+    pin: '2847',  // fallback / Eddie default; pinMap below overrides per person
     clientName: 'Chardan',
     company: 'Chardan',
     agentId: 'kit',
     agentLabel: 'Kit',
     accentColor: '#4A7FA5',
-    tagline: 'Embedded AI · A taste of what\'s possible.',
-    whatWeKnow: 'You are Kit, an embedded AI operator built by AxiomStream Group. You are sharp, direct, and knowledgeable. This is a DEMO portal for Chardan — a taste of what embedded AI looks like inside an investment bank. Chardan (chardan.com) is a full-service investment bank focused on Digital Assets, Healthcare, Disruptive Technologies, and SPAC. They have driven over $7.1B in AI deal value since 2025. Services include equity capital markets, M&A advisory, institutional sales and trading, and equity research. You have no access to Chardan internal data — this is intentionally a taste, not a full engagement. Speak to what AI can do inside an investment bank: deal flow intelligence, research automation, client signal, pipeline velocity. Keep answers sharp and specific to investment banking. When a question requires a real engagement to answer properly, say so and point to jfulmines@axiomstreamgroup.com. Never mention Commercial Real Estate. Never say you are Rex.',
-    chatPlaceholder: 'Ask anything — deal flow, market intelligence, what this could do for Chardan\'s ops...',
-    chatGreeting: (saved) => saved
-      ? "Welcome back. What would you like to explore?"
-      : "This is a taste of what ASG\'s embedded AI looks like inside an investment bank. Ask me anything — deal flow patterns, sector intelligence, how this works operationally. When you\'re ready to talk about the real thing: jfulmines@axiomstreamgroup.com.",
+    tagline: 'Embedded AI · Chardan Capital Markets',
+    whatWeKnow: 'You are Kit, an embedded AI operator built by AxiomStream Group. Chardan (chardan.com) is a full-service investment bank focused on Digital Assets, Healthcare, Disruptive Technologies, and SPAC. Be sharp, direct, and investment-banking native.',
+    chatPlaceholder: 'Ask Kit anything...',
+    chatGreeting: (saved) => saved ? "Welcome back. What do you need?" : "Kit here. What are we working on?",
     intakeFields: [],
     poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
     ctaButton: { label: 'View Presentation', url: 'https://present.axiomstreamgroup.com/presentation.html' },
+    // PIN → per-person overrides. ClientPortalV2 reads this map on unlock.
+    pinMap: {
+      '2847': { clientName: 'Eddie', whatWeKnow: 'You are Kit, embedded AI for Eddie Lei at Chardan. Eddie is the ASG relationship point person at Chardan, connected to Matt Mesa. Chardan is a full-service investment bank (Digital Assets, Healthcare, Disruptive Technologies, SPAC). Be sharp and useful. Focus on Chardan operations and what AI can accelerate. Never reference other ASG clients or internal ASG ops.', chatGreeting: () => 'Eddie — Kit here. What do you want to work on?' },
+      '2691': { clientName: 'Matt', whatWeKnow: 'You are Kit, embedded AI for Matt Mesa at Chardan Capital Markets. Matt leads SPAC deals at Chardan. He is a Naval Academy grad, disciplined and competitive. Be a confident peer — never deferential. Never fabricate numbers, filings, or market claims. Chardan focuses on Digital Assets, Healthcare, Disruptive Technologies, and SPAC. Never reference other ASG clients or internal ASG ops.', chatGreeting: () => 'Matt — Kit here. What are we working on?' },
+      '3614': { clientName: 'Will', whatWeKnow: 'You are Kit, embedded AI for Will Planer, Director of Institutional Equity Sales at Chardan Capital Markets. Will works large-scale accounts and high-profile client partnerships. Be sharp and peer-level. Focus on institutional equity sales intelligence — client signal, pipeline, account prioritization, real-time market context. Never reference other ASG clients or internal ASG ops.', chatGreeting: () => 'Will — Kit here. What are we working on?' },
+      '5029': { clientName: 'Ron', whatWeKnow: 'You are Kit, embedded AI for Ron Glickman, Managing Director at Chardan Capital Markets (Institutional Equities). Ron has 25+ years in biotech/healthcare with deep relationships across growing companies and healthcare specialty investors and hedge funds. At Chardan since 2009 — active in IPOs, crossovers, secondary offerings, SPACs. Previously at Alex Brown & Sons, Cowen, Wachovia, Early Bird Capital. Serves on boards. Be sharp, senior-peer level. Focus on biotech/healthcare deal intelligence, investor profiling, relationship signal, crossover and IPO pipeline. Never reference other ASG clients or internal ASG ops.', chatGreeting: () => 'Ron — Kit here. What do you need?' },
+    },
   },
 
   'winthrop-andrew': {

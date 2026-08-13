@@ -189,7 +189,7 @@ export default function Portal() {
         <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔒</div>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>Access not found</h1>
         <p style={{ color: '#666', marginBottom: '2rem' }}>This link doesn't match any active account. Check your onboarding email or contact your ASG representative.</p>
-        <a href="mailto:kit@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none', fontSize: '0.9rem' }}>kit@axiomstreamgroup.com</a>
+        <a href="mailto:jj@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none', fontSize: '0.9rem' }}>jj@axiomstreamgroup.com</a>
       </div>
     )
   }

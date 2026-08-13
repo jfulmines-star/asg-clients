@@ -810,11 +810,11 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     agentLabel: 'Kit',
     accentColor: '#4A7FA5',
     tagline: 'Embedded AI · A taste of what\'s possible.',
-    whatWeKnow: 'Chardan is a premier investment bank specializing in emerging growth companies — life sciences, biotech, healthcare, technology. Services: equity capital markets, M&A advisory, institutional sales and trading, equity research. Known for backing pre-revenue and early-commercial stage companies that larger banks won\'t touch. This is a DEMO portal — a curated taste of ASG\'s embedded AI capability. Synapse is intentionally unwired. No client data, no pipeline, no internals. This is the experience of what a wired engagement looks like — not the engagement itself. If they want the real thing: jj@axiomstreamgroup.com.',
+    whatWeKnow: 'Chardan is a premier investment bank specializing in emerging growth companies — life sciences, biotech, healthcare, technology. Services: equity capital markets, M&A advisory, institutional sales and trading, equity research. Known for backing pre-revenue and early-commercial stage companies that larger banks won\'t touch. This is a DEMO portal — a curated taste of ASG\'s embedded AI capability. Synapse is intentionally unwired. No client data, no pipeline, no internals. This is the experience of what a wired engagement looks like — not the engagement itself. If they want the real thing: jfulmines@axiomstreamgroup.com.',
     chatPlaceholder: 'Ask anything — deal flow, market intelligence, what this could do for Chardan\'s ops...',
     chatGreeting: (saved) => saved
       ? "Welcome back. What would you like to explore?"
-      : "This is a taste of what ASG\'s embedded AI looks like inside an investment bank. Ask me anything — deal flow patterns, sector intelligence, how this works operationally. When you\'re ready to talk about the real thing: jj@axiomstreamgroup.com.",
+      : "This is a taste of what ASG\'s embedded AI looks like inside an investment bank. Ask me anything — deal flow patterns, sector intelligence, how this works operationally. When you\'re ready to talk about the real thing: jfulmines@axiomstreamgroup.com.",
     intakeFields: [],
     poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
     ctaButton: { label: 'View Presentation', url: 'https://asg-creative-suite.vercel.app/pitch.html' },

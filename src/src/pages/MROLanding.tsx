@@ -235,8 +235,8 @@ export default function MROLanding() {
             {status === 'error' && (
               <div style={{ fontSize: '13px', color: '#f87171', textAlign: 'center' }}>
                 Something went wrong — try{' '}
-                <a href="mailto:jj@axiomstreamgroup.com" style={{ color: '#f87171' }}>
-                  jj@axiomstreamgroup.com
+                <a href="mailto:jfulmines@axiomstreamgroup.com" style={{ color: '#f87171' }}>
+                  jfulmines@axiomstreamgroup.com
                 </a>
               </div>
             )}

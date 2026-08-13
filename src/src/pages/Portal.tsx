@@ -189,7 +189,7 @@ export default function Portal() {
         <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔒</div>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>Access not found</h1>
         <p style={{ color: '#666', marginBottom: '2rem' }}>This link doesn't match any active account. Check your onboarding email or contact your ASG representative.</p>
-        <a href="mailto:jj@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none', fontSize: '0.9rem' }}>jj@axiomstreamgroup.com</a>
+        <a href="mailto:jfulmines@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none', fontSize: '0.9rem' }}>jfulmines@axiomstreamgroup.com</a>
       </div>
     )
   }
@@ -304,7 +304,7 @@ export default function Portal() {
         }}>
           <p style={{ color: '#3a3a3a', fontSize: '0.8rem' }}>
             Questions? Contact your ASG representative or email{' '}
-            <a href="mailto:jj@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none' }}>jj@axiomstreamgroup.com</a>
+            <a href="mailto:jfulmines@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none' }}>jfulmines@axiomstreamgroup.com</a>
           </p>
           <p style={{ color: '#2a2a2a', fontSize: '0.75rem' }}>
             © {new Date().getFullYear()} AxiomStream Group · <a href="https://axiomstreamgroup.com" style={{ color: '#2a2a2a', textDecoration: 'none' }}>axiomstreamgroup.com</a>

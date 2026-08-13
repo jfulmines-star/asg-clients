@@ -169,7 +169,7 @@ export default function AnttipPortal() {
             </button>
             <div style={{ marginTop: '24px', fontSize: '11px', color: '#333', lineHeight: '1.6' }}>
               Access code provided by AxiomStream Group.<br />
-              Questions? <a href="mailto:jj@axiomstreamgroup.com" style={{ color: TEAL, textDecoration: 'none' }}>jj@axiomstreamgroup.com</a>
+              Questions? <a href="mailto:jfulmines@axiomstreamgroup.com" style={{ color: TEAL, textDecoration: 'none' }}>jfulmines@axiomstreamgroup.com</a>
             </div>
           </div>
         </div>

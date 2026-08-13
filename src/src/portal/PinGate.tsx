@@ -185,8 +185,8 @@ export function PinGate({ config, tv, onUnlock }: Props) {
             Access code provided by AxiomStream Group.
             <br />
             Questions?{' '}
-            <a href="mailto:jj@axiomstreamgroup.com" style={{ color: accent, textDecoration: 'none' }}>
-              jj@axiomstreamgroup.com
+            <a href="mailto:jfulmines@axiomstreamgroup.com" style={{ color: accent, textDecoration: 'none' }}>
+              jfulmines@axiomstreamgroup.com
             </a>
           </div>
         </div>

@@ -800,7 +800,63 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
   },
 
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────
-  // ── Chardan — DEMO / Taste portal (unwired from Synapse by design) ────────
+  // ── Chardan portals — $299/mo per seat ────────
+
+  // Portal 1: Eddie Lei
+  'chardan-eddie': {
+    slug: 'chardan-eddie',
+    pin: '2847',
+    clientName: 'Eddie Lei',
+    company: 'Chardan',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
+    tagline: 'Embedded AI · Chardan',
+    whatWeKnow: 'You are Kit, embedded AI for Eddie Lei at Chardan. Chardan is a full-service investment bank focused on Digital Assets, Healthcare, Disruptive Technologies, and SPAC. Eddie is the ASG point person at Chardan, connected to Matt Mesa. Be sharp and useful. Focus on what AI can do for Chardan operations. Never reference other ASG clients or internal ASG operations.',
+    chatPlaceholder: 'Ask Kit anything...',
+    chatGreeting: () => "Eddie — Kit here. What do you want to work on?",
+    intakeFields: [],
+    poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
+    ctaButton: { label: 'View Presentation', url: 'https://present.axiomstreamgroup.com/presentation.html' },
+  },
+
+  // Portal 3: Will Planer
+  'chardan-will': {
+    slug: 'chardan-will',
+    pin: '3614',
+    clientName: 'Will Planer',
+    company: 'Chardan',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
+    tagline: 'Embedded AI · Chardan',
+    whatWeKnow: 'You are Kit, embedded AI for Will Planer, Director of Institutional Equity Sales at Chardan Capital Markets. Chardan focuses on Digital Assets, Healthcare, Disruptive Technologies, and SPAC. Will works large-scale accounts and high-profile client partnerships in institutional equity. Be sharp, peer-level, and focused on institutional equity sales intelligence. Never reference other ASG clients or internal ASG operations.',
+    chatPlaceholder: 'Ask Kit anything...',
+    chatGreeting: () => "Will — Kit here. What are we working on?",
+    intakeFields: [],
+    poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
+    ctaButton: { label: 'View Presentation', url: 'https://present.axiomstreamgroup.com/presentation.html' },
+  },
+
+  // Portal 4: Ron Glickman
+  'chardan-ron': {
+    slug: 'chardan-ron',
+    pin: '5029',
+    clientName: 'Ron Glickman',
+    company: 'Chardan',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
+    tagline: 'Embedded AI · Chardan',
+    whatWeKnow: 'You are Kit, embedded AI for Ron Glickman, Managing Director at Chardan Capital Markets in Institutional Equities. Ron has 25+ years in biotech and healthcare with deep relationships across growing companies and healthcare specialty investors and hedge funds. At Chardan since 2009 -- active in IPOs, crossovers, secondary offerings, and SPACs. Previously at Alex Brown & Sons, Cowen, Wachovia, Early Bird Capital. Serves on boards. Be sharp, senior-peer level. Focus on biotech/healthcare deal intelligence, investor profiling, relationship signal, crossover and IPO pipeline. Never reference other ASG clients or internal ASG operations.',
+    chatPlaceholder: 'Ask Kit anything...',
+    chatGreeting: () => "Ron — Kit here. What do you need?",
+    intakeFields: [],
+    poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
+    ctaButton: { label: 'View Presentation', url: 'https://present.axiomstreamgroup.com/presentation.html' },
+  },
+
+  // Legacy demo (unwired)
   chardan: {
     slug: 'chardan',
     pin: '2847',

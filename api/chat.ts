@@ -2969,6 +2969,22 @@ async function streamAnthropicWithTools(
   return accumulated;
 }
 
+// ─── Synapse log helper — fire and forget, never blocks response ─────────────
+function logToSynapse(slug: string, event: string, detail?: string, extras?: Record<string, string>): void {
+  if (!slug) return;
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'https://clients.axiomstreamgroup.com';
+  fetch(`${baseUrl}/api/synapse-log`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Kit-Token': process.env.KIT_SYNAPSE_TOKEN || '',
+    },
+    body: JSON.stringify({ slug, event, detail: detail?.slice(0, 200), ...extras }),
+  }).catch(() => {}); // never block on this
+}
+
 // ─── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -3004,6 +3020,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
       const openerData = await openerRes.json();
       const openerText = openerData.content?.[0]?.type === 'text' ? openerData.content[0].text : `Good to see you, ${firstName}. What are we working on today?`;
+      // Fire-and-forget session_start log
+      logToSynapse(slug, 'session_start');
       return res.status(200).json({ reply: openerText, text: openerText });
     } catch {
       return res.status(200).json({ reply: `Good to see you. What are we working on today?`, text: `Good to see you. What are we working on today?` });
@@ -3218,6 +3236,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             consolidateMemory(slug, teamMember, thread).catch(() => {});
           }
         }).catch(() => {});
+        // Fire-and-forget Synapse log — never blocks response
+        logToSynapse(slug, 'chat_message', message as string);
       }
       return res.json({ text: cleanedAccumulated });
     } catch (err: unknown) {
@@ -3253,6 +3273,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             consolidateMemory(slug, teamMember, thread).catch(() => {});
           }
         }).catch(() => {});
+        // Fire-and-forget Synapse log — never blocks response
+        logToSynapse(slug, 'chat_message', message as string);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -3277,6 +3299,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           consolidateMemory(slug, teamMember, thread).catch(() => {});
         }
       }).catch(() => {});
+      // Fire-and-forget Synapse log — never blocks response
+      logToSynapse(slug, 'chat_message', message as string);
     }
     res.json({ text });
   } catch (err: unknown) {

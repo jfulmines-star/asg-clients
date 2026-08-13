@@ -37,6 +37,7 @@ export interface PortalConfig {
   whiteLabel?: boolean      // if true, omit ASG branding from chart exports
   memberName?: string       // full name used for Redis member key (e.g. "Ryan Hopper") — falls back to clientName
   disableTeamContext?: boolean  // if true, suppress cross-member context injection (use for individual clients)
+  ctaButton?: { label: string; url: string }  // optional CTA button shown in portal header/chat area
 }
 
 // ─── Client Configs ──────────────────────────────────────────────────────────
@@ -816,6 +817,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       : "This is a taste of what ASG\'s embedded AI looks like inside an investment bank. Ask me anything — deal flow patterns, sector intelligence, how this works operationally. When you\'re ready to talk about the real thing: jj@axiomstreamgroup.com.",
     intakeFields: [],
     poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
+    ctaButton: { label: 'View Presentation', url: 'https://asg-creative-suite.vercel.app/pitch.html' },
   },
 
   'winthrop-andrew': {

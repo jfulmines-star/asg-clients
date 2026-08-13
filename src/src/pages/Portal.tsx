@@ -304,7 +304,7 @@ export default function Portal() {
         }}>
           <p style={{ color: '#3a3a3a', fontSize: '0.8rem' }}>
             Questions? Contact your ASG representative or email{' '}
-            <a href="mailto:kit@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none' }}>kit@axiomstreamgroup.com</a>
+            <a href="mailto:jj@axiomstreamgroup.com" style={{ color: '#27B5A3', textDecoration: 'none' }}>jj@axiomstreamgroup.com</a>
           </p>
           <p style={{ color: '#2a2a2a', fontSize: '0.75rem' }}>
             © {new Date().getFullYear()} AxiomStream Group · <a href="https://axiomstreamgroup.com" style={{ color: '#2a2a2a', textDecoration: 'none' }}>axiomstreamgroup.com</a>

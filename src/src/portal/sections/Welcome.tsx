@@ -73,6 +73,31 @@ export function WelcomeSection({ config, accent, tv, navigateTo, intake }: Modul
         >
           Chat with {config.agentLabel} →
         </button>
+        {config.ctaButton && (
+          <a
+            href={config.ctaButton.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'transparent',
+              color: accent,
+              border: `1.5px solid ${accent}`,
+              borderRadius: 10,
+              padding: '16px 28px',
+              fontSize: 15,
+              fontWeight: 700,
+              minHeight: 44,
+              cursor: 'pointer',
+              fontFamily: FONT_STACK,
+              textDecoration: 'none',
+            }}
+          >
+            {config.ctaButton.label} ↗
+          </a>
+        )}
         {!intakeSaved && config.intakeFields.length > 0 && (
           <button
             onClick={() => navigateTo('intake')}

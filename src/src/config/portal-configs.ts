@@ -806,7 +806,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     pin: '2847',
     clientName: 'Chardan',
     company: 'Chardan',
-    agentId: 'rex',
+    agentId: 'kit',
     agentLabel: 'Kit',
     accentColor: '#4A7FA5',
     tagline: 'Embedded AI · A taste of what\'s possible.',

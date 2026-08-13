@@ -817,7 +817,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       : "This is a taste of what ASG\'s embedded AI looks like inside an investment bank. Ask me anything — deal flow patterns, sector intelligence, how this works operationally. When you\'re ready to talk about the real thing: jfulmines@axiomstreamgroup.com.",
     intakeFields: [],
     poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
-    ctaButton: { label: 'View Presentation', url: 'https://asg-creative-suite.vercel.app/pitch.html' },
+    ctaButton: { label: 'View Presentation', url: 'https://present.axiomstreamgroup.com/presentation.html' },
   },
 
   'winthrop-andrew': {

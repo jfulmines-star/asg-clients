@@ -498,7 +498,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     company: 'RBP Chemical Technology',
     agentId: 'kit',
     agentLabel: 'Kit',
-    accentColor: '#2563EB',
+    accentColor: '#C8102E',
     tagline: 'RBP Chemical Technology · Sales Strategy · Market Intelligence · Growth Operations',
     whatWeKnow: [
       { label: 'Company', value: 'RBP Chemical Technology — specialty chemical manufacturer. Industrial cleaning, surface treatment, and maintenance chemical products including SurfaceMax line.' },
@@ -576,11 +576,11 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     slug: 'rbp-dan',
     pin: '7391',
     clientName: 'Dan',
-    memberName: 'Dan RBP',
+    memberName: 'Dan',
     company: 'RBP Chemical Technology',
     agentId: 'kit',
     agentLabel: 'Kit',
-    accentColor: '#1B2A4A',
+    accentColor: '#C8102E',
     tagline: 'RBP Chemical Technology · Business Performance · Growth Strategy · Executive Operations',
     whatWeKnow: [
       { label: 'Company', value: 'RBP Chemical Technology — specialty chemical manufacturer. Industrial cleaning, surface treatment, and maintenance chemical products. B2B focused, industrial buyers.' },
@@ -722,7 +722,102 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     disableTeamContext: true,
   },
 
+  // ── Diana Anzaldua — RBP Chemical Technology (Marketing/HR Director) ────────
+  'rbp-diana': {
+    slug: 'rbp-diana',
+    pin: '4518',
+    clientName: 'Diana',
+    memberName: 'Diana Anzaldua',
+    company: 'RBP Chemical Technology',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#C8102E',
+    tagline: 'RBP Chemical Technology · Marketing · HR · Brand Operations',
+    whatWeKnow: [
+      { label: 'Company', value: 'RBP Chemical Technology — specialty chemical manufacturer. Industrial cleaning, surface treatment, and maintenance chemical products. B2B focused, industrial buyers.' },
+      { label: 'Your Role', value: 'Marketing/HR Director — you lead RBP\'s brand presence, marketing execution, and talent/HR operations. Working alongside ASG on digital and growth initiatives.' },
+      { label: 'ASG Engagement', value: 'AxiomStream Group is RBP\'s embedded Head of Digital & Growth — running lead gen, CRM, marketing, content, and digital operations. JJ Fulmines is the operator.' },
+      { label: 'Marketing Priorities', value: 'Brand consistency, content development, trade show presence, digital marketing, and coordinated messaging across verticals (Pressroom, Medical Devices, Electronics/PCB, Toll Blending).' },
+      { label: 'HR Scope', value: 'Talent acquisition, employee engagement, policy development, and workforce planning for a ~200 person organization.' },
+      { label: 'Products', value: 'Full RBP specialty chemical line — Pressroom solutions, electropolishing for medical devices, PCB/electronics chemistry, and custom toll blending.' },
+    ],
+    chatPlaceholder: 'Marketing content, HR questions, brand strategy, internal comms — what are we working on?',
+    chatGreeting: (saved) => saved
+      ? "Diana — context loaded. What are we working on today?"
+      : "Diana — I've been briefed on RBP, your products, and what ASG is building alongside your team. I can help with marketing content, brand strategy, HR questions, internal communications, or anything else in your world. What's on your mind?",
+    aboutPoints: [
+      {
+        icon: '📢',
+        title: 'Marketing & Brand Operations',
+        body: 'Kit knows RBP\'s verticals, products, and buyer personas. Ask it to draft content, develop messaging for a specific vertical, prepare trade show materials, or think through brand positioning.',
+      },
+      {
+        icon: '👥',
+        title: 'HR & Talent Intelligence',
+        body: 'From job descriptions to policy research to employee communication drafts — Kit handles the operational HR work so you stay at the strategic level.',
+      },
+      {
+        icon: '🎨',
+        title: 'Content Development',
+        body: 'Product sheets, case studies, internal announcements, social content — Kit can draft, edit, and refine any content you need. Just describe what you\'re trying to say.',
+      },
+      {
+        icon: '🤝',
+        title: 'Cross-Team Coordination',
+        body: 'Kit has context on what the sales team is working on and what ASG is building. Use it to stay aligned without extra meetings.',
+      },
+      {
+        icon: '⚡',
+        title: 'Purpose-Built for RBP',
+        body: 'Not a generic tool. Kit was briefed on RBP — your products, verticals, team structure, and growth priorities — before you typed the first word.',
+      },
+    ],
+    intakeFields: [
+      {
+        key: 'marketingFocus',
+        label: 'Which marketing area is your biggest priority right now?',
+        type: 'chips',
+        options: ['Content Development', 'Brand Consistency', 'Trade Shows / Events', 'Digital Marketing', 'Internal Communications', 'Collateral / Sales Support'],
+        default: 'Content Development,Brand Consistency',
+      },
+      {
+        key: 'hrFocus',
+        label: 'Any HR initiatives you\'re focused on?',
+        type: 'chips',
+        options: ['Recruiting / Hiring', 'Employee Engagement', 'Policy Development', 'Training Programs', 'None right now'],
+        default: 'None right now',
+      },
+      {
+        key: 'context',
+        label: 'Anything else Kit should know about what you\'re working on?',
+        type: 'textarea',
+        placeholder: 'Current projects, upcoming deadlines, areas where you need support...',
+      },
+    ],
+    poweredBy: 'Powered by AxiomStream Group · Built for RBP Chemical Technology',
+    disableTeamContext: true,
+  },
+
   // ── Andrew Armour — Winthrop Realty Group ────────────────────────────────
+  // ── Chardan — DEMO / Taste portal (unwired from Synapse by design) ────────
+  chardan: {
+    slug: 'chardan',
+    pin: '2847',
+    clientName: 'Chardan',
+    company: 'Chardan',
+    agentId: 'rex',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
+    tagline: 'Embedded AI · A taste of what\'s possible.',
+    whatWeKnow: 'Chardan is a premier investment bank specializing in emerging growth companies — life sciences, biotech, healthcare, technology. Services: equity capital markets, M&A advisory, institutional sales and trading, equity research. Known for backing pre-revenue and early-commercial stage companies that larger banks won\'t touch. This is a DEMO portal — a curated taste of ASG\'s embedded AI capability. Synapse is intentionally unwired. No client data, no pipeline, no internals. This is the experience of what a wired engagement looks like — not the engagement itself. If they want the real thing: jj@axiomstreamgroup.com.',
+    chatPlaceholder: 'Ask anything — deal flow, market intelligence, what this could do for Chardan\'s ops...',
+    chatGreeting: (saved) => saved
+      ? "Welcome back. What would you like to explore?"
+      : "This is a taste of what ASG\'s embedded AI looks like inside an investment bank. Ask me anything — deal flow patterns, sector intelligence, how this works operationally. When you\'re ready to talk about the real thing: jj@axiomstreamgroup.com.",
+    intakeFields: [],
+    poweredBy: 'AxiomStream Group · axiomstreamgroup.com',
+  },
+
   'winthrop-andrew': {
     slug: 'winthrop-andrew',
     pin: '6847',

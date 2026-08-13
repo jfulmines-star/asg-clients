@@ -12,6 +12,8 @@ import AnttipPortal from './pages/AnttipPortal'
 import CampaignPortal from './pages/CampaignPortal'
 import ClientPortalV2 from './pages/ClientPortalV2'
 import RAGDemo from './pages/RAGDemo'
+import KitFullPortal from './pages/KitFullPortal'
+import KitContextPortal from './pages/KitContextPortal'
 import BasePortalDemo from './pages/BasePortalDemo'
 import MROLanding from './pages/MROLanding'
 import MRODemo from './pages/MRODemo'
@@ -44,6 +46,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/jill" element={<Navigate to="/jill/chat" replace />} />
         <Route path="/j" element={<Navigate to="/jill/chat" replace />} />
         <Route path="/jj" element={<JJPortal />} />
+        <Route path="/kit" element={<KitContextPortal />} />
+        <Route path="/kit-chat" element={<KitFullPortal />} />
         <Route path="/lindsay" element={<LindsayPortal />} />
         {/* Generic templates */}
         <Route path="/ria" element={<RIAPortal />} />

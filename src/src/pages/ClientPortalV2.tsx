@@ -190,21 +190,24 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const [freshStart, setFreshStart] = useState(false)
   const [ragDocNames, setRagDocNames] = useState<string[]>([])
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done'>('idle')
+  const [draggingFiles, setDraggingFiles] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dragDepthRef = useRef(0)
+  const documentTenantId = config.documentTenantId || config.slug
 
   // Fetch uploaded RAG docs for this portal so Kit knows about them in the main chat
   // Works for both enableDocuments and enableInlineUpload portals
   useEffect(() => {
     const enableDocs = !!(config as any).enableDocuments || !!(config as any).enableInlineUpload
     if (!enableDocs) return
-    fetch(`/api/rag-documents?tenantId=${encodeURIComponent(config.slug)}`)
+    fetch(`/api/rag-documents?tenantId=${encodeURIComponent(documentTenantId)}`)
       .then(r => r.ok ? r.json() : [])
       .then((data: any) => {
         const raw = Array.isArray(data) ? data : (data.documents || data.docs || [])
         setRagDocNames(raw.map((d: any) => d.name || d.filename).filter(Boolean))
       })
       .catch(() => {})
-  }, [config.slug])
+  }, [config.slug, documentTenantId])
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMsgRef = useRef<HTMLDivElement>(null)
@@ -287,41 +290,78 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
     setInputKey(k => k + 1)
   }
 
-  async function handleInlineUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    // Reset input so the same file can be re-selected if needed
-    e.target.value = ''
+  async function handleInlineFiles(fileList: FileList | null) {
+    const files = fileList ? Array.from(fileList) : []
+    if (files.length === 0 || uploadStatus === 'uploading') return
     setUploadStatus('uploading')
-    // Show user message indicating upload
-    const uploadMsg = { role: 'user', content: `📎 ${file.name}` }
-    setMessages(prev => [...prev, uploadMsg])
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('tenantId', config.slug)
-      const res = await fetch('/api/rag-upload', { method: 'POST', body: formData })
-      const ok = res.ok
-      // Confirmation from Kit in chat
-      const confirmMsg = ok
-        ? { role: 'assistant', content: `Got it — I've processed **${file.name}**. Ask me anything about it.` }
-        : { role: 'assistant', content: `There was a problem uploading **${file.name}**. Please try again.` }
-      setMessages(prev => [...prev, confirmMsg])
-      // Refresh RAG doc list so Kit's context is updated
-      if (ok) {
-        fetch(`/api/rag-documents?tenantId=${encodeURIComponent(config.slug)}`)
-          .then(r => r.ok ? r.json() : [])
-          .then((data: any) => {
-            const raw = Array.isArray(data) ? data : (data.documents || data.docs || [])
-            setRagDocNames(raw.map((d: any) => d.name || d.filename).filter(Boolean))
-          })
-          .catch(() => {})
+    setMessages(prev => [
+      ...prev,
+      ...files.map(file => ({ role: 'user', content: `📎 ${file.name}` })),
+    ])
+
+    const uploaded: string[] = []
+    const failed: string[] = []
+    for (const file of files) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('tenantId', documentTenantId)
+        const res = await fetch('/api/rag-upload', { method: 'POST', body: formData })
+        if (res.ok) uploaded.push(file.name)
+        else failed.push(file.name)
+      } catch {
+        failed.push(file.name)
       }
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: `There was a problem uploading **${file.name}**. Please try again.` }])
     }
+
+    const confirmations = [
+      uploaded.length > 0
+        ? `Got it — I've processed ${uploaded.map(name => `**${name}**`).join(', ')}. Ask me anything about ${uploaded.length === 1 ? 'it' : 'them'}.`
+        : '',
+      failed.length > 0
+        ? `I couldn't upload ${failed.map(name => `**${name}**`).join(', ')}. Please try again.`
+        : '',
+    ].filter(Boolean)
+    setMessages(prev => [...prev, ...confirmations.map(content => ({ role: 'assistant', content }))])
+
+    if (uploaded.length > 0) {
+      fetch(`/api/rag-documents?tenantId=${encodeURIComponent(documentTenantId)}`)
+        .then(r => r.ok ? r.json() : [])
+        .then((data: any) => {
+          const raw = Array.isArray(data) ? data : (data.documents || data.docs || [])
+          setRagDocNames(raw.map((d: any) => d.name || d.filename).filter(Boolean))
+        })
+        .catch(() => {})
+    }
+
     setUploadStatus('done')
     setTimeout(() => setUploadStatus('idle'), 2000)
+  }
+
+  function handleInlineInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    e.target.value = ''
+    void handleInlineFiles(files)
+  }
+
+  function handleDragEnter(e: React.DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer.types.includes('Files')) return
+    e.preventDefault()
+    dragDepthRef.current += 1
+    setDraggingFiles(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+    if (dragDepthRef.current === 0) setDraggingFiles(false)
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    dragDepthRef.current = 0
+    setDraggingFiles(false)
+    void handleInlineFiles(e.dataTransfer.files)
   }
 
   async function send() {
@@ -358,7 +398,22 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   const clientInitial = config.clientName.charAt(0).toUpperCase()
 
   return (
-    <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 120px)', minHeight: '400px' }}>
+    <div
+      onDragEnter={!!config.enableInlineUpload ? handleDragEnter : undefined}
+      onDragOver={!!config.enableInlineUpload ? e => e.preventDefault() : undefined}
+      onDragLeave={!!config.enableInlineUpload ? handleDragLeave : undefined}
+      onDrop={!!config.enableInlineUpload ? handleDrop : undefined}
+      style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 120px)', minHeight: '400px', position: 'relative' }}
+    >
+      {draggingFiles && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 20, border: `2px dashed ${accent}`, borderRadius: '14px', background: themeMode === 'light' ? 'rgba(255,255,255,0.96)' : 'rgba(10,10,10,0.94)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', color: accent, textAlign: 'center', padding: '24px' }}>
+          <div>
+            <div style={{ fontSize: '36px', marginBottom: '10px' }}>📄</div>
+            <div style={{ fontSize: '18px', fontWeight: 800 }}>Drop documents here</div>
+            <div style={{ marginTop: '6px', fontSize: '12px', color: gray }}>Kit will process them and add them to your private knowledge base.</div>
+          </div>
+        </div>
+      )}
       <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div>
           <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>Your Access</div>
@@ -400,20 +455,27 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
         <div ref={bottomRef} />
       </div>
 
+      {!!config.enableInlineUpload && (
+        <div style={{ background: `${accent}0D`, borderLeft: `1px solid ${border}`, borderRight: `1px solid ${border}`, padding: '7px 12px', color: muted, fontSize: '11px', lineHeight: 1.4, textAlign: 'center' }}>
+          <span style={{ color: accent, fontWeight: 700 }}>Add documents:</span> drag files anywhere into this chat or use the paperclip below.
+        </div>
+      )}
+
       <div style={{ background: surface, border: `1px solid ${border}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '12px', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
         {!!(config as any).enableInlineUpload && (
           <>
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.pptx,.ppt"
               style={{ display: 'none' }}
-              onChange={handleInlineUpload}
+              onChange={handleInlineInput}
             />
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadStatus === 'uploading'}
-              title="Attach a file"
+              title="Attach files or drag them anywhere into this chat"
               style={{ height: '44px', background: 'transparent', border: `1px solid ${border}`, borderRadius: '10px', padding: '0 12px', cursor: 'pointer', color: accent, flexShrink: 0, fontSize: '18px', transition: 'opacity 0.15s', opacity: uploadStatus === 'uploading' ? 0.6 : 1 }}
             >
               {uploadStatus === 'idle' ? '📎' : uploadStatus === 'uploading' ? '⏳' : '✓'}

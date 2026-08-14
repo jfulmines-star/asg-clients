@@ -1,15 +1,18 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import type { PortalConfig } from '../config/portal-configs'
+
+// ─── Brand tokens (2026 refresh) ─────────────────────────────────────────────
+// Primary bg: #0A0B0D  Accent: #4A7FA5  Light: #EFEFEF
 
 // ─── Theme helpers ──────────────────────────────────────────────────────────
 function getTheme(mode: string) {
   return mode === 'light'
-    ? { bg: '#F8F9FA', surface: '#FFFFFF', border: '#E5E7EB', gray: '#6B7280', lightGray: '#4B5563', text: '#111827', subtext: '#6B7280' }
-    : { bg: '#0A0A0A', surface: '#111111', border: '#1F1F1F', gray: '#6B7280', lightGray: '#9CA3AF', text: '#FAFAFA', subtext: '#9CA3AF' }
+    ? { bg: '#EFEFEF', surface: '#FFFFFF', border: '#D4D8DC', gray: '#5A6272', lightGray: '#374151', text: '#0A0B0D', subtext: '#5A6272' }
+    : { bg: '#0A0B0D', surface: '#12151A', border: '#1E2530', gray: '#5A6272', lightGray: '#8B95A8', text: '#EFEFEF', subtext: '#8B95A8' }
 }
 
 const FONT_SIZE: Record<string, number> = { sm: 13, md: 15, lg: 18 }
-const DEFAULT_TV = { BG: '#0A0A0A', SURFACE: '#111111', BORDER: '#1F1F1F', GRAY: '#6B7280', LIGHT_GRAY: '#9CA3AF' }
+const DEFAULT_TV = { BG: '#0A0B0D', SURFACE: '#12151A', BORDER: '#1E2530', GRAY: '#5A6272', LIGHT_GRAY: '#8B95A8' }
 
 function storageKey(slug: string) { return `asg-portal-v2-${slug}` }
 function loadContext(slug: string) {
@@ -174,11 +177,12 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
   fontSize?: number; themeMode?: string; tv?: typeof DEFAULT_TV; preloadedHistory?: { role: string; content: string }[] | null
 }) {
   const th = tv || DEFAULT_TV
-  const bg = themeMode === 'light' ? '#F8F9FA' : th.BG
+  const bg = themeMode === 'light' ? '#EFEFEF' : th.BG
   const surface = themeMode === 'light' ? '#FFFFFF' : th.SURFACE
-  const border = themeMode === 'light' ? '#E5E7EB' : th.BORDER
+  const border = themeMode === 'light' ? '#D4D8DC' : th.BORDER
   const gray = th.GRAY
-  const lightGray = themeMode === 'light' ? '#4B5563' : th.LIGHT_GRAY
+  const lightGray = themeMode === 'light' ? '#374151' : th.LIGHT_GRAY
+  const muted = themeMode === 'light' ? '#5A6272' : th.LIGHT_GRAY
 
   const memberName = (config as any).memberName || config.clientName
 
@@ -434,10 +438,10 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', background: surface, border: `1px solid ${border}`, borderRadius: '12px 12px 0 0', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.map((msg, i) => (
           <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? '#1e3a5f' : `${accent}20`, border: `1px solid ${msg.role === 'user' ? '#2563eb40' : accent + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: msg.role === 'user' ? '#60a5fa' : accent }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? `${accent}25` : `${accent}20`, border: `1px solid ${msg.role === 'user' ? accent + '50' : accent + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent }}>
               {msg.role === 'user' ? clientInitial : agentInitial}
             </div>
-            <div style={{ maxWidth: '80%', minWidth: 0, background: msg.role === 'user' ? '#1e3a5f' : themeMode === 'light' ? '#F3F4F6' : '#161616', border: `1px solid ${msg.role === 'user' ? '#2563eb30' : border}`, borderRadius: '10px', padding: '12px 16px', fontSize: `${fontSize}px`, color: themeMode === 'light' ? (msg.role === 'user' ? '#FAFAFA' : '#111827') : '#FAFAFA', lineHeight: '1.7' }}>
+            <div style={{ maxWidth: '80%', minWidth: 0, background: msg.role === 'user' ? `${accent}18` : themeMode === 'light' ? '#F3F4F6' : '#161B24', border: `1px solid ${msg.role === 'user' ? accent + '30' : border}`, borderRadius: '12px', padding: '12px 16px', fontSize: `${fontSize}px`, color: themeMode === 'light' ? '#0A0B0D' : '#EFEFEF', lineHeight: '1.7' }}>
               <MessageContent content={msg.content} />
             </div>
           </div>
@@ -445,7 +449,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
         {loading && (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: `${accent}20`, border: `1px solid ${accent}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent }}>{agentInitial}</div>
-            <div style={{ background: '#161616', border: `1px solid ${border}`, borderRadius: '10px', padding: '12px 16px' }}>
+            <div style={{ background: themeMode === 'light' ? '#F3F4F6' : '#161B24', border: `1px solid ${border}`, borderRadius: '10px', padding: '12px 16px' }}>
               <span style={{ display: 'inline-flex', gap: '4px' }}>
                 {[0, 1, 2].map(i => <span key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: accent, opacity: 0.5, animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
               </span>
@@ -748,6 +752,370 @@ function DocumentsSection({ config, accent, themeMode, fontSize, tv }: {
   )
 }
 
+// ─── Upload Zone section ─────────────────────────────────────────────────────
+interface UploadedFile {
+  id: string
+  name: string
+  size: number
+  type: string
+  previewUrl: string | null   // object URL for images/PDFs
+  dataUrl: string | null       // base64 for API use
+  uploadedAt: Date
+  status: 'ready' | 'uploading' | 'done' | 'error'
+  progress: number             // 0–100
+  error?: string
+}
+
+function fileIcon(name: string, mime: string): string {
+  if (mime.startsWith('image/')) return '🖼️'
+  if (mime === 'application/pdf' || name.endsWith('.pdf')) return '📝'
+  if (name.match(/\.(doc|docx)$/i)) return '📄'
+  if (name.match(/\.(xls|xlsx|csv)$/i)) return '📊'
+  if (name.match(/\.(ppt|pptx)$/i)) return '📹'
+  if (name.match(/\.(txt|md)$/i)) return '🗒️'
+  return '📁'
+}
+
+function UploadZoneSection({ config, accent, themeMode, tv }: {
+  config: PortalConfig; accent: string; themeMode: string; tv: typeof DEFAULT_TV
+}) {
+  const surface = themeMode === 'light' ? '#FFFFFF' : tv.SURFACE
+  const border  = themeMode === 'light' ? '#D4D8DC' : tv.BORDER
+  const text    = themeMode === 'light' ? '#0A0B0D' : '#EFEFEF'
+  const muted   = themeMode === 'light' ? '#5A6272' : tv.LIGHT_GRAY
+
+  const [files, setFiles]     = useState<UploadedFile[]>([])
+  const [dragging, setDragging] = useState(false)
+  const [preview, setPreview] = useState<UploadedFile | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const dragDepth    = useRef(0)
+  const documentTenantId = (config as any).documentTenantId || config.slug
+
+  useEffect(() => {
+    return () => {
+      files.forEach(f => { if (f.previewUrl) URL.revokeObjectURL(f.previewUrl) })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const processFiles = useCallback(async (fileList: FileList | File[]) => {
+    const incoming = Array.from(fileList)
+    if (incoming.length === 0) return
+
+    const newFiles: UploadedFile[] = incoming.map(f => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      name: f.name,
+      size: f.size,
+      type: f.type || 'application/octet-stream',
+      previewUrl: (f.type.startsWith('image/') || f.type === 'application/pdf')
+        ? URL.createObjectURL(f)
+        : null,
+      dataUrl: null,
+      uploadedAt: new Date(),
+      status: 'uploading' as const,
+      progress: 0,
+    }))
+
+    setFiles(prev => {
+      const existingNames = new Set(prev.map(p => p.name))
+      return [...prev, ...newFiles.filter(nf => !existingNames.has(nf.name))]
+    })
+
+    for (let i = 0; i < incoming.length; i++) {
+      const f  = incoming[i]
+      const nf = newFiles[i]
+
+      // Animate progress ticks
+      for (let p = 10; p <= 70; p += 20) {
+        await new Promise(r => setTimeout(r, 90))
+        setFiles(prev => prev.map(x => x.id === nf.id ? { ...x, progress: p } : x))
+      }
+
+      try {
+        const formData = new FormData()
+        formData.append('file', f)
+        formData.append('tenantId', documentTenantId)
+        const res = await fetch('/api/rag-upload', { method: 'POST', body: formData })
+
+        // Read dataUrl for downloads
+        let dataUrl: string | null = null
+        if (f.type.startsWith('image/') || f.type === 'application/pdf') {
+          dataUrl = await new Promise<string>(resolve => {
+            const reader = new FileReader()
+            reader.onload  = () => resolve(reader.result as string)
+            reader.onerror = () => resolve('')
+            reader.readAsDataURL(f)
+          })
+        }
+
+        if (res.ok) {
+          setFiles(prev => prev.map(x => x.id === nf.id ? { ...x, status: 'done', progress: 100, dataUrl } : x))
+        } else {
+          const errText = await res.text().catch(() => 'Upload failed')
+          setFiles(prev => prev.map(x => x.id === nf.id ? { ...x, status: 'error', progress: 0, error: errText.slice(0, 80) } : x))
+        }
+      } catch (err: any) {
+        setFiles(prev => prev.map(x => x.id === nf.id ? { ...x, status: 'error', progress: 0, error: String(err?.message || 'Network error') } : x))
+      }
+    }
+  }, [documentTenantId])
+
+  function handleDragEnter(e: React.DragEvent) {
+    if (!e.dataTransfer.types.includes('Files')) return
+    e.preventDefault(); dragDepth.current += 1; setDragging(true)
+  }
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    dragDepth.current = Math.max(0, dragDepth.current - 1)
+    if (dragDepth.current === 0) setDragging(false)
+  }
+  function handleDragOver(e: React.DragEvent) { e.preventDefault() }
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault(); dragDepth.current = 0; setDragging(false)
+    void processFiles(e.dataTransfer.files)
+  }
+
+  function removeFile(id: string) {
+    setFiles(prev => {
+      const f = prev.find(x => x.id === id)
+      if (f?.previewUrl) URL.revokeObjectURL(f.previewUrl)
+      return prev.filter(x => x.id !== id)
+    })
+    if (preview?.id === id) setPreview(null)
+  }
+
+  function downloadFile(f: UploadedFile) {
+    const href = f.dataUrl || f.previewUrl
+    if (!href) return
+    const a = document.createElement('a'); a.href = href; a.download = f.name; a.click()
+  }
+
+  const doneCount      = files.filter(f => f.status === 'done').length
+  const uploadingCount = files.filter(f => f.status === 'uploading').length
+  const errorCount     = files.filter(f => f.status === 'error').length
+
+  return (
+    <div style={{ maxWidth: '860px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '28px' }}>
+        <div style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '8px' }}>Knowledge Base</div>
+        <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '8px', lineHeight: '1.1', color: text }}>Upload Documents</h2>
+        <p style={{ fontSize: '14px', color: muted, lineHeight: '1.7', margin: 0 }}>
+          Drag and drop files — PDFs, Word docs, spreadsheets, images, and more. Uploaded documents are added to your private knowledge base and immediately available to {config.agentLabel}.
+        </p>
+      </div>
+
+      {/* Drop zone */}
+      <div
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        style={{
+          border: `2px dashed ${dragging ? accent : border}`,
+          borderRadius: '16px',
+          padding: '52px 32px',
+          textAlign: 'center',
+          cursor: 'pointer',
+          background: dragging ? `${accent}08` : surface,
+          transition: 'all 0.2s ease',
+          marginBottom: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '14px',
+          boxShadow: dragging ? `0 0 0 4px ${accent}20` : 'none',
+        }}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.pptx,.ppt"
+          style={{ display: 'none' }}
+          onChange={e => { void processFiles(e.target.files || []); e.target.value = '' }}
+        />
+        <div style={{ fontSize: '52px', lineHeight: 1, transition: 'transform 0.2s', transform: dragging ? 'scale(1.15)' : 'scale(1)' }}>
+          {dragging ? '📥' : '📂'}
+        </div>
+        <div>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: dragging ? accent : text, marginBottom: '6px' }}>
+            {dragging ? 'Release to upload' : 'Drop files here'}
+          </div>
+          <div style={{ fontSize: '13px', color: muted }}>
+            or <span style={{ color: accent, fontWeight: 600 }}>click to browse</span>
+            {' · PDF · DOCX · XLSX · CSV · TXT · PNG · JPG'}
+          </div>
+        </div>
+        {uploadingCount > 0 && (
+          <div style={{ fontSize: '12px', color: accent, fontWeight: 600, background: `${accent}12`, padding: '5px 16px', borderRadius: '20px', border: `1px solid ${accent}30` }}>
+            ⏳ Uploading {uploadingCount} file{uploadingCount > 1 ? 's' : ''}…
+          </div>
+        )}
+      </div>
+
+      {/* Stats */}
+      {files.length > 0 && (
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          {doneCount > 0 && (
+            <span style={{ fontSize: '12px', color: '#22c55e', background: '#22c55e12', border: '1px solid #22c55e30', borderRadius: '20px', padding: '4px 12px', fontWeight: 700 }}>
+              ✓ {doneCount} uploaded
+            </span>
+          )}
+          {uploadingCount > 0 && (
+            <span style={{ fontSize: '12px', color: accent, background: `${accent}12`, border: `1px solid ${accent}30`, borderRadius: '20px', padding: '4px 12px', fontWeight: 700 }}>
+              ⏳ {uploadingCount} uploading
+            </span>
+          )}
+          {errorCount > 0 && (
+            <span style={{ fontSize: '12px', color: '#ef4444', background: '#ef444412', border: '1px solid #ef444430', borderRadius: '20px', padding: '4px 12px', fontWeight: 700 }}>
+              ⚠️ {errorCount} failed
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* File list */}
+      {files.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+          {files.map(f => (
+            <div key={f.id} style={{
+              background: surface,
+              border: `1px solid ${
+                f.status === 'error' ? '#ef444440'
+                : f.status === 'done' ? '#22c55e20'
+                : border
+              }`,
+              borderRadius: '12px',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              transition: 'border-color 0.2s',
+            }}>
+              {/* Thumbnail / icon */}
+              <div
+                onClick={() => f.previewUrl && setPreview(f)}
+                style={{
+                  width: '48px', height: '48px',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  background: `${accent}12`,
+                  border: `1px solid ${accent}25`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: f.previewUrl ? 'pointer' : 'default',
+                  fontSize: '24px',
+                }}
+              >
+                {f.type.startsWith('image/') && f.previewUrl
+                  ? <img src={f.previewUrl} alt={f.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span>{fileIcon(f.name, f.type)}</span>
+                }
+              </div>
+
+              {/* Info + progress */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '3px' }}>
+                  {f.name}
+                </div>
+                <div style={{ fontSize: '11px', color: muted, display: 'flex', gap: '10px', alignItems: 'center', marginBottom: f.status === 'uploading' ? '8px' : 0 }}>
+                  <span>{formatBytes(f.size)}</span>
+                  {f.status === 'done'      && <span style={{ color: '#22c55e', fontWeight: 700 }}>✓ Ready</span>}
+                  {f.status === 'error'     && <span style={{ color: '#ef4444', fontWeight: 700 }}>⚠️ {f.error || 'Upload failed'}</span>}
+                  {f.status === 'uploading' && <span style={{ color: accent,    fontWeight: 700 }}>Uploading…</span>}
+                </div>
+                {f.status === 'uploading' && (
+                  <div style={{ height: '4px', borderRadius: '2px', background: border, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${f.progress}%`,
+                      background: `linear-gradient(90deg, ${accent}, ${accent}BB)`,
+                      borderRadius: '2px',
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons — 36px tap targets */}
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                {f.status === 'done' && f.previewUrl && (
+                  <button
+                    onClick={() => setPreview(f)}
+                    title="Preview"
+                    style={{ width: '36px', height: '36px', minWidth: '36px', borderRadius: '8px', border: `1px solid ${border}`, background: 'transparent', cursor: 'pointer', color: accent, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >👁️</button>
+                )}
+                {(f.status === 'done' || f.status === 'uploading') && (
+                  <button
+                    onClick={() => downloadFile(f)}
+                    title="Download"
+                    style={{ width: '36px', height: '36px', minWidth: '36px', borderRadius: '8px', border: `1px solid ${border}`, background: 'transparent', cursor: 'pointer', color: accent, fontSize: '16px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >⇩</button>
+                )}
+                <button
+                  onClick={() => removeFile(f.id)}
+                  title="Remove"
+                  style={{ width: '36px', height: '36px', minWidth: '36px', borderRadius: '8px', border: '1px solid #ef444430', background: 'transparent', cursor: 'pointer', color: '#ef4444', fontSize: '20px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >×</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {files.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '24px 0', color: muted, fontSize: '13px', lineHeight: '1.8' }}>
+          No documents uploaded yet. Drop files in the zone above.
+        </div>
+      )}
+
+      {/* Preview modal */}
+      {preview && (
+        <div
+          onClick={() => setPreview(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: surface, border: `1px solid ${border}`, borderRadius: '16px', overflow: 'hidden', maxWidth: '900px', maxHeight: '90vh', width: '100%', display: 'flex', flexDirection: 'column' }}
+          >
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: `${accent}08` }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: accent }}>{preview.name}</div>
+                <div style={{ fontSize: '11px', color: muted }}>{formatBytes(preview.size)} · {preview.uploadedAt.toLocaleTimeString()}</div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => downloadFile(preview)} style={{ padding: '8px 16px', borderRadius: '8px', border: `1px solid ${border}`, background: 'transparent', color: accent, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}>⇩ Download</button>
+                <button onClick={() => setPreview(null)} style={{ width: '36px', height: '36px', borderRadius: '8px', border: `1px solid ${border}`, background: 'transparent', color: text, fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>×</button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+              {preview.type.startsWith('image/') && preview.previewUrl
+                ? <img src={preview.previewUrl} alt={preview.name} style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: '8px', display: 'block' }} />
+                : (preview.type === 'application/pdf' || preview.name.toLowerCase().endsWith('.pdf')) && preview.previewUrl
+                ? <iframe src={preview.previewUrl} style={{ width: '100%', height: '70vh', border: 'none', borderRadius: '8px' }} title={preview.name} />
+                : (
+                  <div style={{ textAlign: 'center', padding: '40px', color: muted }}>
+                    <div style={{ fontSize: '52px', marginBottom: '14px' }}>{fileIcon(preview.name, preview.type)}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: text, marginBottom: '6px' }}>{preview.name}</div>
+                    <div style={{ fontSize: '13px', marginBottom: '20px' }}>Preview not available for this file type.</div>
+                    <button onClick={() => downloadFile(preview)} style={{ padding: '12px 24px', borderRadius: '10px', background: accent, color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: '14px' }}>⇩ Download</button>
+                  </div>
+                )
+              }
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   const accent = config.accentColor
@@ -832,7 +1200,8 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
     setSavedContext(ctx); setIntakeSaved(true); setSection('chat')
   }
 
-  const enableDocuments = !!(config as any).enableDocuments
+  const enableDocuments  = !!(config as any).enableDocuments
+  const enableUploadZone = !!(config as any).enableInlineUpload || !!(config as any).enableDocuments
 
   const navItems = config.intakeFields.length > 0
     ? [
@@ -841,10 +1210,12 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
         ...(!intakeSaved ? [{ id: 'intake', label: 'Your Practice', icon: '🏢' }] : []),
         { id: 'chat', label: `Chat with ${config.agentLabel}`, icon: '💬', tag: 'Live' },
         ...(enableDocuments ? [{ id: 'documents', label: 'Documents', icon: '📁' }] : []),
+        ...(enableUploadZone ? [{ id: 'upload', label: 'Upload Files', icon: '📤' }] : []),
       ]
     : [
         { id: 'chat', label: `Chat with ${config.agentLabel}`, icon: '💬', tag: 'Live' },
         ...(enableDocuments ? [{ id: 'documents', label: 'Documents', icon: '📁' }] : []),
+        ...(enableUploadZone ? [{ id: 'upload', label: 'Upload Files', icon: '📤' }] : []),
       ]
 
   if (!unlocked) {
@@ -888,15 +1259,33 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
       </div>
 
       <style>{`
+        * { box-sizing: border-box; }
         @media (max-width: 600px) {
           .portal-layout { flex-direction: column !important; }
-          .portal-sidebar { width: 100% !important; position: static !important; height: auto !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; padding: 12px 16px !important; }
-          .portal-sidebar-nav { display: flex !important; flex-direction: row !important; gap: 8px !important; flex-wrap: wrap !important; }
+          .portal-sidebar {
+            width: 100% !important; position: static !important; height: auto !important;
+            border-right: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+            padding: 10px 12px !important;
+          }
+          .portal-sidebar-nav {
+            display: flex !important; flex-direction: row !important;
+            gap: 6px !important; flex-wrap: wrap !important;
+          }
+          .portal-sidebar-nav button {
+            min-height: 40px !important; padding: 8px 10px !important;
+            font-size: 13px !important;
+          }
           .portal-sidebar-meta { display: none !important; }
           .portal-mobile-controls { display: flex !important; }
-          .portal-main { min-height: calc(100dvh - 120px) !important; padding: 12px 8px !important; }
+          .portal-main { min-height: calc(100dvh - 110px) !important; padding: 16px 14px !important; }
         }
         @media (min-width: 601px) { .portal-mobile-controls { display: none !important; } }
+        /* Minimum 48px tap targets on touch devices */
+        @media (pointer: coarse) {
+          button { min-height: 48px !important; }
+          input[type="tel"] { min-height: 56px !important; }
+        }
       `}</style>
 
       <div className="portal-layout" style={{ display: 'flex', minHeight: 'calc(100vh - 60px)' }}>
@@ -959,6 +1348,9 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
           </div>
           {enableDocuments && section === 'documents' && (
             <DocumentsSection config={config} accent={accent} themeMode={themeMode} fontSize={FONT_SIZE[textSize]} tv={tv} />
+          )}
+          {enableUploadZone && section === 'upload' && (
+            <UploadZoneSection config={config} accent={accent} themeMode={themeMode} tv={tv} />
           )}
         </div>
       </div>

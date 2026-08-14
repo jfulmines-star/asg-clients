@@ -18,6 +18,7 @@ import BasePortalDemo from './pages/BasePortalDemo'
 import MROLanding from './pages/MROLanding'
 import MRODemo from './pages/MRODemo'
 import ShieldAppShell from './pages/ShieldAppShell'
+import StatusPage from './components/StatusPage'
 import { PORTAL_CONFIGS } from './config/portal-configs'
 import NotFound from './pages/NotFound'
 import { ASGPortalBase } from './portal/ASGPortalBase'
@@ -58,6 +59,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/shield-caleb" element={<ASGPortalBase config={CALEB_CONFIG} />} />
         <Route path="/gnoles" element={<ASGPortalBase config={GNOLES_CONFIG} />} />
         {/* /terry shortcut removed — all portals use /client-person format only */}
+        {/* Status page */}
+        <Route path="/status" element={<StatusPage />} />
         {/* V2 data-driven portals */}
         {Object.values(PORTAL_CONFIGS).map(cfg => (
           <Route key={cfg.slug} path={`/${cfg.slug}`} element={<ClientPortalV2 config={cfg} />} />

@@ -59,8 +59,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/shield-caleb" element={<ASGPortalBase config={CALEB_CONFIG} />} />
         <Route path="/gnoles" element={<ASGPortalBase config={GNOLES_CONFIG} />} />
         {/* /terry shortcut removed — all portals use /client-person format only */}
-        {/* Status page */}
+        {/* Status pages */}
         <Route path="/status" element={<StatusPage />} />
+        {/* HTML version (Hendrix) at /status-html or linked from React version */}
+        <Route path="/status-react" element={<StatusPage />} />
         {/* V2 data-driven portals */}
         {Object.values(PORTAL_CONFIGS).map(cfg => (
           <Route key={cfg.slug} path={`/${cfg.slug}`} element={<ClientPortalV2 config={cfg} />} />

@@ -50,7 +50,7 @@ function WelcomeSection({ config, accent, intakeSaved, onNavigate, tv = DEFAULT_
 }) {
   const { SURFACE, BORDER, GRAY, LIGHT_GRAY } = tv
   return (
-    <div style={{ maxWidth: '680px' }}>
+    <div className="portal-section portal-welcome" style={{ maxWidth: '680px' }}>
       <div style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '16px' }}>
         Private Access · {config.company}
       </div>
@@ -102,7 +102,7 @@ function AboutSection({ config, accent, tv = DEFAULT_TV }: { config: PortalConfi
     { icon: '🏗️', title: 'The ASG Model', body: 'AxiomStream Group builds purpose-specific AI for professionals. A tool built for one practice, configured for one team, that gets more useful the longer you use it.' },
   ]
   return (
-    <div style={{ maxWidth: '680px' }}>
+    <div className="portal-section portal-about" style={{ maxWidth: '680px' }}>
       <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '16px' }}>The Technology</div>
       <h2 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '28px', lineHeight: '1.1' }}>
         {config.agentLabel} — How It Works
@@ -133,7 +133,7 @@ function IntakeSection({ config, accent, fields, setFields, onSave, tv = DEFAULT
   const labelStyle = { fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const, color: GRAY, display: 'block', marginBottom: '10px' }
   const inputStyle = { width: '100%', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '12px 16px', fontSize: '14px', color: LIGHT_GRAY, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }
   return (
-    <div style={{ maxWidth: '600px' }}>
+    <div className="portal-section portal-intake" style={{ maxWidth: '600px' }}>
       <div style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: '#A78BFA', fontWeight: 700, marginBottom: '16px' }}>Quick Context — 2 Minutes</div>
       <h2 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '12px', lineHeight: '1.1' }}>Tell Us About<br />Your Practice</h2>
       <p style={{ fontSize: '15px', color: LIGHT_GRAY, lineHeight: '1.7', marginBottom: '28px' }}>
@@ -403,6 +403,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
 
   return (
     <div
+      className="portal-section portal-chat"
       onDragEnter={!!config.enableInlineUpload ? handleDragEnter : undefined}
       onDragOver={!!config.enableInlineUpload ? e => e.preventDefault() : undefined}
       onDragLeave={!!config.enableInlineUpload ? handleDragLeave : undefined}
@@ -435,13 +436,19 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
         </button>
       </div>
 
+      {config.slug === 'chardan' && (
+        <div className="chardan-memory-note" style={{ display: 'none', marginBottom: '14px', padding: '12px 14px', borderRadius: '10px', background: `${accent}10`, border: `1px solid ${accent}30`, color: lightGray, fontSize: '14px', lineHeight: 1.55 }}>
+          <strong style={{ color: accent }}>Persistent memory.</strong> Kit carries your conversations and documents forward, so you do not have to repeat the context—and it becomes more useful the more you work together.
+        </div>
+      )}
+
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', background: surface, border: `1px solid ${border}`, borderRadius: '12px 12px 0 0', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.map((msg, i) => (
           <div key={i} ref={i === messages.length - 1 ? lastMsgRef : undefined} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, background: msg.role === 'user' ? `${accent}25` : `${accent}20`, border: `1px solid ${msg.role === 'user' ? accent + '50' : accent + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: accent }}>
               {msg.role === 'user' ? clientInitial : agentInitial}
             </div>
-            <div style={{ maxWidth: '80%', minWidth: 0, background: msg.role === 'user' ? `${accent}18` : themeMode === 'light' ? '#F3F4F6' : '#161B24', border: `1px solid ${msg.role === 'user' ? accent + '30' : border}`, borderRadius: '12px', padding: '12px 16px', fontSize: `${fontSize}px`, color: themeMode === 'light' ? '#0A0B0D' : '#EFEFEF', lineHeight: '1.7' }}>
+            <div className="portal-chat-bubble" style={{ maxWidth: '80%', minWidth: 0, background: msg.role === 'user' ? `${accent}18` : themeMode === 'light' ? '#F3F4F6' : '#161B24', border: `1px solid ${msg.role === 'user' ? accent + '30' : border}`, borderRadius: '12px', padding: '12px 16px', fontSize: `${fontSize}px`, color: themeMode === 'light' ? '#0A0B0D' : '#EFEFEF', lineHeight: '1.7' }}>
               <MessageContent content={msg.content} />
             </div>
           </div>
@@ -639,9 +646,9 @@ function DocumentsSection({ config, accent, themeMode, fontSize, tv }: {
   }
 
   return (
-    <div style={{ display: 'flex', gap: '20px', height: 'calc(100vh - 140px)', minHeight: '500px' }}>
+    <div className="portal-section portal-documents" style={{ display: 'flex', gap: '20px', height: 'calc(100vh - 140px)', minHeight: '500px' }}>
       {/* Left: file list + upload */}
-      <div style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="portal-documents-list" style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* Drop zone */}
         <div
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
@@ -687,7 +694,7 @@ function DocumentsSection({ config, accent, themeMode, fontSize, tv }: {
       </div>
 
       {/* Right: document chat */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: surface, border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden' }}>
+      <div className="portal-documents-chat" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: surface, border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden' }}>
         {/* Header */}
         <div style={{ padding: '14px 18px', borderBottom: `1px solid ${border}`, background: `${accent}08` }}>
           {selected
@@ -895,7 +902,7 @@ function UploadZoneSection({ config, accent, themeMode, tv }: {
   const errorCount     = files.filter(f => f.status === 'error').length
 
   return (
-    <div style={{ maxWidth: '860px' }}>
+    <div className="portal-section portal-upload-zone" style={{ maxWidth: '860px' }}>
       {/* Header */}
       <div style={{ marginBottom: '28px' }}>
         <div style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '8px' }}>Knowledge Base</div>
@@ -907,6 +914,7 @@ function UploadZoneSection({ config, accent, themeMode, tv }: {
 
       {/* Drop zone */}
       <div
+        className="portal-upload-drop"
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -981,7 +989,7 @@ function UploadZoneSection({ config, accent, themeMode, tv }: {
       {files.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
           {files.map(f => (
-            <div key={f.id} style={{
+            <div key={f.id} className="portal-upload-file" style={{
               background: surface,
               border: `1px solid ${
                 f.status === 'error' ? '#ef444440'
@@ -1041,7 +1049,7 @@ function UploadZoneSection({ config, accent, themeMode, tv }: {
               </div>
 
               {/* Action buttons — 36px tap targets */}
-              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+              <div className="portal-upload-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                 {f.status === 'done' && f.previewUrl && (
                   <button
                     onClick={() => setPreview(f)}
@@ -1119,6 +1127,7 @@ function UploadZoneSection({ config, accent, themeMode, tv }: {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   const accent = config.accentColor
+  const isChardan = config.slug === 'chardan'
   const [themeMode, setThemeMode] = useState('dark')
   const [textSize, setTextSize] = useState('md')
   const theme = getTheme(themeMode)
@@ -1220,9 +1229,9 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
 
   if (!unlocked) {
     return (
-      <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif" }}>
+      <div className={isChardan ? 'portal-root portal-root-chardan' : 'portal-root'} style={{ minHeight: '100vh', background: theme.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif" }}>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-        <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; }`}</style>
+        <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; ${isChardan ? 'max-width: 100%; overflow-x: hidden;' : ''} }`}</style>
         <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
           <div style={{ fontSize: '13px', letterSpacing: '4px', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '12px' }}>AxiomStream Group</div>
           <div style={{ fontSize: '32px', fontWeight: 900, marginBottom: '6px', letterSpacing: '-0.5px', color: theme.text }}>{config.clientName}</div>
@@ -1246,11 +1255,11 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: theme.bg, color: theme.text, fontFamily: "'Inter', sans-serif" }}>
+    <div className={isChardan ? 'portal-root portal-root-chardan' : 'portal-root'} style={{ minHeight: '100vh', background: theme.bg, color: theme.text, fontFamily: "'Inter', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-      <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; }`}</style>
+      <style>{`html, body, #root { background: ${theme.bg}; margin: 0; padding: 0; ${isChardan ? 'max-width: 100%; overflow-x: hidden;' : ''} }`}</style>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, background: theme.bg, zIndex: 100 }}>
+      <div className="portal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, background: theme.bg, zIndex: 100 }}>
         <div>
           <div style={{ fontSize: '11px', letterSpacing: '3px', color: accent, textTransform: 'uppercase', fontWeight: 700 }}>AxiomStream Group</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: theme.text }}>{config.clientName} · {config.agentLabel}</div>
@@ -1285,6 +1294,87 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
         @media (pointer: coarse) {
           button { min-height: 48px !important; }
           input[type="tel"] { min-height: 56px !important; }
+        }
+        @media (max-width: 767px) {
+          .portal-root-chardan {
+            width: 100%; max-width: 100vw; overflow-x: hidden;
+            overscroll-behavior-x: none; touch-action: pan-y;
+          }
+          .portal-root-chardan .portal-header { min-height: 60px; padding: 13px 16px !important; }
+          .portal-root-chardan .portal-header > div:first-child > div:first-child {
+            font-size: 10px !important; letter-spacing: 2px !important;
+          }
+          .portal-root-chardan .portal-header > div:first-child > div:last-child { font-size: 16px !important; }
+          .portal-root-chardan .portal-header > div:last-child:not(:first-child) { display: none !important; }
+          .portal-root-chardan .portal-layout {
+            width: 100%; min-width: 0; flex-direction: column !important;
+          }
+          .portal-root-chardan .portal-sidebar {
+            width: 100% !important; height: auto !important;
+            position: sticky !important; top: 60px !important; z-index: 90;
+            padding: 8px 12px !important; background: ${theme.bg};
+            border-right: none !important; border-bottom: 1px solid ${theme.border} !important;
+            overflow: hidden !important;
+          }
+          .portal-root-chardan .portal-sidebar > div:first-child,
+          .portal-root-chardan .portal-mobile-controls { display: none !important; }
+          .portal-root-chardan .portal-sidebar-nav {
+            display: flex !important; flex-flow: row nowrap !important;
+            gap: 6px !important; width: 100%; overflow-x: auto;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-x;
+          }
+          .portal-root-chardan .portal-sidebar-nav::-webkit-scrollbar { display: none; }
+          .portal-root-chardan .portal-sidebar-nav button {
+            width: auto !important; min-width: max-content; min-height: 44px !important;
+            flex: 0 0 auto; margin: 0 !important; padding: 10px 13px !important;
+            font-size: 15px !important;
+          }
+          .portal-root-chardan .portal-main {
+            width: 100%; min-width: 0;
+            padding: 20px 16px calc(24px + env(safe-area-inset-bottom)) !important;
+            overflow: hidden !important;
+          }
+          .portal-root-chardan .portal-section {
+            width: 100% !important; max-width: 100% !important; min-width: 0 !important;
+          }
+          .portal-root-chardan .portal-section h1 {
+            font-size: 38px !important; line-height: 1.05 !important; letter-spacing: -1px !important;
+          }
+          .portal-root-chardan .portal-section h2 { font-size: 28px !important; line-height: 1.15 !important; }
+          .portal-root-chardan .portal-section p,
+          .portal-root-chardan .portal-about > div > div:last-child {
+            font-size: 16px !important; line-height: 1.65 !important;
+          }
+          .portal-root-chardan .portal-welcome > div:nth-of-type(2),
+          .portal-root-chardan .portal-welcome > div:nth-of-type(2) div {
+            font-size: 15px !important; line-height: 1.6 !important;
+          }
+          .portal-root-chardan .portal-section button,
+          .portal-root-chardan .portal-section input,
+          .portal-root-chardan .portal-section textarea {
+            font-size: 16px !important; min-height: 44px;
+          }
+          .portal-root-chardan .portal-welcome > div:last-child { flex-direction: column; }
+          .portal-root-chardan .portal-welcome > div:last-child button { width: 100%; }
+          .portal-root-chardan .portal-chat {
+            height: calc(100dvh - 170px) !important; min-height: 540px !important;
+          }
+          .portal-root-chardan .chardan-memory-note { display: block !important; font-size: 15px !important; }
+          .portal-root-chardan .portal-chat-bubble {
+            max-width: 88% !important; font-size: 16px !important; padding: 12px 14px !important;
+          }
+          .portal-root-chardan .portal-documents {
+            height: auto !important; min-height: 0 !important;
+            flex-direction: column !important; gap: 14px !important;
+          }
+          .portal-root-chardan .portal-documents-list { width: 100% !important; max-height: 260px; }
+          .portal-root-chardan .portal-documents-chat { width: 100%; min-height: 520px; }
+          .portal-root-chardan .portal-upload-drop { padding: 32px 18px !important; }
+          .portal-root-chardan .portal-upload-file { padding: 12px !important; gap: 10px !important; }
+          .portal-root-chardan .portal-upload-actions { gap: 4px !important; }
+          .portal-root-chardan .portal-upload-actions button {
+            width: 40px !important; min-width: 40px !important; height: 44px !important;
+          }
         }
       `}</style>
 

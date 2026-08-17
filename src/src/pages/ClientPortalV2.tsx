@@ -1211,6 +1211,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
 
   const enableDocuments  = !!(config as any).enableDocuments
   const enableUploadZone = !!(config as any).enableInlineUpload || !!(config as any).enableDocuments
+  const supportedUserName = config.portalUserName || config.clientName
 
   const navItems = config.intakeFields.length > 0
     ? [
@@ -1264,7 +1265,14 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
           <div style={{ fontSize: '11px', letterSpacing: '3px', color: accent, textTransform: 'uppercase', fontWeight: 700 }}>AxiomStream Group</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: theme.text }}>{config.clientName} · {config.agentLabel}</div>
         </div>
-        {intakeSaved && <div style={{ fontSize: '11px', color: accent, background: `${accent}15`, border: `1px solid ${accent}30`, borderRadius: '20px', padding: '4px 12px' }}>Context saved ✓</div>}
+        {isChardan ? (
+          <div className="portal-user-pill" style={{ display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: theme.text, background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: '999px', padding: '7px 12px' }}>
+            <span aria-hidden="true" style={{ width: '8px', height: '8px', flexShrink: 0, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 0 3px rgba(34,197,94,0.14)' }} />
+            {supportedUserName}
+          </div>
+        ) : intakeSaved && (
+          <div style={{ fontSize: '11px', color: accent, background: `${accent}15`, border: `1px solid ${accent}30`, borderRadius: '20px', padding: '4px 12px' }}>Context saved ✓</div>
+        )}
       </div>
 
       <style>{`
@@ -1305,7 +1313,10 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
             font-size: 10px !important; letter-spacing: 2px !important;
           }
           .portal-root-chardan .portal-header > div:first-child > div:last-child { font-size: 16px !important; }
-          .portal-root-chardan .portal-header > div:last-child:not(:first-child) { display: none !important; }
+          .portal-root-chardan .portal-user-pill {
+            max-width: 48vw; padding: 7px 10px !important; font-size: 12px !important;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          }
           .portal-root-chardan .portal-layout {
             width: 100%; min-width: 0; flex-direction: column !important;
           }

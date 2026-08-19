@@ -86,7 +86,7 @@ async function consolidateMemory(slug: string, member: string, thread: TeamMessa
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model: 'claude-sonnet-4-5-20251001', max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),
     });
     if (!res.ok) return;
     const data = await res.json();
@@ -2691,7 +2691,7 @@ async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[])
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-5-20251001',
         max_tokens: 2048,
         system: systemPrompt,
         messages: sanitizeMessages(messages),
@@ -2721,7 +2721,7 @@ async function streamAnthropic(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-5-20251001',
         max_tokens: 2048,
         stream: true,
         system: systemPrompt,
@@ -2818,7 +2818,7 @@ async function streamAnthropicWithTools(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-5-20251001',
         max_tokens: 2048,
         system: systemPrompt,
         tools: [WEB_SEARCH_TOOL],
@@ -2909,7 +2909,7 @@ async function streamAnthropicWithTools(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-5-20251001',
         max_tokens: 2048,
         stream: false,
         system: systemPrompt,
@@ -3016,7 +3016,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const openerRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
+        body: JSON.stringify({ model: 'claude-sonnet-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
       });
       const openerData = await openerRes.json();
       const openerText = openerData.content?.[0]?.type === 'text' ? openerData.content[0].text : `Good to see you, ${firstName}. What are we working on today?`;
@@ -3082,7 +3082,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const isFirstInteraction = !history || (history as AnthropicMessage[]).length === 0;
-  const clientContext = CLIENT_CONTEXTS[slug] || '';
+  const DEFAULT_CONSUMER_CONTEXT = `You are Kit — a personal AI built by AxiomStream Group. You are sharp, direct, and genuinely knowledgeable. You are not a generic chatbot. You have a point of view and you use it.
+
+You can help with anything: research, writing, strategy, business questions, personal decisions, healthcare questions, industry knowledge, creative work — whatever the user brings. No topic is off-limits. You do not deflect, hedge excessively, or give watered-down answers.
+
+When someone asks about a company, organization, or place — look up everything you know about it and give a real answer. For example, if someone asks about a treatment facility, a hospital, a nonprofit, a school, or a local business — tell them what it is, what it does, who it serves, and anything relevant you know. Never say "I'm not familiar with that" without first reasoning through what you actually do know.
+
+Be conversational. Be specific. Be useful. That is the job.
+
+Built by AxiomStream Group — axiomstreamgroup.com`;
+  const clientContext = CLIENT_CONTEXTS[slug] || DEFAULT_CONSUMER_CONTEXT;
   let systemPrompt = buildSystemPrompt(agent, teammates, teamContext, isFirstInteraction, isLead, clientContext, slug);
   if (systemContextAddendum) systemPrompt += systemContextAddendum;
 

@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { writeTeamIntel } from './team-intel';
 import { getMarketSnapshot } from './market-data';
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
 const OPENAI_API_KEY_PORTAL = process.env.OPENAI_API_KEY || '';
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
@@ -86,7 +86,7 @@ async function consolidateMemory(slug: string, member: string, thread: TeamMessa
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5-20251001', max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),
     });
     if (!res.ok) return;
     const data = await res.json();
@@ -2691,17 +2691,21 @@ async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[])
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20251001',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         system: systemPrompt,
         messages: sanitizeMessages(messages),
       }),
     });
-    if (!res.ok) throw new Error(`Anthropic ${res.status}`);
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      throw new Error(`Anthropic ${res.status}: ${errBody.slice(0, 300)}`);
+    }
     const data = await res.json();
     return data.content?.[0]?.type === 'text' ? data.content[0].text : '';
-  } catch {
-    // Silent fallback to OpenAI — client never sees the error
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[rex] Anthropic callAnthropic error:', msg);
     return callOpenAIFallback(systemPrompt, messages);
   }
 }
@@ -2721,7 +2725,7 @@ async function streamAnthropic(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20251001',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         stream: true,
         system: systemPrompt,
@@ -2762,6 +2766,116 @@ async function streamAnthropic(
     }
   }
   return accumulated;
+}
+
+// ─── Shield GCC High calendar — client credentials, no iOS required ─────────────
+const SHIELD_GRAPH_TENANT   = '9df00d69-3980-486c-b81e-d6ef8ab81b10';
+const SHIELD_GRAPH_CLIENT_ID = '3ae2aaaa-b799-4a54-963d-4d4497f0e330';
+const SHIELD_GRAPH_SECRET    = 'W.Chd9gudo.K.c5Amc0I5wL6Ec.-L8MUv-';
+const SHIELD_TOKEN_URL       = `https://login.microsoftonline.us/${SHIELD_GRAPH_TENANT}/oauth2/v2.0/token`;
+const SHIELD_GRAPH_BASE      = 'https://graph.microsoft.us/v1.0';
+
+const SHIELD_SLUG_UPNS: Record<string, string> = {
+  andrew: 'andy.parks@shieldtechnologies.com',
+  ryanh:  'ryan.hopper@shieldtechnologies.com',
+  markb:  'mark.bechtel@shieldtechnologies.com',
+  caleb:  'caleb.sabroski@shieldtechnologies.com',
+  jimoaks:'jim.oaks@shieldtechnologies.com',
+  jeffd:  'jeff.dicks@shieldtechnologies.com',
+};
+
+let shieldPortalTokenCache: { accessToken: string; expiresAtMs: number } | null = null;
+
+async function getShieldPortalToken(): Promise<{ ok: boolean; accessToken?: string }> {
+  const bufferMs = 2 * 60 * 1000;
+  if (shieldPortalTokenCache && Date.now() < shieldPortalTokenCache.expiresAtMs - bufferMs) {
+    return { ok: true, accessToken: shieldPortalTokenCache.accessToken };
+  }
+  try {
+    const resp = await fetch(SHIELD_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id:     SHIELD_GRAPH_CLIENT_ID,
+        client_secret: SHIELD_GRAPH_SECRET,
+        grant_type:    'client_credentials',
+        scope:         'https://graph.microsoft.us/.default',
+      }).toString(),
+    });
+    const data = await resp.json() as { access_token: string; expires_in: number };
+    shieldPortalTokenCache = { accessToken: data.access_token, expiresAtMs: Date.now() + data.expires_in * 1000 };
+    return { ok: true, accessToken: data.access_token };
+  } catch { return { ok: false }; }
+}
+
+async function getShieldCalendarForSlug(slug: string): Promise<string> {
+  const upn = SHIELD_SLUG_UPNS[slug];
+  if (!upn) return 'No calendar account mapped for this user.';
+  const tr = await getShieldPortalToken();
+  if (!tr.ok || !tr.accessToken) return 'Could not reach Shield Microsoft 365 right now.';
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).toISOString();
+  const end   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+  try {
+    const resp = await fetch(
+      `${SHIELD_GRAPH_BASE}/users/${encodeURIComponent(upn)}/calendarView?startDateTime=${start}&endDateTime=${end}&$select=subject,start,end,location,isAllDay&$orderby=start/dateTime&$top=10`,
+      { headers: { Authorization: `Bearer ${tr.accessToken}` } }
+    );
+    const data = await resp.json() as { value: Array<{ subject: string; isAllDay: boolean; start: { dateTime: string; timeZone: string }; end: { dateTime: string; timeZone: string }; location?: { displayName: string } }> };
+    const events = data.value || [];
+    if (!events.length) return 'No calendar events for today.';
+    const lines = events.map(e => {
+      if (e.isAllDay) return `All day: ${e.subject}`;
+      const s  = new Date(e.start.dateTime + (e.start.timeZone === 'UTC' ? 'Z' : ''));
+      const en = new Date(e.end.dateTime   + (e.end.timeZone   === 'UTC' ? 'Z' : ''));
+      const fmt = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const loc = e.location?.displayName ? ` — ${e.location.displayName}` : '';
+      return `${fmt(s)}–${fmt(en)}: ${e.subject}${loc}`;
+    });
+    return `Today's calendar:\n${lines.join('\n')}`;
+  } catch { return 'Could not load calendar right now.'; }
+}
+
+const GET_CALENDAR_TOOL = {
+  name: 'get_calendar',
+  description: "Read the user's Microsoft 365 calendar for today. Use immediately when the user asks about their schedule, meetings, or what's on their agenda today.",
+  input_schema: { type: 'object' as const, properties: {}, required: [] },
+};
+
+const DRAFT_EMAIL_TOOL = {
+  name: 'draft_email',
+  description: 'Save a draft email to the user\'s Outlook Drafts folder. Use when the user asks Rex to write, compose, or draft an email. Always read the draft back before saving and confirm with the user. Never send — drafts only.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      to:      { type: 'string', description: 'Recipient email address (optional if not yet decided)' },
+      subject: { type: 'string', description: 'Email subject line' },
+      body:    { type: 'string', description: 'Full email body text' },
+    },
+    required: ['subject', 'body'],
+  },
+};
+
+async function draftEmailForSlug(slug: string, to: string, subject: string, body: string): Promise<string> {
+  const upn = SHIELD_SLUG_UPNS[slug];
+  if (!upn) return 'No M365 account mapped for this user.';
+  const tr = await getShieldPortalToken();
+  if (!tr.ok || !tr.accessToken) return 'Could not reach Shield Microsoft 365 right now.';
+  try {
+    const resp = await fetch(`${SHIELD_GRAPH_BASE}/users/${encodeURIComponent(upn)}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${tr.accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject,
+        body: { contentType: 'Text', content: body },
+        isDraft: true,
+        ...(to ? { toRecipients: [{ emailAddress: { address: to } }] } : {}),
+      }),
+    });
+    if (resp.status === 201) return `Draft saved to Outlook. Subject: "${subject}" — ${to ? `To: ${to}` : 'No recipient yet'}. Open Outlook to review and send.`;
+    const err = await resp.json() as { error?: { message?: string } };
+    return `Failed to save draft: ${err?.error?.message || resp.status}`;
+  } catch { return 'Could not save the draft right now.'; }
 }
 
 // ─── Brave web search — Winthrop portals only ─────────────────────────────────
@@ -2818,7 +2932,7 @@ async function streamAnthropicWithTools(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20251001',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         system: systemPrompt,
         tools: [WEB_SEARCH_TOOL],
@@ -2909,7 +3023,7 @@ async function streamAnthropicWithTools(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20251001',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         stream: false,
         system: systemPrompt,
@@ -3016,7 +3130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const openerRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
       });
       const openerData = await openerRes.json();
       const openerText = openerData.content?.[0]?.type === 'text' ? openerData.content[0].text : `Good to see you, ${firstName}. What are we working on today?`;
@@ -3221,6 +3335,65 @@ Built by AxiomStream Group — axiomstreamgroup.com`;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Document analysis failed';
       return res.status(500).json({ error: msg, reply: 'Document analysis failed. Please paste the text directly and I can analyze it.' });
+    }
+  }
+
+  // Shield calendar slugs — use get_calendar tool instead of web search
+  const SHIELD_CALENDAR_SLUGS = ['andrew', 'ryanh', 'markb', 'caleb', 'jimoaks', 'jeffd'];
+  const isShieldSlug = SHIELD_CALENDAR_SLUGS.includes(slug as string);
+
+  if (isShieldSlug) {
+    try {
+      // Agentic loop — handles calendar reads and email drafts
+      const SHIELD_TOOLS = [GET_CALENDAR_TOOL, DRAFT_EMAIL_TOOL];
+      type ContentBlock = { type: string; id?: string; name?: string; text?: string; input?: Record<string, string> };
+      let loopMessages: { role: string; content: unknown }[] = [...sanitizeMessages(messages)];
+      let reply = '';
+      let continueLoop = true;
+
+      while (continueLoop) {
+        const loopRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 2048,
+            system: systemPrompt,
+            tools: SHIELD_TOOLS,
+            messages: loopMessages,
+          }),
+        });
+        const loopData = await loopRes.json() as { stop_reason: string; content: ContentBlock[] };
+
+        if (loopData.stop_reason === 'tool_use') {
+          loopMessages.push({ role: 'assistant', content: loopData.content });
+          const toolResults: { type: string; tool_use_id: string; content: string }[] = [];
+          for (const block of loopData.content) {
+            if (block.type !== 'tool_use' || !block.id) continue;
+            if (block.name === 'get_calendar') {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await getShieldCalendarForSlug(slug as string) });
+            } else if (block.name === 'draft_email' && block.input) {
+              const { to = '', subject = '', body: emailBody = '' } = block.input;
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await draftEmailForSlug(slug as string, to, subject, emailBody) });
+            }
+          }
+          loopMessages.push({ role: 'user', content: toolResults });
+        } else {
+          reply = (loopData.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || 'Ready when you are.';
+          continueLoop = false;
+        }
+      }
+
+      const cleanReply = stripAgentPrefix(reply);
+      if (slug) {
+        const now = Date.now();
+        await appendMemberThread(slug as string, teamMember, { member: teamMember, role: 'agent', agent, content: cleanReply, ts: now });
+        logToSynapse(slug as string, 'chat_message', message as string);
+      }
+      return res.json({ text: cleanReply });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      return res.status(500).json({ error: msg });
     }
   }
 

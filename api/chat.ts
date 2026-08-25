@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { writeTeamIntel } from './team-intel';
 import { getMarketSnapshot } from './market-data';
+import { recordUsage, hasAlert80BeenSent, markAlert80Sent } from './billing-ledger';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
@@ -817,6 +818,12 @@ When you're told someone is calling a contact or attending a meeting, immediatel
 - When Ryan references Southwest, Jaime, Christopher Richardson, Megan Kahle, MRO Americas, CFM engines, or engine covers — you know the context.
 - NSN-specific: if Ryan asks what covers exist for a Navy/USMC platform, check the portfolio above and answer specifically.
 - End every response with a concrete next step.
+
+CONFERENCE INTELLIGENCE (Ryan is Shield's primary show rep):
+- Ryan owns the event calendar. When he mentions any upcoming show, research it and cite specifically — "Based on AUSA 2025 coverage in National Defense Magazine..." or "The MRO Americas 2026 exhibitor list shows...". Never give generic advice.
+- Pre-show brief format: (1) This year's themes with sources, (2) Confirmed/likely exhibitors relevant to Shield, (3) Competitive intel — who is showing what, (4) Account hit list from his pipeline cross-referenced with likely attendees, (5) Specific restaurant and venue recommendations near the venue by name, (6) Booth strategy do's and don'ts sourced from top defense exhibitor research.
+- Post-show: within 48 hours of a show ending, ask Ryan for a debrief. What was the coolest thing on the floor? What were the big primes showing? Any leads or warm contacts? Log everything.
+- Ryan's conference intel is the team's intelligence — what he learns becomes Rex's knowledge base for all of Shield.
 `,
 
   blake: `
@@ -2769,6 +2776,83 @@ async function streamAnthropic(
 }
 
 // ─── Shield GCC High calendar — client credentials, no iOS required ─────────────
+const SHIELD_HS_TOKEN = process.env.SHIELD_HUBSPOT_TOKEN || '';
+const SHIELD_HS_BASE  = 'https://api.hubapi.com';
+
+async function hsSearchContacts(query: string): Promise<string> {
+  const r = await fetch(`${SHIELD_HS_BASE}/crm/v3/objects/contacts/search`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SHIELD_HS_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, limit: 5, properties: ['firstname','lastname','email','company','phone','hs_lead_status'] }),
+  });
+  const d = await r.json() as { results?: Array<Record<string,unknown>> };
+  if (!d.results?.length) return 'No contacts found matching that search.';
+  return d.results.map((c: Record<string,unknown>) => {
+    const p = c.properties as Record<string,string>;
+    return `${p.firstname||''} ${p.lastname||''} | ${p.email||''} | ${p.company||''} | ${p.phone||''} | Status: ${p.hs_lead_status||'—'}`;
+  }).join('\n');
+}
+
+async function hsGetDeals(stage?: string): Promise<string> {
+  const filters = stage ? [{ propertyName: 'dealstage', operator: 'EQ', value: stage }] : [];
+  const r = await fetch(`${SHIELD_HS_BASE}/crm/v3/objects/deals/search`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SHIELD_HS_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ limit: 10, properties: ['dealname','amount','dealstage','closedate','hubspot_owner_id'], filterGroups: filters.length ? [{ filters }] : [] }),
+  });
+  const d = await r.json() as { results?: Array<Record<string,unknown>>; total?: number };
+  if (!d.results?.length) return 'No deals found.';
+  return `Total: ${d.total||0}\n` + d.results.map((deal: Record<string,unknown>) => {
+    const p = deal.properties as Record<string,string>;
+    return `${p.dealname||'Untitled'} | Stage: ${p.dealstage||'—'} | Amount: $${p.amount||'0'} | Close: ${p.closedate?.split('T')[0]||'—'}`;
+  }).join('\n');
+}
+
+async function hsCreateContact(firstName: string, lastName: string, email: string, company: string, phone?: string): Promise<string> {
+  const r = await fetch(`${SHIELD_HS_BASE}/crm/v3/objects/contacts`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SHIELD_HS_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ properties: { firstname: firstName, lastname: lastName, email, company, ...(phone ? { phone } : {}) } }),
+  });
+  const d = await r.json() as { id?: string; properties?: Record<string,string> };
+  return d.id ? `Contact created: ${firstName} ${lastName} at ${company} (ID: ${d.id})` : `Failed to create contact`;
+}
+
+async function hsCreateDeal(dealName: string, stage: string, amount?: string, closeDate?: string): Promise<string> {
+  const r = await fetch(`${SHIELD_HS_BASE}/crm/v3/objects/deals`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SHIELD_HS_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ properties: { dealname: dealName, dealstage: stage, ...(amount ? { amount } : {}), ...(closeDate ? { closedate: closeDate } : {}) } }),
+  });
+  const d = await r.json() as { id?: string };
+  return d.id ? `Deal created: "${dealName}" | Stage: ${stage} (ID: ${d.id})` : `Failed to create deal`;
+}
+
+async function hsLogActivity(contactEmail: string, note: string): Promise<string> {
+  // Find contact by email first
+  const sr = await fetch(`${SHIELD_HS_BASE}/crm/v3/objects/contacts/search`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SHIELD_HS_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: contactEmail }] }], limit: 1, properties: ['firstname','lastname'] }),
+  });
+  const sd = await sr.json() as { results?: Array<{ id: string; properties: Record<string,string> }> };
+  const contact = sd.results?.[0];
+  // Create engagement note via v1 engagements
+  const engBody: Record<string, unknown> = {
+    engagement: { active: true, type: 'NOTE' },
+    metadata: { body: note },
+    ...(contact ? { associations: { contactIds: [parseInt(contact.id)] } } : {}),
+  };
+  const er = await fetch(`${SHIELD_HS_BASE}/engagements/v1/engagements`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SHIELD_HS_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(engBody),
+  });
+  const ed = await er.json() as { engagement?: { id: number } };
+  const name = contact ? `${contact.properties.firstname||''} ${contact.properties.lastname||''}`.trim() : contactEmail;
+  return ed.engagement?.id ? `Activity logged for ${name}: "${note.slice(0,80)}${note.length>80?'…':''}"` : `Failed to log activity`;
+}
+
 const SHIELD_GRAPH_TENANT   = '9df00d69-3980-486c-b81e-d6ef8ab81b10';
 const SHIELD_GRAPH_CLIENT_ID = '3ae2aaaa-b799-4a54-963d-4d4497f0e330';
 const SHIELD_GRAPH_SECRET    = 'W.Chd9gudo.K.c5Amc0I5wL6Ec.-L8MUv-';
@@ -2855,6 +2939,267 @@ const DRAFT_EMAIL_TOOL = {
     required: ['subject', 'body'],
   },
 };
+
+const HS_SEARCH_CONTACTS_TOOL = {
+  name: 'hs_search_contacts',
+  description: 'Search HubSpot CRM contacts by name, email, or company. Use when asked to find a contact, look up a person, or check if someone is in the CRM.',
+  input_schema: { type: 'object' as const, properties: { query: { type: 'string', description: 'Name, email, or company to search' } }, required: ['query'] },
+};
+
+const HS_GET_DEALS_TOOL = {
+  name: 'hs_get_deals',
+  description: 'Get deals from the HubSpot pipeline. Use when asked about the pipeline, open opportunities, or deal status. Optionally filter by stage.',
+  input_schema: { type: 'object' as const, properties: { stage: { type: 'string', description: 'Optional deal stage filter (e.g. appointmentscheduled, qualifiedtobuy, presentationscheduled, closedwon, closedlost)' } }, required: [] },
+};
+
+const HS_CREATE_CONTACT_TOOL = {
+  name: 'hs_create_contact',
+  description: 'Create a new contact in HubSpot CRM. Use when asked to add someone to the CRM or log a new lead.',
+  input_schema: { type: 'object' as const, properties: { first_name: { type: 'string' }, last_name: { type: 'string' }, email: { type: 'string' }, company: { type: 'string' }, phone: { type: 'string', description: 'Optional' } }, required: ['first_name', 'last_name', 'email', 'company'] },
+};
+
+const HS_CREATE_DEAL_TOOL = {
+  name: 'hs_create_deal',
+  description: 'Create a new deal in the HubSpot pipeline. Use when asked to log an opportunity or add a deal.',
+  input_schema: { type: 'object' as const, properties: { deal_name: { type: 'string' }, stage: { type: 'string', description: 'Pipeline stage: appointmentscheduled, qualifiedtobuy, presentationscheduled, decisionmakerboughtin, contractsent, closedwon, closedlost' }, amount: { type: 'string', description: 'Optional dollar amount' }, close_date: { type: 'string', description: 'Optional close date YYYY-MM-DD' } }, required: ['deal_name', 'stage'] },
+};
+
+const HS_LOG_ACTIVITY_TOOL = {
+  name: 'hs_log_activity',
+  description: 'Log a note or activity against a contact in HubSpot. Use when asked to log a call, meeting, or follow-up note.',
+  input_schema: { type: 'object' as const, properties: { contact_email: { type: 'string', description: 'Email of the contact to log against' }, note: { type: 'string', description: 'Activity note text' } }, required: ['contact_email', 'note'] },
+};
+
+const SAVE_DOCUMENT_TOOL = {
+  name: 'save_document',
+  description: "Save a document to the user's SharePoint Documents folder. Supported formats: .docx (Word), .xlsx (Excel/CSV data), .pptx (PowerPoint outline), .pdf (saved as text), .txt. Use whenever the user asks Rex to create, write, draft, or save any document, report, spreadsheet, or file. Always use the correct file extension.",
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      filename: { type: 'string', description: 'Filename with extension — e.g. "Call Prep Fort Campbell.docx", "Q3 Pipeline.xlsx", "Deck Outline.pptx"' },
+      content:  { type: 'string', description: 'Full document content as plain text, or CSV rows for spreadsheets' },
+    },
+    required: ['filename', 'content'],
+  },
+};
+
+const REX_MAILBOX = 'rex@shieldtechnologies.com';
+
+async function sendFromRexPortal(toUpn: string, subject: string, body: string, webUrl?: string): Promise<void> {
+  const tokenResult = await getShieldPortalToken();
+  if (!tokenResult.ok || !tokenResult.accessToken) return;
+  const token = tokenResult.accessToken;
+  const emailBody = webUrl
+    ? `${body}\n\nOpen in SharePoint: ${webUrl}`
+    : body;
+  await fetch(`${SHIELD_GRAPH_BASE}/users/${encodeURIComponent(REX_MAILBOX)}/sendMail`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: {
+        subject,
+        body: { contentType: 'Text', content: emailBody },
+        toRecipients: [{ emailAddress: { address: toUpn } }],
+      },
+      saveToSentItems: true,
+    }),
+  }).catch(() => {/* best-effort */});
+}
+
+async function saveSharePointDocForSlug(slug: string, filename: string, content: string): Promise<string> {
+  const upnMap: Record<string, string> = {
+    andrew: 'andy.parks@shieldtechnologies.com',
+    ryanh:  'ryan.hopper@shieldtechnologies.com',
+    markb:  'mark.bechtel@shieldtechnologies.com',
+    caleb:  'caleb.sabroski@shieldtechnologies.com',
+    jimoaks:'jim.oaks@shieldtechnologies.com',
+    jeffd:  'jeff.dicks@shieldtechnologies.com',
+  };
+  const upn = upnMap[slug];
+  if (!upn) return 'Your profile is not configured for SharePoint access.';
+  const lower = filename.toLowerCase();
+  let safeName = filename;
+  let mimeType = 'text/plain';
+  let body = content;
+  if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
+    safeName = lower.endsWith('.docx') ? filename : filename.replace(/\.doc$/, '.docx');
+    mimeType = 'text/html';
+    body = `<html><body>${content.replace(/\n/g, '<br/>')}</body></html>`;
+  } else if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+    safeName = filename.replace(/\.xls$/, '.csv').replace('.xlsx', '.csv');
+    mimeType = 'text/csv';
+  } else if (lower.endsWith('.pdf')) {
+    safeName = filename.replace('.pdf', '.txt');
+    body = `[PDF content — open in Word and export to PDF]\n\n${content}`;
+  } else if (!lower.match(/\.(txt|md|pptx|ppt|csv)$/)) {
+    safeName = `${filename}.txt`;
+  }
+  const token = await getShieldPortalToken();
+  if (!token) return 'Could not reach Shield M365 right now.';
+  try {
+    const resp = await fetch(
+      `https://graph.microsoft.us/v1.0/users/${encodeURIComponent(upn)}/drive/root:/Documents/${encodeURIComponent(safeName)}:/content`,
+      { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': mimeType }, body }
+    );
+    if (resp.ok) {
+      const data = await resp.json() as { webUrl?: string; name?: string };
+      const note = safeName !== filename ? ` (saved as ${safeName})` : '';
+      // Auto-email from rex@ to the user
+      await sendFromRexPortal(
+        upn,
+        `Rex created: ${data.name || safeName}`,
+        `Your document is ready and saved to SharePoint Documents.\n\nFilename: ${data.name || safeName}`,
+        data.webUrl
+      );
+      return `Saved to your SharePoint Documents: "${data.name || safeName}"${note}${data.webUrl ? `\nOpen: ${data.webUrl}` : ''}\n\nAlso emailed to you from rex@shieldtechnologies.com.`;
+    }
+    const err = await resp.json() as { error?: { message?: string } };
+    return `Failed to save: ${err?.error?.message || resp.status}`;
+  } catch { return 'Could not save document right now.'; }
+}
+
+const GRAPH_LOOKUP_TOOL = {
+  name: 'graph_lookup',
+  description: 'Traverse Shield\'s client-scoped Synapse correlation graph for connected people, organizations, products, opportunities, platforms, contracts, events, topics, and field reports. Use this for internal relationship questions and whenever the user asks what field intelligence connects to a person, product, account, or operating condition.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      query: { type: 'string', description: 'The user question to resolve against the relationship graph.' },
+      depth: { type: 'number', minimum: 1, maximum: 4, description: 'Traversal depth from 1 to 4; defaults to 2.' },
+    },
+    required: ['query'],
+  },
+};
+
+function shieldGraphPins(): Record<string, string> {
+  try {
+    const parsed = JSON.parse(process.env.SHIELD_GRAPH_PINS_JSON || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+const GRAPH_RELATIONSHIPS = new Set([
+  'works_at', 'reports_to', 'owns_account', 'competes_with', 'procures_from',
+  'attended', 'related_to', 'field_reported', 'researches',
+]);
+type GraphPlan = { entity_names: string[]; relationship_types: string[] };
+const graphPlanCache = new Map<string, { expiresAt: number; plan: GraphPlan }>();
+
+function fallbackGraphPlan(query: string): GraphPlan {
+  const lowered = query.toLowerCase();
+  const relationships: string[] = [];
+  const hints: Record<string, string> = {
+    'works at': 'works_at', 'reports to': 'reports_to', 'owns account': 'owns_account',
+    competitor: 'competes_with', procures: 'procures_from', attended: 'attended',
+    related: 'related_to', 'field report': 'field_reported', research: 'researches',
+  };
+  for (const [hint, relationship] of Object.entries(hints)) {
+    if (lowered.includes(hint) && !relationships.includes(relationship)) relationships.push(relationship);
+  }
+  const entities = Array.from(query.matchAll(/\b[A-Z][A-Za-z0-9&.-]+(?:\s+[A-Z][A-Za-z0-9&.-]+){0,3}\b/g))
+    .map(match => match[0].replace(/[?.,]+$/, ''))
+    .filter(value => !['What', 'Find', 'Show'].includes(value));
+  return { entity_names: [...new Set(entities)].slice(0, 8), relationship_types: relationships };
+}
+
+function cleanGraphPlan(value: unknown): GraphPlan {
+  const payload = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  const entities = Array.isArray(payload.entity_names)
+    ? [...new Set(payload.entity_names.map(String).map(v => v.trim()).filter(Boolean))].slice(0, 8)
+    : [];
+  const relationships = Array.isArray(payload.relationship_types)
+    ? [...new Set(payload.relationship_types.map(String).map(v => v.trim().toLowerCase().replace(/ /g, '_')))]
+        .filter(v => GRAPH_RELATIONSHIPS.has(v)).slice(0, 5)
+    : [];
+  return { entity_names: entities, relationship_types: relationships };
+}
+
+async function planGraphQuery(query: string): Promise<GraphPlan> {
+  const cacheKey = query.toLowerCase().trim().replace(/\s+/g, ' ');
+  const cached = graphPlanCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.plan;
+  let plan = fallbackGraphPlan(query);
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 220, temperature: 0,
+        messages: [{ role: 'user', content: `Return JSON only with entity_names and relationship_types for this graph query. Allowed relationships: ${[...GRAPH_RELATIONSHIPS].join(', ')}. Do not invent names. Field-report questions use field_reported.\n\nQuery: ${query.slice(0, 2000)}` }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const text = (data.content || []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('');
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = cleanGraphPlan(JSON.parse(match[0]));
+        if (parsed.entity_names.length || parsed.relationship_types.length) plan = parsed;
+      }
+    }
+  } catch { /* cached deterministic fallback keeps the portal responsive */ }
+  if (graphPlanCache.size >= 128) {
+    const oldest = graphPlanCache.keys().next().value;
+    if (oldest) graphPlanCache.delete(oldest);
+  }
+  graphPlanCache.set(cacheKey, { expiresAt: Date.now() + 10 * 60 * 1000, plan });
+  return plan;
+}
+
+function graphMetadataSummary(metadata: unknown): string {
+  if (!metadata || typeof metadata !== 'object') return '';
+  const hidden = new Set(['source_record_id', 'source_created_at', 'source_type', 'source_client']);
+  return Object.entries(metadata as Record<string, unknown>)
+    .filter(([key, value]) => !hidden.has(key) && value !== null && value !== '')
+    .slice(0, 3)
+    .map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(', ') : String(value)}`)
+    .join('; ')
+    .slice(0, 320);
+}
+
+async function graphLookup(query: string, depth = 2): Promise<string> {
+  const safeDepth = Math.max(1, Math.min(Number.isFinite(Number(depth)) ? Math.trunc(Number(depth)) : 2, 4));
+  const plan = await planGraphQuery(query);
+  const supabaseUrl = process.env.SUPABASE_URL || '';
+  const serviceKey = process.env.SUPABASE_SERVICE_KEY || '';
+  if (!supabaseUrl || !serviceKey) throw new Error('Graph lookup server configuration is unavailable.');
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/graph_lookup_paths`, {
+    method: 'POST',
+    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      p_client: 'shield', p_entity_names: plan.entity_names,
+      p_relationships: plan.relationship_types, p_depth: safeDepth, p_limit: 30,
+    }),
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!response.ok) throw new Error(`Graph traversal failed (${response.status}).`);
+  const rows = await response.json();
+  const header = `Client-scoped graph results (depth ${safeDepth}); anchors: ${plan.entity_names.join(', ') || 'none'}; relationships: ${plan.relationship_types.join(', ') || 'any'}.`;
+  if (!Array.isArray(rows) || !rows.length) return `${header}\nNo graph paths matched. Do not infer or invent a connection.`;
+  const lines = rows.slice(0, 20).map((row: Record<string, unknown>, index: number) => {
+    const names = Array.isArray(row.node_names) ? row.node_names.map(String) : [];
+    const types = Array.isArray(row.node_types) ? row.node_types.map(String) : [];
+    const metadata = Array.isArray(row.node_metadata) ? row.node_metadata : [];
+    const relationships = Array.isArray(row.relationships) ? row.relationships.map(String) : [];
+    const segments: string[] = [];
+    names.forEach((name, offset) => {
+      const detail = graphMetadataSummary(metadata[offset]);
+      segments.push(`${name} [${types[offset] || 'Node'}]${detail ? ` (${detail})` : ''}`);
+      if (relationships[offset]) segments.push(`--${relationships[offset]}-->`);
+    });
+    const sources = [...new Set(Array.isArray(row.source_record_ids) ? row.source_record_ids.map(String) : [])];
+    return `${index + 1}. ${segments.join(' ')}${sources.length ? ` | source records: ${sources.join(', ')}` : ''}`;
+  });
+  const combined = lines.join(' ').toLowerCase();
+  const stop = new Set(['about', 'cover', 'covers', 'environment', 'environments', 'field', 'find', 'from', 'mention', 'mentions', 'reports', 'that', 'their', 'these', 'this', 'through', 'what', 'which', 'with']);
+  const missing = [...new Set(query.toLowerCase().match(/[a-z0-9]+/g) || [])]
+    .filter(term => term.length >= 5 && !stop.has(term) && !combined.includes(term));
+  if (missing.length) lines.push(`Evidence gap: no direct graph match for ${missing.slice(0, 8).join(', ')}. Do not claim a matching report without additional source data.`);
+  return [header, ...lines].join('\n');
+}
 
 async function draftEmailForSlug(slug: string, to: string, subject: string, body: string): Promise<string> {
   const upn = SHIELD_SLUG_UPNS[slug];
@@ -3118,6 +3463,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     'devalk-sean':      { role: 'Lex, an AI legal assistant built for DeValk Power Lair & Warner', context: 'Sean D. Lair is an attorney at DeValk Power Lair & Warner in Monroe and Wayne County, NY. NYS family law — custody, child support (CSSA), divorce, matrimonial law. Prefers plain text output, no markdown.' },
     'shield-jeffd':     { role: 'Kit, an AI assistant built for Shield Technologies', context: 'Jeff Dicks is the CFO and Controller at Shield Technologies Corporation — a DoD defense contractor specializing in military equipment covers (Envelop brand). He is largely a one-man finance operation. His world: government contract accounting (FAR/DFARS cost principles), DCAA compliance, revenue recognition on FFP and T&M contracts, cash flow management for a manufacturing/distribution business, cost buildup for new NSN bids, DoD payment cycles (MOCAS/IPP), and managing the financial side of SBIR Phase III contracting. He signs the checks — he needs to see ROI, cost justification, and financial clarity above all else.' },
     'shield-jimoaks':   { role: 'Kit, an AI assistant built for Shield Technologies', context: 'Jim Oaks is the COO at Shield Technologies Corporation — a DoD defense contractor. Ex-sales background, longtime Shield team member. Operationally focused: production, fulfillment, logistics, contract execution. He is the near-term decision maker on vendor relationships and operational investments. He needs Kit to help him run Shield\'s operations smarter — faster answers on product lines, contracts, delivery status, and team coordination.' },
+    'shield-admin':     { role: 'Rex, the Shield Technologies AI — God Mode', context: 'You are in God Mode. You are Rex with full administrative visibility across all Shield Technologies users and operations. You have access to: (1) All six user sessions — Andy Parks (CRO, andrew), Ryan Hopper (ryanh), Mark Bechtel (markb), Caleb Sabroski (shield-caleb), Jim Oaks (shield-jimoaks), Jeff Dicks (shield-jeffd). (2) rex@shieldtechnologies.com shared mailbox — read all inbound, send outbound. (3) All calendars, email drafting, and SharePoint document creation for any Shield user. (4) Full Shield context: Envelop engine protection covers, DoD/MRO sales, GCC High M365 tenant, government capture pipeline. You are talking to JJ Fulmines, CEO of AxiomStream Group — the firm that built and manages Rex for Shield. Be direct, thorough, and give full visibility. When asked about a specific user, pull their calendar or context. When asked about rex@, read the inbox.' },
   };
   if (message === '__opener__' && slug) {
     try {
@@ -3339,33 +3685,117 @@ Built by AxiomStream Group — axiomstreamgroup.com`;
   }
 
   // Shield calendar slugs — use get_calendar tool instead of web search
-  const SHIELD_CALENDAR_SLUGS = ['andrew', 'ryanh', 'markb', 'caleb', 'jimoaks', 'jeffd'];
+  const SHIELD_CALENDAR_SLUGS = [
+    'andrew', 'andy', 'ryanh', 'markb', 'caleb', 'shield-caleb',
+    'jimoaks', 'shield-jimoaks', 'jeffd', 'shield-jeffd', 'shield-admin',
+  ];
   const isShieldSlug = SHIELD_CALENDAR_SLUGS.includes(slug as string);
 
   if (isShieldSlug) {
     try {
-      // Agentic loop — handles calendar reads and email drafts
-      const SHIELD_TOOLS = [GET_CALENDAR_TOOL, DRAFT_EMAIL_TOOL];
-      type ContentBlock = { type: string; id?: string; name?: string; text?: string; input?: Record<string, string> };
+      // Level 2 proactivity addendum — injected into every Shield portal system prompt
+      const LEVEL2_ADDENDUM = `
+
+PROACTIVITY RULES (Level 2 — always on):
+You are not a passive assistant. Surface relevant information without being asked:
+1. CALENDAR: If the user mentions an account or meeting topic, check their calendar (get_calendar). Surface upcoming related meetings unprompted.
+2. PIPELINE: If the user mentions a company or contact, check HubSpot (hs_search_contacts, hs_get_deals) without being asked. Surface open deals and last activity.
+3. STALE CONTACTS: When a user logs a call or mentions a contact, check HubSpot for activity recency. Flag if 14+ days no activity: "No logged activity with [contact] in [X] days — want me to draft a follow-up?"
+4. ACTION EXTRACTION: When a user shares call notes or a transcript, automatically extract contacts, action items, and follow-up commitments. Offer to log to HubSpot and draft emails.
+5. PRE-CALL BRIEF: If the user mentions an upcoming meeting, immediately pull calendar event + HubSpot contact/deal history without being asked.
+6. CONFERENCE DEBRIEF: If the user mentions returning from or attending a conference (Tailhook, AUSA, NDIA, MRO Americas, Sea-Air-Space, depot symposiums), shift into debrief mode. Ask: "What was the coolest thing you saw on the floor? Any of the big primes showing something new?" Extract floor intel, competitive activity, account contacts, leads. Log to HubSpot.
+7. CONFERENCE PREP: If a user mentions an upcoming show, proactively offer: account hit list from pipeline cross-referenced with likely attendees, competitive intel, booth strategy do's/don'ts, restaurant and venue recommendations near the venue. Research what top defense exhibitors do differently. Tailor to depot maintenance buyers.
+Keep proactive flags to one line. Surface the most relevant thing first. Never overwhelm.`;
+
+      // Agentic loop — handles calendar reads, email drafts, and graph traversal.
+      // Tool rounds are hard-capped to prevent loops/resource exhaustion.
+      const forceGraphQuery = /\b(field reports?|relationship|connected|connection|correlat(?:e|ion)|linked?|path|mentions?)\b/i.test(String(message));
+      const expectedGraphPin = shieldGraphPins()[String(slug)];
+      const graphAuthorized = !!expectedGraphPin && String(req.body?.portalPin || '') === expectedGraphPin;
+      if (forceGraphQuery && !graphAuthorized) {
+        return res.status(401).json({ error: 'Portal authentication required for graph lookup.' });
+      }
+      const HS_TOOLS = [HS_SEARCH_CONTACTS_TOOL, HS_GET_DEALS_TOOL, HS_CREATE_CONTACT_TOOL, HS_CREATE_DEAL_TOOL, HS_LOG_ACTIVITY_TOOL];
+      const isGodMode = slug === 'shield-admin';
+      const GOD_MODE_TOOLS = [
+        GET_CALENDAR_TOOL,
+        DRAFT_EMAIL_TOOL,
+        SAVE_DOCUMENT_TOOL,
+        ...HS_TOOLS,
+        {
+          name: 'read_rex_inbox',
+          description: 'Read recent emails in the rex@shieldtechnologies.com shared mailbox. Use when asked to check what came in, monitor inbound, or review messages sent to Rex.',
+          input_schema: { type: 'object' as const, properties: {}, required: [] },
+        },
+        {
+          name: 'send_from_rex',
+          description: 'Send an email FROM rex@shieldtechnologies.com. Use when JJ wants Rex to send an outbound message on behalf of Shield.',
+          input_schema: {
+            type: 'object' as const,
+            properties: {
+              to:      { type: 'string', description: 'Recipient email address' },
+              subject: { type: 'string', description: 'Email subject' },
+              body:    { type: 'string', description: 'Full email body' },
+            },
+            required: ['to', 'subject', 'body'],
+          },
+        },
+        {
+          name: 'get_user_calendar',
+          description: 'Read the calendar for a specific Shield user by slug. Use when JJ asks about a specific rep\'s schedule.',
+          input_schema: {
+            type: 'object' as const,
+            properties: {
+              user_slug: { type: 'string', description: 'Shield user slug: andrew, ryanh, markb, shield-caleb, shield-jimoaks, shield-jeffd' },
+            },
+            required: ['user_slug'],
+          },
+        },
+      ];
+      const SHIELD_TOOLS = isGodMode
+        ? GOD_MODE_TOOLS
+        : graphAuthorized
+        ? [GET_CALENDAR_TOOL, DRAFT_EMAIL_TOOL, SAVE_DOCUMENT_TOOL, ...HS_TOOLS, GRAPH_LOOKUP_TOOL]
+        : [GET_CALENDAR_TOOL, DRAFT_EMAIL_TOOL, SAVE_DOCUMENT_TOOL, ...HS_TOOLS];
+      type ContentBlock = { type: string; id?: string; name?: string; text?: string; input?: Record<string, unknown> };
+      // Auto-escalate to Sonnet for heavy tasks / engineering slug
+      const SHIELD_MODEL_HAIKU  = 'claude-haiku-4-5-20251001';
+      const SHIELD_MODEL_SONNET = 'claude-sonnet-4-6-20250514';
+      const engineeringSlugs = ['shield-caleb', 'caleb'];
+      const heavyPatterns = [
+        /\b(analyz|review|summariz|evaluat|assess|break.?down|read.?through)/i,
+        /\b(rfp|solicitation|sow|statement.?of.?work|spec(ification)?|technical|engineering|proposal|bid|nsn|mil.?spec)/i,
+        /\b(draft|write|create|compose).{0,30}(report|proposal|response|analysis|brief|plan)/i,
+        /\b(compar|versus|pros.?and.?cons|trade.?off|recommend|strateg)/i,
+      ];
+      const isHeavyMessage = engineeringSlugs.includes(slug as string) ||
+        heavyPatterns.some(r => r.test(String(message))) ||
+        String(message).length > 800;
+      const shieldModel    = isHeavyMessage ? SHIELD_MODEL_SONNET : SHIELD_MODEL_HAIKU;
+      const shieldMaxToks  = isHeavyMessage ? 4096 : 2048;
+
       let loopMessages: { role: string; content: unknown }[] = [...sanitizeMessages(messages)];
       let reply = '';
       let continueLoop = true;
+      let toolRounds = 0;
 
-      while (continueLoop) {
+      while (continueLoop && toolRounds < 3) {
         const loopRes = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 2048,
-            system: systemPrompt,
+            model: shieldModel,
+            max_tokens: shieldMaxToks,
+            system: isGodMode ? systemPrompt : systemPrompt + LEVEL2_ADDENDUM,
             tools: SHIELD_TOOLS,
+            ...(forceGraphQuery && toolRounds === 0 ? { tool_choice: { type: 'tool', name: 'graph_lookup' } } : {}),
             messages: loopMessages,
           }),
         });
         const loopData = await loopRes.json() as { stop_reason: string; content: ContentBlock[] };
 
         if (loopData.stop_reason === 'tool_use') {
+          toolRounds += 1;
           loopMessages.push({ role: 'assistant', content: loopData.content });
           const toolResults: { type: string; tool_use_id: string; content: string }[] = [];
           for (const block of loopData.content) {
@@ -3373,8 +3803,42 @@ Built by AxiomStream Group — axiomstreamgroup.com`;
             if (block.name === 'get_calendar') {
               toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await getShieldCalendarForSlug(slug as string) });
             } else if (block.name === 'draft_email' && block.input) {
-              const { to = '', subject = '', body: emailBody = '' } = block.input;
+              const to = String(block.input.to || '');
+              const subject = String(block.input.subject || '');
+              const emailBody = String(block.input.body || '');
               toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await draftEmailForSlug(slug as string, to, subject, emailBody) });
+            } else if (block.name === 'save_document' && block.input) {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await saveSharePointDocForSlug(slug as string, String(block.input.filename || 'Rex-Document.txt'), String(block.input.content || '')) });
+            } else if (block.name === 'read_rex_inbox') {
+              const tokenResult = await getShieldPortalToken();
+              const token = tokenResult.accessToken || '';
+              if (!token) { toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: 'Could not reach Shield M365.' }); continue; }
+              const r = await fetch(`${SHIELD_GRAPH_BASE}/users/rex@shieldtechnologies.com/mailFolders/Inbox/messages?$select=subject,from,receivedDateTime,bodyPreview,isRead&$orderby=receivedDateTime desc&$top=5`, { headers: { Authorization: `Bearer ${token}` } });
+              const d = await r.json() as { value?: Array<{ subject: string; from: { emailAddress: { name: string; address: string } }; receivedDateTime: string; bodyPreview: string; isRead: boolean }> };
+              const msgs = d.value?.map(m => `${m.isRead ? '' : '🔵 NEW '}From: ${m.from?.emailAddress?.name || m.from?.emailAddress?.address} | ${new Date(m.receivedDateTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}\nSubject: ${m.subject}\n${m.bodyPreview}`).join('\n\n---\n\n') || 'No messages in rex@ inbox.';
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: msgs });
+            } else if (block.name === 'send_from_rex' && block.input) {
+              const tokenResult = await getShieldPortalToken();
+              const token = tokenResult.accessToken || '';
+              if (!token) { toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: 'Could not reach Shield M365.' }); continue; }
+              const sr = await fetch(`${SHIELD_GRAPH_BASE}/users/rex@shieldtechnologies.com/sendMail`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: { subject: String(block.input.subject || ''), body: { contentType: 'Text', content: String(block.input.body || '') }, toRecipients: [{ emailAddress: { address: String(block.input.to || '') } }] }, saveToSentItems: true }) });
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: sr.status === 202 ? `Sent from rex@shieldtechnologies.com to ${block.input.to}. Subject: "${block.input.subject}"` : `Send failed: ${sr.status}` });
+            } else if (block.name === 'get_user_calendar' && block.input) {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await getShieldCalendarForSlug(String(block.input.user_slug || 'andrew')) });
+            } else if (block.name === 'hs_search_contacts' && block.input) {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await hsSearchContacts(String(block.input.query || '')) });
+            } else if (block.name === 'hs_get_deals') {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await hsGetDeals(block.input ? String(block.input.stage || '') : '') });
+            } else if (block.name === 'hs_create_contact' && block.input) {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await hsCreateContact(String(block.input.first_name||''), String(block.input.last_name||''), String(block.input.email||''), String(block.input.company||''), block.input.phone ? String(block.input.phone) : undefined) });
+            } else if (block.name === 'hs_create_deal' && block.input) {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await hsCreateDeal(String(block.input.deal_name||''), String(block.input.stage||'appointmentscheduled'), block.input.amount ? String(block.input.amount) : undefined, block.input.close_date ? String(block.input.close_date) : undefined) });
+            } else if (block.name === 'hs_log_activity' && block.input) {
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await hsLogActivity(String(block.input.contact_email||''), String(block.input.note||'')) });
+            } else if (block.name === 'graph_lookup' && block.input) {
+              const graphQuery = String(block.input.query || message);
+              const graphDepth = Number(block.input.depth || 2);
+              toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: await graphLookup(graphQuery, graphDepth) });
             }
           }
           loopMessages.push({ role: 'user', content: toolResults });
@@ -3383,6 +3847,66 @@ Built by AxiomStream Group — axiomstreamgroup.com`;
           continueLoop = false;
         }
       }
+      if (continueLoop) reply = 'I could not complete that lookup within the safe tool limit. Please try a narrower question.';
+
+      // ─── Billing: record usage + enforce cap ─────────────────────────────────
+      try {
+        const loopFinal = await loopRes.json() as { usage?: { input_tokens: number; output_tokens: number } };
+        const usage = loopFinal?.usage;
+        if (usage) {
+          const billing = await recordUsage({
+            client: 'shield', slug: slug as string, model: shieldModel,
+            inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, feature: 'portal',
+          });
+          // 80% alert — fire once per month
+          if (billing.over80 && !(await hasAlert80BeenSent('shield'))) {
+            await markAlert80Sent('shield');
+            fetch('https://clients.axiomstreamgroup.com/api/billing-alert', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ client: 'shield', pct: 80, mtdCents: billing.mtdCents, capCents: billing.capCents }),
+            }).catch(() => {});
+          }
+          // Hard cap — pause Rex
+          if (billing.overCap) {
+            return res.json({ text: 'Rex is temporarily unavailable. Please contact your administrator.' });
+          }
+        }
+      } catch { /* billing errors never block the response */ }
+
+      // ─── Usage tracking — fire and forget, never blocks ────────────────────────
+      try {
+        const toolsUsed = loopMessages
+          .filter(m => typeof m.content === 'string' && m.role === 'user')
+          .flatMap(() => []); // placeholder — actual tool names come from toolResults above
+        // Track which tools fired this session for discovery email personalization
+        const usedTools: string[] = [];
+        for (const m of loopMessages) {
+          if (Array.isArray(m.content)) {
+            for (const block of m.content as Array<{type:string;name?:string}>) {
+              if (block.type === 'tool_use' && block.name) usedTools.push(block.name);
+            }
+          }
+        }
+        if (usedTools.length && slug) {
+          const UPSTASH_URL2 = process.env.UPSTASH_REDIS_REST_URL || 'https://renewed-macaw-61269.upstash.io';
+          const UPSTASH_TOK2 = process.env.UPSTASH_REDIS_REST_TOKEN || UPSTASH_TOKEN || '';
+          const now = Date.now();
+          await Promise.all(usedTools.map(tool =>
+            fetch(UPSTASH_URL2, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${UPSTASH_TOK2}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(['SET', `usage:shield:${slug}:${tool}:last`, now, 'EX', 60*60*24*90]),
+            }).then(() =>
+              fetch(UPSTASH_URL2, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${UPSTASH_TOK2}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(['SADD', `usage:shield:${slug}:tools_used`, tool]),
+              })
+            ).catch(() => {})
+          ));
+        }
+      } catch { /* usage tracking never blocks */ }
 
       const cleanReply = stripAgentPrefix(reply);
       if (slug) {

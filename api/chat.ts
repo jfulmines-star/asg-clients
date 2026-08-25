@@ -3026,21 +3026,27 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
   if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
     safeName = lower.endsWith('.docx') ? filename : filename.replace(/\.doc$/, '.docx');
     mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    // Build a real OOXML .docx
-    const lines = content.split('\n');
-    const paragraphs = lines.map(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return new Paragraph({});
-      // Treat ALL-CAPS lines or lines ending with ':' as headings
-      const isHeading = /^[A-Z][A-Z\s]{4,}$/.test(trimmed) || trimmed.endsWith(':');
-      return new Paragraph({
-        heading: isHeading ? HeadingLevel.HEADING_2 : undefined,
-        alignment: AlignmentType.LEFT,
-        children: [new TextRun({ text: trimmed, bold: isHeading, size: isHeading ? 28 : 24, font: 'Calibri' })],
-      });
-    });
-    const doc = new Document({ sections: [{ properties: {}, children: paragraphs }] });
-    const buffer = await Packer.toBuffer(doc);
+    // Build branded Shield/Envelop .docx via Python builder (matches Poland/Croatia VP template exactly)
+    const tmpOut = `/tmp/rex-doc-${Date.now()}.docx`;
+    const titleLine = content.split('\n')[0] || filename.replace('.docx','');
+    const bodyContent = content;
+    const { execSync } = await import('child_process');
+    try {
+      execSync(
+        `python3 /root/Projects/asg-clients/scripts/build-shield-doc.py ` +
+        `--title ${JSON.stringify(titleLine)} ` +
+        `--subtitle ${JSON.stringify(slug)} ` +
+        `--content ${JSON.stringify(bodyContent)} ` +
+        `--out ${JSON.stringify(tmpOut)}`,
+        { timeout: 30000 }
+      );
+    } catch (pyErr: unknown) {
+      const msg = pyErr instanceof Error ? pyErr.message : String(pyErr);
+      return `Failed to build document: ${msg.slice(0,200)}`;
+    }
+    const { readFileSync, unlinkSync } = await import('fs');
+    const buffer = readFileSync(tmpOut);
+    try { unlinkSync(tmpOut); } catch {}
     // Upload binary buffer
     const tokenResult2 = await getShieldPortalToken();
     if (!tokenResult2.ok || !tokenResult2.accessToken) return 'Could not reach Shield M365 right now.';

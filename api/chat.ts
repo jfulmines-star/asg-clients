@@ -2,6 +2,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { writeTeamIntel } from './team-intel';
 import { getMarketSnapshot } from './market-data';
 import { recordUsage, hasAlert80BeenSent, markAlert80Sent } from './billing-ledger';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import PptxGenJS from 'pptxgenjs';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
@@ -3023,15 +3025,79 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
   let body = content;
   if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
     safeName = lower.endsWith('.docx') ? filename : filename.replace(/\.doc$/, '.docx');
-    mimeType = 'text/html';
-    body = `<html><body>${content.replace(/\n/g, '<br/>')}</body></html>`;
+    mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    // Build a real OOXML .docx
+    const lines = content.split('\n');
+    const paragraphs = lines.map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return new Paragraph({});
+      // Treat ALL-CAPS lines or lines ending with ':' as headings
+      const isHeading = /^[A-Z][A-Z\s]{4,}$/.test(trimmed) || trimmed.endsWith(':');
+      return new Paragraph({
+        heading: isHeading ? HeadingLevel.HEADING_2 : undefined,
+        alignment: AlignmentType.LEFT,
+        children: [new TextRun({ text: trimmed, bold: isHeading, size: isHeading ? 28 : 24, font: 'Calibri' })],
+      });
+    });
+    const doc = new Document({ sections: [{ properties: {}, children: paragraphs }] });
+    const buffer = await Packer.toBuffer(doc);
+    // Upload binary buffer
+    const tokenResult2 = await getShieldPortalToken();
+    if (!tokenResult2.ok || !tokenResult2.accessToken) return 'Could not reach Shield M365 right now.';
+    const uploadResp = await fetch(
+      `${SHIELD_GRAPH_BASE}/users/${encodeURIComponent(upnMap[slug] || slug)}/drive/root:/Documents/${encodeURIComponent(safeName)}:/content`,
+      { method: 'PUT', headers: { Authorization: `Bearer ${tokenResult2.accessToken}`, 'Content-Type': mimeType }, body: buffer as unknown as BodyInit }
+    );
+    if (uploadResp.ok) {
+      const data = await uploadResp.json() as { webUrl?: string; name?: string };
+      await sendFromRexPortal(upnMap[slug] || slug, `Rex created: ${data.name || safeName}`, `Your document is ready and saved to SharePoint Documents.\n\nFilename: ${data.name || safeName}`, data.webUrl);
+      return `Saved "${data.name || safeName}" to your SharePoint Documents and emailed to you from rex@shieldtechnologies.com.${data.webUrl ? `\nOpen: ${data.webUrl}` : ''}`;
+    }
+    const errD = await uploadResp.json() as { error?: { message?: string } };
+    return `Failed to save document: ${errD?.error?.message || uploadResp.status}`;
+  } else if (lower.endsWith('.pptx') || lower.endsWith('.ppt')) {
+    safeName = lower.endsWith('.pptx') ? filename : filename.replace(/\.ppt$/, '.pptx');
+    mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    // Build a real .pptx
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE';
+    const lines = content.split('\n').filter(l => l.trim());
+    // First line = title slide
+    const titleSlide = pptx.addSlide();
+    titleSlide.background = { color: '1B2A4A' };
+    titleSlide.addText(lines[0] || filename.replace('.pptx',''), { x: 0.5, y: 2.5, w: '90%', h: 1.5, fontSize: 36, bold: true, color: 'FFFFFF', align: 'center' });
+    titleSlide.addText('Shield Technologies — Envelop®', { x: 0.5, y: 4.2, w: '90%', h: 0.5, fontSize: 16, color: '7AA0FF', align: 'center' });
+    // Remaining lines — group into slides of ~5 bullets each
+    const bullets = lines.slice(1).filter(l => l.trim());
+    for (let i = 0; i < bullets.length; i += 5) {
+      const slide = pptx.addSlide();
+      slide.background = { color: '0A0F1E' };
+      const chunk = bullets.slice(i, i + 5);
+      const slideTitle = chunk[0].replace(/^#+\s*/, '');
+      slide.addText(slideTitle, { x: 0.5, y: 0.3, w: '90%', h: 0.7, fontSize: 24, bold: true, color: 'FFFFFF' });
+      slide.addText(chunk.slice(1).map(b => ({ text: b.replace(/^[-•*]\s*/, ''), options: { bullet: true } })), { x: 0.7, y: 1.2, w: '88%', h: 4.5, fontSize: 18, color: 'D0D8F0' });
+    }
+    const pptBuffer = await pptx.write({ outputType: 'nodebuffer' }) as Buffer;
+    const tokenResult3 = await getShieldPortalToken();
+    if (!tokenResult3.ok || !tokenResult3.accessToken) return 'Could not reach Shield M365 right now.';
+    const uploadResp3 = await fetch(
+      `${SHIELD_GRAPH_BASE}/users/${encodeURIComponent(upnMap[slug] || slug)}/drive/root:/Documents/${encodeURIComponent(safeName)}:/content`,
+      { method: 'PUT', headers: { Authorization: `Bearer ${tokenResult3.accessToken}`, 'Content-Type': mimeType }, body: pptBuffer as unknown as BodyInit }
+    );
+    if (uploadResp3.ok) {
+      const data3 = await uploadResp3.json() as { webUrl?: string; name?: string };
+      await sendFromRexPortal(upnMap[slug] || slug, `Rex created: ${data3.name || safeName}`, `Your presentation is ready and saved to SharePoint Documents.\n\nFilename: ${data3.name || safeName}`, data3.webUrl);
+      return `Saved "${data3.name || safeName}" to your SharePoint Documents and emailed to you from rex@shieldtechnologies.com.${data3.webUrl ? `\nOpen: ${data3.webUrl}` : ''}`;
+    }
+    const errP = await uploadResp3.json() as { error?: { message?: string } };
+    return `Failed to save presentation: ${errP?.error?.message || uploadResp3.status}`;
   } else if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
     safeName = filename.replace(/\.xls$/, '.csv').replace('.xlsx', '.csv');
     mimeType = 'text/csv';
   } else if (lower.endsWith('.pdf')) {
     safeName = filename.replace('.pdf', '.txt');
     body = `[PDF content — open in Word and export to PDF]\n\n${content}`;
-  } else if (!lower.match(/\.(txt|md|pptx|ppt|csv)$/)) {
+  } else if (!lower.match(/\.(txt|md|csv)$/)) {
     safeName = `${filename}.txt`;
   }
   const tokenResult = await getShieldPortalToken();

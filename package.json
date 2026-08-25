@@ -9,17 +9,22 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@types/formidable": "^3.5.1",
+    "@types/papaparse": "^5.5.2",
     "@types/pdf-parse": "^1.1.5",
     "@vercel/node": "^5.6.10",
+    "docx": "^9.7.1",
     "formidable": "^3.5.4",
     "html2canvas": "^1.4.1",
     "mammoth": "^1.12.0",
+    "papaparse": "^5.6.0",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.5.207",
+    "pptxgenjs": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
-    "recharts": "^3.8.0"
+    "recharts": "^3.8.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

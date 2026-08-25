@@ -3034,8 +3034,9 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
   } else if (!lower.match(/\.(txt|md|pptx|ppt|csv)$/)) {
     safeName = `${filename}.txt`;
   }
-  const token = await getShieldPortalToken();
-  if (!token) return 'Could not reach Shield M365 right now.';
+  const tokenResult = await getShieldPortalToken();
+  if (!tokenResult.ok || !tokenResult.accessToken) return 'Could not reach Shield M365 right now.';
+  const token = tokenResult.accessToken;
   try {
     const resp = await fetch(
       `https://graph.microsoft.us/v1.0/users/${encodeURIComponent(upn)}/drive/root:/Documents/${encodeURIComponent(safeName)}:/content`,

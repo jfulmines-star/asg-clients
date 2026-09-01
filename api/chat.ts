@@ -2690,6 +2690,38 @@ async function streamOpenAIFallback(
   return accumulated;
 }
 
+// Emergency provider failover for the shared Shield portals. The primary
+// Vercel handler keeps the full Rex tool loop on Anthropic. If Anthropic is
+// unavailable (billing, auth, rate limit, or network), hand the same turn to
+// the Shield gateway, which owns the ordered OpenAI -> Gemini fallbacks.
+async function callShieldFailoverGateway(
+  portalPin: string,
+  message: string,
+  history: AnthropicMessage[],
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90000);
+  try {
+    const response = await fetch('https://api.by-kit.com/shield/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        pin: portalPin,
+        message,
+        history: sanitizeMessages(history).slice(-20),
+      }),
+    });
+    const data = await response.json().catch(() => ({})) as { reply?: string; error?: string };
+    if (!response.ok || !data.reply?.trim()) {
+      throw new Error(`Shield failover gateway ${response.status}: ${String(data.error || 'no reply').slice(0, 160)}`);
+    }
+    return data.reply.trim();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -3865,6 +3897,22 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
             messages: loopMessages,
           }),
         });
+
+        // Anthropic error payloads do not contain content blocks. Previously
+        // they fell through to the canned "Ready when you are" response with
+        // HTTP 200, masking the outage. Route the turn through the shared
+        // Shield provider chain instead.
+        if (!loopRes.ok) {
+          const errText = await loopRes.text().catch(() => '');
+          console.error(`[shield] Anthropic ${loopRes.status}; using provider failover: ${errText.slice(0, 200)}`);
+          reply = await callShieldFailoverGateway(
+            String(req.body?.portalPin || ''),
+            String(message),
+            messages,
+          );
+          continueLoop = false;
+          break;
+        }
         const loopData = await loopRes.json() as { stop_reason: string; content: ContentBlock[] };
 
         if (loopData.stop_reason === 'tool_use') {
@@ -3916,7 +3964,15 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
           }
           loopMessages.push({ role: 'user', content: toolResults });
         } else {
-          reply = (loopData.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || 'Ready when you are.';
+          reply = (loopData.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+          if (!reply.trim()) {
+            console.error('[shield] Anthropic returned no text; using provider failover');
+            reply = await callShieldFailoverGateway(
+              String(req.body?.portalPin || ''),
+              String(message),
+              messages,
+            );
+          }
           continueLoop = false;
         }
       }

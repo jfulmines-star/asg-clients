@@ -172,9 +172,9 @@ function IntakeSection({ config, accent, fields, setFields, onSave, tv = DEFAULT
 }
 
 // ─── Chat section ─────────────────────────────────────────────────────────────
-function ChatSection({ config, accent, savedContext, fields, fontSize = 14, themeMode = 'dark', tv, preloadedHistory }: {
+function ChatSection({ config, accent, savedContext, fields, fontSize = 14, themeMode = 'dark', tv, preloadedHistory, portalPin = '' }: {
   config: PortalConfig; accent: string; savedContext: any; fields: any;
-  fontSize?: number; themeMode?: string; tv?: typeof DEFAULT_TV; preloadedHistory?: { role: string; content: string }[] | null
+  fontSize?: number; themeMode?: string; tv?: typeof DEFAULT_TV; preloadedHistory?: { role: string; content: string }[] | null; portalPin?: string
 }) {
   const th = tv || DEFAULT_TV
   const bg = themeMode === 'light' ? '#EFEFEF' : th.BG
@@ -386,7 +386,7 @@ function ChatSection({ config, accent, savedContext, fields, fontSize = 14, them
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent: config.agentId, message: text, history, slug: config.slug, teamMember: memberName, isLead: false, extraContext, disableTeamContext: !!(config as any).disableTeamContext }),
+        body: JSON.stringify({ agent: config.agentId, message: text, history, slug: config.slug, teamMember: memberName, isLead: false, extraContext, disableTeamContext: !!(config as any).disableTeamContext, portalPin }),
       })
       const data = await res.json()
       const reply = data.reply || data.text || data.message || 'Something went wrong.'
@@ -531,8 +531,8 @@ function formatBytes(n: number) {
 
 const ACCEPTED_TYPES = '.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.pptx,.ppt'
 
-function DocumentsSection({ config, accent, themeMode, fontSize, tv }: {
-  config: PortalConfig; accent: string; themeMode: string; fontSize: number; tv: typeof DEFAULT_TV
+function DocumentsSection({ config, accent, themeMode, fontSize, tv, portalPin = '' }: {
+  config: PortalConfig; accent: string; themeMode: string; fontSize: number; tv: typeof DEFAULT_TV; portalPin?: string
 }) {
   const bg = themeMode === 'light' ? '#F8F9FA' : tv.BG
   const surface = themeMode === 'light' ? '#FFFFFF' : tv.SURFACE
@@ -613,6 +613,7 @@ function DocumentsSection({ config, accent, themeMode, fontSize, tv }: {
         history,
         slug: config.slug,
         teamMember: memberName,
+        portalPin,
         isLead: false,
         disableTeamContext: true,
         extraContext: `\n\n## Document Analysis Mode\nUser has shared a document and is asking questions about it.`,
@@ -1134,6 +1135,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   const tv = { BG: theme.bg, SURFACE: theme.surface, BORDER: theme.border, GRAY: theme.gray, LIGHT_GRAY: theme.lightGray }
 
   const [unlocked, setUnlocked] = useState(false)
+  const [authenticatedPin, setAuthenticatedPin] = useState('')
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
   const [savedContext, setSavedContext] = useState<any>(null)
@@ -1195,8 +1197,10 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
       // Multi-PIN portal: merge per-person overrides into config
       const overrides = pinMap[entered]
       Object.assign(config, overrides)
+      setAuthenticatedPin(entered)
       setUnlocked(true)
     } else if (entered === config.pin) {
+      setAuthenticatedPin(entered)
       setUnlocked(true)
     } else {
       setPinError(true); setDigits(['', '', '', '']); setTimeout(() => (document.getElementById('pin-0') as HTMLInputElement)?.focus(), 80)
@@ -1445,10 +1449,10 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
           {section === 'intake' && !intakeSaved && <IntakeSection config={config} accent={accent} fields={fields} setFields={setFields} onSave={handleSaveIntake} tv={tv} />}
           {/* Keep ChatSection mounted once visited so history survives tab switches */}
           <div style={{ display: section === 'chat' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
-            <ChatSection config={config} accent={accent} savedContext={intakeSaved ? savedContext : null} fields={intakeSaved ? fields : null} fontSize={FONT_SIZE[textSize]} themeMode={themeMode} tv={tv} preloadedHistory={preloadedHistory} />
+            <ChatSection config={config} accent={accent} savedContext={intakeSaved ? savedContext : null} fields={intakeSaved ? fields : null} fontSize={FONT_SIZE[textSize]} themeMode={themeMode} tv={tv} preloadedHistory={preloadedHistory} portalPin={authenticatedPin} />
           </div>
           {enableDocuments && section === 'documents' && (
-            <DocumentsSection config={config} accent={accent} themeMode={themeMode} fontSize={FONT_SIZE[textSize]} tv={tv} />
+            <DocumentsSection config={config} accent={accent} themeMode={themeMode} fontSize={FONT_SIZE[textSize]} tv={tv} portalPin={authenticatedPin} />
           )}
           {enableUploadZone && section === 'upload' && (
             <UploadZoneSection config={config} accent={accent} themeMode={themeMode} tv={tv} />

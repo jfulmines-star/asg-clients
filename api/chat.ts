@@ -2615,7 +2615,7 @@ function sanitizeMessages(messages: AnthropicMessage[]): AnthropicMessage[] {
 }
 
 // ─── OpenAI fallback (used when Anthropic is unavailable) ────────────────────
-async function callOpenAIFallback(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
+async function callOpenAIFallback(systemPrompt: string, messages: AnthropicMessage[], chardanPortalPin = ''): Promise<string> {
   const oaiMessages = [
     { role: 'system', content: systemPrompt },
     ...sanitizeMessages(messages).map(m => ({ role: m.role, content: m.content })),
@@ -2634,6 +2634,9 @@ async function callOpenAIFallback(systemPrompt: string, messages: AnthropicMessa
   });
   if (!res.ok) {
     const err = await res.text();
+    if (chardanPortalPin) {
+      return callChardanFailoverGateway(chardanPortalPin, messages);
+    }
     throw new Error(`OpenAI fallback error ${res.status}: ${err.slice(0, 200)}`);
   }
   const data = await res.json();
@@ -2644,6 +2647,7 @@ async function streamOpenAIFallback(
   systemPrompt: string,
   messages: AnthropicMessage[],
   onChunk: (text: string) => void,
+  chardanPortalPin = '',
 ): Promise<string> {
   const oaiMessages = [
     { role: 'system', content: systemPrompt },
@@ -2664,6 +2668,11 @@ async function streamOpenAIFallback(
   });
   if (!res.ok || !res.body) {
     const err = await res.text().catch(() => '');
+    if (chardanPortalPin) {
+      const reply = await callChardanFailoverGateway(chardanPortalPin, messages);
+      onChunk(reply);
+      return reply;
+    }
     throw new Error(`OpenAI fallback stream error ${res.status}: ${err.slice(0, 200)}`);
   }
   const reader = (res.body as ReadableStream<Uint8Array>).getReader();
@@ -2722,7 +2731,34 @@ async function callShieldFailoverGateway(
   }
 }
 
-async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
+async function callChardanFailoverGateway(
+  portalPin: string,
+  messages: AnthropicMessage[],
+): Promise<string> {
+  const safeMessages = sanitizeMessages(messages);
+  const lastUserIndex = safeMessages.map(m => m.role).lastIndexOf('user');
+  const message = lastUserIndex >= 0 ? safeMessages[lastUserIndex].content : '';
+  const history = lastUserIndex >= 0 ? safeMessages.slice(0, lastUserIndex) : safeMessages;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90000);
+  try {
+    const response = await fetch('https://api.by-kit.com/chardan/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({ pin: portalPin, message, history: history.slice(-20) }),
+    });
+    const data = await response.json().catch(() => ({})) as { reply?: string; error?: string };
+    if (!response.ok || !data.reply?.trim()) {
+      throw new Error(`Chardan failover gateway ${response.status}: ${String(data.error || 'no reply').slice(0, 160)}`);
+    }
+    return data.reply.trim();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[], chardanPortalPin = ''): Promise<string> {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2747,7 +2783,7 @@ async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[])
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error('[rex] Anthropic callAnthropic error:', msg);
-    return callOpenAIFallback(systemPrompt, messages);
+    return callOpenAIFallback(systemPrompt, messages, chardanPortalPin);
   }
 }
 
@@ -3368,6 +3404,7 @@ async function streamAnthropicWithTools(
   messages: AnthropicMessage[],
   onChunk: (text: string) => void,
   forceSearch = false,
+  chardanPortalPin = '',
 ): Promise<string> {
   const safeMessages = sanitizeMessages(messages);
 
@@ -3393,7 +3430,7 @@ async function streamAnthropicWithTools(
     if (!firstRes.ok) throw new Error(`Anthropic ${firstRes.status}`);
   } catch {
     // Anthropic unavailable — fall back to OpenAI (no tool use on fallback)
-    return streamOpenAIFallback(systemPrompt, safeMessages, onChunk);
+    return streamOpenAIFallback(systemPrompt, safeMessages, onChunk, chardanPortalPin);
   }
 
   const firstData = await firstRes.json();
@@ -3488,7 +3525,7 @@ async function streamAnthropicWithTools(
       { role: 'assistant' as const, content: `I searched the web and found: ${searchResults}` },
       { role: 'user' as const, content: 'Please synthesize that search result into a helpful response.' },
     ];
-    return streamOpenAIFallback(systemPrompt, fallbackMessages, onChunk);
+    return streamOpenAIFallback(systemPrompt, fallbackMessages, onChunk, chardanPortalPin);
   }
 
   // Non-streaming path: parse full response and emit in chunks
@@ -4082,6 +4119,9 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
   }
 
   const streaming = req.body?.stream === true;
+  const chardanPortalPin = (slug === 'chardan' || String(slug).startsWith('chardan-'))
+    ? String(req.body?.portalPin || '')
+    : '';
 
   if (streaming) {
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -4092,7 +4132,7 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
       const streamFn = streamAnthropicWithTools;
       const accumulated = await streamFn(systemPrompt, messages, (text) => {
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
-      }, forceSearch);
+      }, forceSearch, chardanPortalPin);
       res.write('data: [DONE]\n\n');
       res.end();
       if (slug && accumulated) {
@@ -4120,7 +4160,7 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
   }
 
   try {
-    const text = await callAnthropic(systemPrompt, messages);
+    const text = await callAnthropic(systemPrompt, messages, chardanPortalPin);
     if (slug) {
       const now = Date.now();
       const cleanedText = stripAgentPrefix(text);

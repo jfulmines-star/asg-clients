@@ -607,7 +607,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
       const history = messages.map(m => ({ role: m.role, content: m.content }))
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent: 'rex', message: text, history, slug, teamMember: meta.memberName, isLead: false, extraContext: '', disableTeamContext: false }),
+        body: JSON.stringify({ agent: 'rex', message: text, history, slug, portalPin: pin, teamMember: meta.memberName, isLead: false, extraContext: '', disableTeamContext: false }),
       })
       const data = await res.json()
       const reply = data.reply || data.text || data.message || 'Something went wrong.'

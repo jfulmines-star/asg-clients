@@ -98,6 +98,7 @@ export function Chat({
         history: history.map(m => ({ role: m.role, content: m.content })),
         slug: config.slug,
         tenantId: config.slug,
+        portalPin: config.pin,
         teamMember: memberName,
         isLead: config.chat.isLead ?? false,
         extraContext: intakeAsMarkdown,

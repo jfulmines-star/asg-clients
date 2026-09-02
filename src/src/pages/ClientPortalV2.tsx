@@ -1152,7 +1152,11 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
   // Pre-load history at top level so ChatSection always has it on mount
   const [preloadedHistory, setPreloadedHistory] = useState<{ role: string; content: string }[] | null>(null)
   useEffect(() => {
+    // Multi-PIN portals must establish the person first. Loading before unlock
+    // uses the generic tenant identity and can surface another member's thread.
+    if (!unlocked) return
     const memberName = (config as any).memberName || config.clientName
+    setPreloadedHistory(null)
     fetch(`/api/history?slug=${encodeURIComponent(config.slug)}&member=${encodeURIComponent(memberName)}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
@@ -1164,7 +1168,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
         }
       })
       .catch(() => setPreloadedHistory([]))
-  }, [config.slug])
+  }, [unlocked, authenticatedPin, config.slug, config.clientName])
 
   // On unlock, load saved context
   useEffect(() => {
@@ -1197,6 +1201,7 @@ export default function ClientPortalV2({ config }: { config: PortalConfig }) {
       // Multi-PIN portal: merge per-person overrides into config
       const overrides = pinMap[entered]
       Object.assign(config, overrides)
+      setPreloadedHistory(null)
       setAuthenticatedPin(entered)
       setUnlocked(true)
     } else if (entered === config.pin) {

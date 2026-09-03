@@ -330,21 +330,21 @@ export const CALEB_CONFIG: PortalConfig = {
   ],
 }
 
-// ─── GNOLES — Fiber Network Services / Rex ───────────────────────────────────
+// ─── GNOLES — Fiber Network Services / Kit ───────────────────────────────────
 // clients.axiomstreamgroup.com/gnoles
-// Greg Noles — Owner, Fiber Network Services. Rex agent, orange accent.
+// Greg Noles — Owner, Fiber Network Services. Kit agent, steel blue accent.
 export const GNOLES_CONFIG: PortalConfig = {
   slug: 'gnoles',
   pin: '1996',
   clientName: 'Greg Noles',
   company: 'Fiber Network Services',
   memberName: 'Greg',
-  agentLabel: 'Rex',
-  agentId: 'rex',
-  accentColor: '#F97316',
+  agentLabel: 'Kit',
+  agentId: 'kit',
+  accentColor: '#4A7FA5',
   themeMode: 'dark',
   tagline:
-    "Private access to Rex — your Fiber Network Services AI, pre-loaded with your Comcast/Cox " +
+    "Private access to Kit — your Fiber Network Services AI, pre-loaded with your Comcast/Cox " +
     "footprint, BEAD pipeline, and fleet operations. Every conversation starts from there.",
   whatWeKnow: [
     { label: 'Owner',     value: 'Greg Noles' },
@@ -356,15 +356,15 @@ export const GNOLES_CONFIG: PortalConfig = {
 
   intakeLabel: 'My Business — 2 Minutes',
   intakeTitle: 'Load Your Context',
-  intakeSubtitle: "Give Rex your current priorities — MCA renewals, BEAD targets, fleet issues, hiring. Two minutes now means every conversation starts smarter.",
+  intakeSubtitle: "Give Kit your current priorities — MCA renewals, BEAD targets, fleet issues, hiring. Two minutes now means every conversation starts smarter.",
 
   chat: {
     transport: 'api-proxy',
-    placeholder: 'Ask Rex anything…',
+    placeholder: 'Ask Kit anything…',
     greeting: (savedContext) =>
       savedContext
         ? "Greg — context loaded. What's the priority today?"
-        : "Greg — good to have you here. I'm briefed on FNS: your Comcast/Cox/Segra footprint, the eastern US office network, fleet operations, and where the BEAD opportunity sits. Where do you want to start?",
+        : "Greg — Kit here. I'm briefed on FNS: your Comcast/Cox/Segra footprint, the eastern US office network, fleet operations, and where the BEAD opportunity sits. Where do you want to start?",
     apiEndpoint: '/api/chat',
     historyEndpoint: '/api/history',
     persistEndpoint: '/api/portal-chat-history',
@@ -398,7 +398,7 @@ export const GNOLES_CONFIG: PortalConfig = {
   ],
 
   defaultModule: 'chat',
-  headerLabel: 'Rex - FNS',
+  headerLabel: 'Kit - FNS',
 
   modules: ['welcome', 'chat', 'documents'],
 
@@ -415,7 +415,7 @@ export const GNOLES_CONFIG: PortalConfig = {
       icon: '📡',
       title: 'FNS Context Loaded',
       body:
-        'Rex opens already knowing FNS — your Comcast/Cox/Segra footprint, eastern US offices, ' +
+        'Kit opens already knowing FNS — your Comcast/Cox/Segra footprint, eastern US offices, ' +
         'fleet operations, BEAD pipeline, and MCA landscape. Skip the brief, start where the work is.',
     },
     {

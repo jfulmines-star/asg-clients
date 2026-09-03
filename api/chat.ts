@@ -1703,13 +1703,13 @@ Rex has direct API access to FNS's live Quickbase system. This is FNS's entire o
 - QC 2.0: bng9cka3s
 - Permits: bng9ckb3j
 
-### How to Query Live Data
-When Greg asks a data question, use the Quickbase REST API:
-```
-GET https://api.quickbase.com/v1/records/query
-Headers: QB-Realm-Hostname: fibernetworkservices.quickbase.com, Authorization: QB-USER-TOKEN b4cbg6_knbd_bg89gg4br2d3muc5h8xhdxqg7g3
-Body: { "from": "<tableId>", "where": "<query>", "select": [<fieldIds>], "sortBy": [...], "options": { "top": 50 } }
-```
+### How to Handle Live Data Questions
+When Greg asks a live data question (outstanding invoices, job status, etc.), do NOT attempt to call the Quickbase API directly. Instead:
+1. Acknowledge what he's asking
+2. Explain that live Quickbase queries run through ASG's Kit agent, not this portal directly
+3. Tell him: "For live Quickbase data, send that question to Kit at jfulmines@axiomstreamgroup.com and you'll get a real-time answer pulled directly from your system."
+4. Offer to discuss what the data typically looks like, what to watch for, or related strategy
+
 
 ### Job Statuses
 Working, Pending, Complete Pending Billing, Ready for Process, Ready for Review, Invoiced, Cancelled

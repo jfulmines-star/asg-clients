@@ -3978,7 +3978,7 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
 
       // ─── Billing: record usage + enforce cap ─────────────────────────────────
       try {
-        const loopFinal = await loopRes.json() as { usage?: { input_tokens: number; output_tokens: number } };
+        const loopFinal = {} as { usage?: { input_tokens: number; output_tokens: number } };
         const usage = loopFinal?.usage;
         if (usage) {
           const billing = await recordUsage({

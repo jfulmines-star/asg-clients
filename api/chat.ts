@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { writeTeamIntel } from './team-intel';
 import { getMarketSnapshot } from './market-data';
 import { recordUsage, hasAlert80BeenSent, markAlert80Sent } from './billing-ledger';
+import { MODEL_DEFAULTS, isHeavyMessage as sharedIsHeavyMessage } from './modelConfig';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import PptxGenJS from 'pptxgenjs';
 
@@ -89,7 +90,7 @@ async function consolidateMemory(slug: string, member: string, thread: TeamMessa
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model: MODEL_DEFAULTS.light, max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),
     });
     if (!res.ok) return;
     const data = await res.json();
@@ -2754,7 +2755,7 @@ async function callAnthropic(systemPrompt: string, messages: AnthropicMessage[])
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: MODEL_DEFAULTS.light,
         max_tokens: 2048,
         system: systemPrompt,
         messages: sanitizeMessages(messages),
@@ -2788,7 +2789,7 @@ async function streamAnthropic(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: MODEL_DEFAULTS.light,
         max_tokens: 2048,
         stream: true,
         system: systemPrompt,
@@ -3253,7 +3254,7 @@ async function planGraphQuery(query: string): Promise<GraphPlan> {
       method: 'POST',
       headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 220, temperature: 0,
+        model: MODEL_DEFAULTS.light, max_tokens: 220, temperature: 0,
         messages: [{ role: 'user', content: `Return JSON only with entity_names and relationship_types for this graph query. Allowed relationships: ${[...GRAPH_RELATIONSHIPS].join(', ')}. Do not invent names. Field-report questions use field_reported.\n\nQuery: ${query.slice(0, 2000)}` }],
       }),
       signal: AbortSignal.timeout(20000),
@@ -3404,7 +3405,7 @@ async function streamAnthropicWithTools(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: MODEL_DEFAULTS.light,
         max_tokens: 2048,
         system: systemPrompt,
         tools: [WEB_SEARCH_TOOL],
@@ -3495,7 +3496,7 @@ async function streamAnthropicWithTools(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: MODEL_DEFAULTS.light,
         max_tokens: 2048,
         stream: false,
         system: systemPrompt,
@@ -3603,7 +3604,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const openerRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
+        body: JSON.stringify({ model: MODEL_DEFAULTS.light, max_tokens: 200, messages: [{ role: 'user', content: openerPrompt }] }),
       });
       const openerData = await openerRes.json();
       const openerText = openerData.content?.[0]?.type === 'text' ? openerData.content[0].text : `Good to see you, ${firstName}. What are we working on today?`;
@@ -3788,7 +3789,7 @@ Built by AxiomStream Group — axiomstreamgroup.com`;
           ...(isPDF ? { 'anthropic-beta': 'pdfs-2024-09-25' } : {}),
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
+          model: MODEL_DEFAULTS.heavy,
           max_tokens: 4096,
           system: systemPrompt,
           messages: [{ role: 'user', content: userContent }],
@@ -3886,19 +3887,10 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
         : [GET_CALENDAR_TOOL, DRAFT_EMAIL_TOOL, SAVE_DOCUMENT_TOOL, ...HS_TOOLS];
       type ContentBlock = { type: string; id?: string; name?: string; text?: string; input?: Record<string, unknown> };
       // Auto-escalate to Sonnet for heavy tasks / engineering slug
-      const SHIELD_MODEL_HAIKU  = 'claude-haiku-4-5-20251001';
-      const SHIELD_MODEL_SONNET = 'claude-sonnet-4-6-20250514';
+      // (shared MODEL_DEFAULTS + isHeavyMessage from ./modelConfig — Rex 2.0 alignment)
       const engineeringSlugs = ['shield-caleb', 'caleb'];
-      const heavyPatterns = [
-        /\b(analyz|review|summariz|evaluat|assess|break.?down|read.?through)/i,
-        /\b(rfp|solicitation|sow|statement.?of.?work|spec(ification)?|technical|engineering|proposal|bid|nsn|mil.?spec)/i,
-        /\b(draft|write|create|compose).{0,30}(report|proposal|response|analysis|brief|plan)/i,
-        /\b(compar|versus|pros.?and.?cons|trade.?off|recommend|strateg)/i,
-      ];
-      const isHeavyMessage = engineeringSlugs.includes(slug as string) ||
-        heavyPatterns.some(r => r.test(String(message))) ||
-        String(message).length > 800;
-      const shieldModel    = isHeavyMessage ? SHIELD_MODEL_SONNET : SHIELD_MODEL_HAIKU;
+      const isHeavyMessage = sharedIsHeavyMessage(String(message), slug as string, engineeringSlugs);
+      const shieldModel    = isHeavyMessage ? MODEL_DEFAULTS.heavy : MODEL_DEFAULTS.light;
       const shieldMaxToks  = isHeavyMessage ? 4096 : 2048;
 
       let loopMessages: { role: string; content: unknown }[] = [...sanitizeMessages(messages)];

@@ -3,7 +3,7 @@ export async function recordUsage(_params: {
   client: string; slug: string; model: string;
   inputTokens: number; outputTokens: number; feature: string;
 }) {
-  return { over80: false };
+  return { over80: false, overCap: false, mtdCents: 0, capCents: 0 };
 }
 
 export async function hasAlert80BeenSent(_client: string): Promise<boolean> {

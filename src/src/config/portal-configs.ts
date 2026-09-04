@@ -42,6 +42,7 @@ export interface PortalConfig {
   enableInlineUpload?: boolean  // allow documents to be attached or dropped into chat
   documentTenantId?: string     // isolated RAG namespace; defaults to slug
   pinMap?: Record<string, Partial<PortalConfig>>  // per-person overrides for shared portal URLs
+  logoUrl?: string          // client logo shown in the "Built For" header band; falls back to text-only company name
 }
 
 // ─── Client Configs ──────────────────────────────────────────────────────────

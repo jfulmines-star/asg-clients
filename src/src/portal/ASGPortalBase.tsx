@@ -327,6 +327,9 @@ export function ASGPortalBase({ config }: Props) {
           boxSizing: 'border-box',
         }}
       >
+        {/* Built For — client logo/name band, above all content (Rex 2.0) */}
+        <BuiltForHeader config={config} tv={tv} accent={accent} />
+
         {/* Banner slot */}
         {banners.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
@@ -345,6 +348,58 @@ export function ASGPortalBase({ config }: Props) {
 }
 
 // ── ASG Wordmark ────────────────────────────────────────────────────────────
+function BuiltForHeader({ config, tv, accent }: { config: PortalConfig; tv: { border: string; gray: string; text: string; surface: string }; accent: string }) {
+  if (!config.company) return null
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '10px 16px',
+        marginBottom: 20,
+        borderRadius: 10,
+        border: `1px solid ${tv.border}`,
+        background: tv.surface,
+      }}
+    >
+      {config.logoUrl ? (
+        <img
+          src={config.logoUrl}
+          alt={config.company}
+          style={{ height: 24, maxWidth: 120, objectFit: 'contain', flexShrink: 0 }}
+        />
+      ) : (
+        <div
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 5,
+            background: accent,
+            color: '#0A0A0A',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 900,
+            fontSize: 12,
+            flexShrink: 0,
+          }}
+        >
+          {config.company.charAt(0).toUpperCase()}
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.3 }}>
+        <span style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: tv.gray, fontWeight: 700 }}>
+          Built For
+        </span>
+        <span style={{ fontSize: 13, color: tv.text, fontWeight: 700 }}>
+          {config.company}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function Wordmark({ accent, tv, compact = false, label }: { accent: string; tv: { text: string }; compact?: boolean; label?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: FONT_STACK }}>

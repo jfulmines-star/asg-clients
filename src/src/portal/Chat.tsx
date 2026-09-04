@@ -22,6 +22,7 @@ import type {
   ModuleContext,
   ThemeTokens,
 } from './types'
+import { MODEL_DEFAULTS } from './modelConfig'
 
 interface Props {
   config: PortalConfig
@@ -36,7 +37,7 @@ interface Props {
   fontSize?: number
 }
 
-const DEFAULT_MODEL = 'claude-sonnet-4-6'
+const DEFAULT_MODEL = MODEL_DEFAULTS.primary
 
 export function Chat({
   config,

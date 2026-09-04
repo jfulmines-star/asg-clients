@@ -61,7 +61,7 @@ export interface ChatConfig {
   anthropic?: {
     /** Reads import.meta.env.VITE_ANTHROPIC_API_KEY when omitted */
     apiKey?: string
-    model?: string             // default 'claude-sonnet-4-6'
+    model?: string             // default 'claude-sonnet-5' (see MODEL_DEFAULTS in ./modelConfig)
     systemPrompt: (ctx: SystemPromptCtx) => string
     maxTokens?: number         // default 2048
   }
@@ -80,6 +80,7 @@ export interface PortalConfig {
   agentId: string              // sent to /api/chat as `agent`
 
   // Branding
+  logoUrl?: string              // client logo shown in the "Built For" header band; falls back to text-only company name
   accentColor: string
   themeMode?: 'dark' | 'light' | 'auto'
   tagline: string

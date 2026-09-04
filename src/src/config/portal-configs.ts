@@ -88,9 +88,9 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     pin: '0000',
     clientName: 'JJ',
     company: 'AxiomStream Group',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
     tagline: 'CRE & Deal Intelligence — V2 Test',
     whatWeKnow: 'Jason Fulmines · CEO, AxiomStream Group · Builder of this product · Testing V2 portal architecture. Go through the full flow as if you were a real client.',
     chatPlaceholder: 'Ask anything, test the flow, paste a clause...',
@@ -99,24 +99,6 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       : "Hey JJ — you're testing the V2 portal. Walk through the intake, save your context, then come back to this chat and see what the returning-user experience looks like.",
     intakeFields: REX_CRE_INTAKE,
     poweredBy: 'AxiomStream Group · V2 Architecture Test',
-  },
-
-  // ── Shield Technologies — Andy Parks ────────────────────────────────────
-  andrew: {
-    slug: 'andrew',
-    pin: '6291',
-    clientName: 'Andy',
-    company: 'Shield Technologies Corporation',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
-    tagline: 'Sales Strategy & Government Capture Intelligence',
-    whatWeKnow: 'Director of Sales · Shield Technologies Corporation (Envelop Covers) · Marine Corps veteran, Iraq · DoD sales: Army, Marine Corps, Navy · Florida-based · NSN-assigned products on existing contract vehicles · $23B corrosion market · Southwest Airlines MRO expansion play in pipeline.',
-    chatPlaceholder: 'Pipeline, capture strategy, account targeting, outreach — what are we working on?',
-    chatGreeting: (saved) => saved
-      ? "Andy — context loaded. What's the priority today?"
-      : "Andy — I've been briefed on Shield, the Envelop line, and your government and commercial pipeline. Where do you want to start — pipeline hygiene, capture strategy, or the Southwest play?",
-    intakeFields: [],
   },
 
   // ── Shield Technologies — Mark Bechtel ──────────────────────────────────
@@ -134,25 +116,6 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     chatGreeting: (saved) => saved
       ? "Mark — context loaded. What's the aviation priority today?"
       : "Mark — I'm up to speed on your territory: Southwest, the commercial MRO pipeline, and military aviation. What are we working on?",
-    intakeFields: [],
-  },
-
-  // ── Shield Technologies — Ryan Hopper ───────────────────────────────────
-  ryanh: {
-    slug: 'ryanh',
-    pin: '5506',
-    clientName: 'Ryan',
-    memberName: 'Ryan Hopper',
-    company: 'Shield Technologies — Navy & Coast Guard',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
-    tagline: 'Navy, Coast Guard & Commercial Aviation',
-    whatWeKnow: 'Field Service Rep, Navy/Coast Guard/Commercial Aviation · Shield Technologies Corporation · Territory: NAVSEA, NAVAIR, NAVSUP, naval depots, USCG, Commercial MRO · CFM56 + CFM LEAP engine covers · Southwest Airlines active account (Jaime, Christopher Richardson, Megan Kahle) · MRO Americas April 21–23.',
-    chatPlaceholder: 'Southwest pipeline, Navy/USCG capture, MRO accounts — what are we working on?',
-    chatGreeting: (saved) => saved
-      ? "Ryan — context loaded. What's the priority today?"
-      : "Ryan — I'm briefed on your territory: Navy buying commands, Coast Guard, and the depot pipeline. What are we working on?",
     intakeFields: [],
   },
 
@@ -194,25 +157,6 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     intakeFields: [],
   },
 
-  // ── Shield Technologies — Caleb Sabroski (Chief Engineer) ───────────────
-  'shield-caleb': {
-    slug: 'shield-caleb',
-    pin: '4829',
-    clientName: 'Caleb',
-    memberName: 'Caleb Sabroski',
-    company: 'Shield Technologies Corporation',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
-    tagline: 'Chief Engineer Intelligence — Materials Science, Design & DoD Engineering',
-    whatWeKnow: 'Chief Engineer · Shield Technologies Corporation · 9 years designing and engineering Envelop protective covers — the world\'s most advanced tactical environmental protection systems for military equipment, aircraft, and vehicles · Envelop product: 4-layer patented technology — waterproof outer shell + non-porous membrane blocking SO2/chloride molecules + VCI corrosion inhibitor releasing ions that prevent oxygen bonding + hydrophobic wicking layer · Performance validated: USAF 12-month study 20x more effective than shelters; USN 4-month test 95% corrosion reduction; German Navy "Significantly Superior" · 120,000+ covers delivered · 500+ NSN-assigned designs across all 5 U.S. military branches + international allies (Australian ADF, RAAF, JSDF) · Custom cover design expertise: SolidWorks 3D modeling, industrial sewing and softgoods construction, textile science, pattern engineering for complex military geometries (aircraft, vehicles, weapons systems) · Materials science depth: multi-layer technical textile construction, vapor phase corrosion inhibition chemistry, waterproof-breathable membrane technology, UV/impact resistance, environmental performance testing · Manufacturing process: custom fabrication from design spec through production; MIL-SPEC compliance; quality management (ISO 9001 principles); supply chain coordination · Engineering background: Mechanical Designer at Continental Hydraulics (hydraulic power unit design, SolidWorks, AutoCAD, hydraulic schematics, ERP/BOM management); Mechanical Drafter experience across food packaging, HVAC, custom sheet metal fabrication · Education: BS Industrial Engineering (ABET accredited, Dunwoody); Fashion/Apparel Design (textile science concentration, Minneapolis College); Six Sigma Green Belt (University of St. Thomas); Lean Six Sigma Yellow Belt · Export control awareness: custom designs for international military programs require ITAR/EAR license management — coordinate with Jim Oaks on any international custom design requests · Commercial aviation: CFM56-7B and LEAP-1B engine cover design; Southwest Airlines, American Airlines, Frontier Airlines · ASG engagement: engineering intelligence, custom design support, materials research, DoD specification lookup, competitive technical analysis.',
-    chatPlaceholder: 'Custom cover design, materials questions, MIL-SPEC lookup, engineering analysis — what are we working on?',
-    chatGreeting: (saved) => saved
-      ? "Caleb — context loaded. What are we engineering today?"
-      : "Caleb — your Rex is tuned to Shield's engineering side: Envelop materials science, custom cover design, DoD MIL-SPEC requirements, and the full product technical stack. I can help with design research, spec lookup, materials analysis, competitive technical comparisons, and documentation. I also have full context on the Shield business — customers, contract vehicles, international programs. What do you want to dig into?",
-    intakeFields: [],
-  },
-
   // ── Nancy — JJ's Mom ─────────────────────────────────────────────────────
   nancy: {
     slug: 'nancy',
@@ -238,145 +182,18 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     pin: '6202',
     clientName: 'Doug',
     company: 'Niagara Frontier Orthopaedic Supplies',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
     tagline: 'Medical Device Sales Intelligence · WNY Territory',
     whatWeKnow: 'Medical device sales professional at Niagara Frontier Orthopaedic Supplies LLC, the DePuy Synthes distributor for WNY. Full DePuy portfolio: joint reconstruction (ATTUNE Knee, CORAIL/PINNACLE Hip), spine, trauma, and sports med. Calls on orthopedic surgeons across Western New York. Long-time resident of Ransom Oaks in East Amherst — well-connected community member.',
     chatPlaceholder: 'Ask about a competitor, prep for a surgeon call, work through a deal...',
     chatGreeting: (saved) => saved
       ? "Hey Doug — good to have you back. What are you working on?"
-      : "Hey Doug — I'm Rex. Before I get into it, do you mind if I ask you a few questions so I can be as useful as possible? Won't take long.",
+      : "Hey Doug — I'm Kit. Before I get into it, do you mind if I ask you a few questions so I can be as useful as possible? Won't take long.",
     intakeFields: [],
     poweredBy: 'Powered by AxiomStream Group · Built for you',
   },
-
-  // ── Deus X Defense — Mike Gugino ────────────────────────────────────────
-  dxdmike: {
-    slug: 'dxdmike',
-    pin: '7731',
-    clientName: 'Mike',
-    company: 'Deus X Defense',
-    agentId: 'rex',
-    agentLabel: 'Your Agent',
-    accentColor: '#3B82F6',
-    tagline: 'Business Development & Revenue Strategy · DXD',
-    whatWeKnow: 'CRO / Sales Lead · Deus X Defense · Army veteran, investment banking (Evercore, JPMorgan), tech (Axon) · Physical security: DaaS, manned guarding, remote monitoring, executive protection · Early stage, seed-funded, targeting 2027 round · Geographic focus: TX, FL, AZ · Current priority: zero-to-one product-market fit across key verticals.',
-    chatPlaceholder: 'Market research, prospect lists, outreach strategy, deal planning — what are we working on?',
-    chatGreeting: (saved) => saved
-      ? "Mike — context loaded. What's the priority today?"
-      : "Mike — I've been briefed on DXD, your verticals, and your go-to-market. Your number one priority is revenue — let's get to work. What do you want to tackle first?",
-    aboutPoints: [
-      {
-        icon: '🚀',
-        title: 'Built for Founders in Build Mode',
-        body: 'Your Agent was designed for exactly where DXD is right now — early stage, building product-market fit, working every angle at once. It\'s a strategic partner that thinks with you, not just a tool that answers questions.',
-      },
-      {
-        icon: '🎯',
-        title: 'Market Diligence at Speed',
-        body: 'Tell it a product idea — a new vertical, a new geography, a new segment. It will research the market, size the opportunity, identify the right buyers, surface the competition, and give you an honest assessment of where it fits in your strategy.',
-      },
-      {
-        icon: '💡',
-        title: 'From Idea to Business Case',
-        body: 'Your Agent can take a half-formed idea and build it out — market analysis, customer definition, revenue model, go-to-market approach, risk assessment, and a proof-of-concept framework. The kind of work that used to take weeks.',
-      },
-      {
-        icon: '📣',
-        title: 'Brand Building and Market Presence',
-        body: 'DXD wins trust before it wins contracts. Your Agent helps you build the brand — thought leadership content, messaging that lands with each buyer type, and a presence strategy that generates inbound before you make your first call.',
-      },
-      {
-        icon: '🏗️',
-        title: 'The ASG Model',
-        body: 'AxiomStream Group builds purpose-specific AI for businesses in motion. An agent configured for DXD — your products, your market, your stage — that gets sharper the more you use it.',
-      },
-    ],
-    intakeFields: [
-      {
-        key: 'topVertical',
-        label: 'Which product vertical are you prioritizing right now?',
-        type: 'chips',
-        options: ['Drone-as-a-Service (DaaS)', 'Manned Guarding', 'Remote Monitoring & Response', 'Executive Protection', 'Training & Consulting'],
-        default: 'Drone-as-a-Service (DaaS)',
-      },
-      {
-        key: 'targetMarket',
-        label: 'Which customer segment is highest priority for that vertical?',
-        type: 'chips',
-        options: ['Schools & Campuses', 'Critical Infrastructure', 'Private Estates / HNW', 'Construction Sites', 'Public Safety & Defense', 'Corporate / Executive'],
-        default: 'Schools & Campuses,Critical Infrastructure',
-      },
-      {
-        key: 'biggestChallenge',
-        label: 'What is the hardest problem in your business right now?',
-        type: 'text',
-        placeholder: 'Finding the right buyers, proving the model, brand awareness, SEO/inbound...',
-      },
-      {
-        key: 'geoFocus',
-        label: 'Current geographic focus',
-        type: 'chips',
-        options: ['Texas', 'Florida', 'Arizona', 'National'],
-        default: 'Texas,Florida,Arizona',
-      },
-      {
-        key: 'notes',
-        label: 'Anything else your agent should know about what you\'re working on?',
-        type: 'textarea',
-        placeholder: 'Current deals, ideas you want to explore, strategic questions on your mind...',
-      },
-    ],
-    poweredBy: 'Powered by AxiomStream Group · Built for Deus X Defense',
-  },
-
-  // ── Deus X Defense — Dean Pratt ─────────────────────────────────────────
-  dxddean: {
-    slug: 'dxddean',
-    pin: '9284',
-    clientName: 'Dean',
-    company: 'Deus X Defense',
-    agentId: 'rex',
-    agentLabel: 'Your Agent',
-    accentColor: '#6366F1',
-    tagline: 'Technical Strategy & AI Architecture · DXD',
-    whatWeKnow: 'Principal Architect · Deus X Defense · Former Senior Architect of Intelligent Edge practice globally, Accenture · Also Kyndryl, Google, Dell · Deep expertise in AI security, agentic risk, responsible AI, enterprise architecture · FedRAMP compliance roadmap in progress · Google Cloud Assured Workloads · NeMo Guardrails (NVIDIA) advocate.',
-    chatPlaceholder: 'Architecture decisions, compliance, AI governance, vendor evaluation — what are we working on?',
-    chatGreeting: (saved) => saved
-      ? "Dean — context loaded. What are you working through?"
-      : "Dean — I've been briefed on your background and DXD's technical priorities. FedRAMP, agentic security, data governance, build vs. buy — let's get into it. What's most pressing?",
-    intakeFields: [
-      {
-        key: 'topPriority',
-        label: 'What is your most pressing technical challenge right now?',
-        type: 'text',
-        placeholder: 'FedRAMP roadmap, AI guardrails, platform architecture, data governance...',
-      },
-      {
-        key: 'complianceTargets',
-        label: 'Compliance frameworks you\'re working toward',
-        type: 'chips',
-        options: ['FedRAMP', 'CJIS', 'CMMC', 'SOC 2', 'ISO 27001', 'NIST 800-53'],
-        default: 'FedRAMP,CJIS',
-      },
-      {
-        key: 'aiStack',
-        label: 'Current AI / ML stack or frameworks being evaluated',
-        type: 'text',
-        placeholder: 'NeMo Guardrails, LangChain, custom agents, Google Vertex...',
-        default: 'NeMo Guardrails (NVIDIA)',
-      },
-      {
-        key: 'notes',
-        label: 'Anything else about your technical priorities or concerns?',
-        type: 'textarea',
-        placeholder: 'Data tenancy concerns, vendor evaluations, security architecture decisions...',
-      },
-    ],
-    poweredBy: 'Powered by AxiomStream Group · Built for Deus X Defense',
-  },
-
   // ── Blake Warren — Winthrop Realty Group ────────────────────────────────
   'winthrop-blake': {
     slug: 'winthrop-blake',
@@ -384,15 +201,15 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     clientName: 'Blake',
     memberName: 'Blake Warren',
     company: 'Winthrop Realty Group',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
     tagline: 'CRE Transaction Intelligence · Houston Metro',
     whatWeKnow: 'VP at Winthrop Realty Group · Houston TX · South Texas College of Law · $25M+ in acquisitions · 2.5M+ sq ft transacted across office, industrial, retail, multifamily, and land · Class B office and flex acquisition thesis · Small-to-mid-size tenant focus.',
     chatPlaceholder: 'Paste a clause, describe a deal, ask anything about a transaction...',
     chatGreeting: (saved) => saved
       ? "Hey Blake — your context is loaded. What are you working on?"
-      : "Hey Blake — I'm Rex. I've been briefed on Winthrop and your background. What are you working on right now?",
+      : "Hey Blake — I'm Kit. I've been briefed on Winthrop and your background. What are you working on right now?",
     intakeFields: REX_CRE_INTAKE,
     poweredBy: 'Powered by AxiomStream Group · Built for Winthrop Realty Group',
     disableTeamContext: true,
@@ -407,7 +224,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     company: 'Kelyniam Global',
     agentId: 'kit',
     agentLabel: 'Kit',
-    accentColor: '#4ADE80',
+    accentColor: '#4A7FA5',
     tagline: 'Kelyniam Global · Sales Strategy · Tax & Financial Intelligence · Executive Operations',
     whatWeKnow: [
       { label: 'Background', value: 'Former Deloitte Tax Partner · 37 years · Milwaukee office · Healthcare industry focus' },
@@ -664,15 +481,15 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     clientName: 'Ken',
     memberName: 'Ken Kocolowski',
     company: 'RBP Chemical Technology',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#D4A017',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#C8102E',
     tagline: 'Sales Intelligence · RBP Chemical Technology',
-    whatWeKnow: 'Ken Kocolowski · Sales Manager · RBP Chemical Technology · West Allis (Milwaukee), WI · Manages ~7 field reps across RBP\'s four primary verticals: Pressroom/Printing (fountain solutions, press washes, flexo, blankets, additives), Medical Implant Devices (nitinol and cobalt-chrome electropolishing, room-temp Nitinol EP, FDA/EH&S documentation), Electronics/PCB (developing, resist stripping, copper cleaning, through-hole and electrolytic plating, etching, waste treatment — aerospace, medical, defense, consumer), Toll Blending/Industrial Finishing (custom formulation, scale-up, blending, packaging, warehouse, JIT delivery, ISO 9001) · Additional verticals: Mining, Automotive, Custom Chemistry · RBP ISO 9001:2015 certified · ~200 employees · 48,000 sq ft Milwaukee facility + Chennai India manufacturing · Distribution: factory-trained reps + distributors in North America and Asia · Top prospect accounts: Quad, Medtronic, Boston Scientific, TTM Technologies, Zimmer Biomet, Sanmina, Integer Holdings, Pioneer Metal Finishing, Cabot Microelectronics, LSC Communications · ASG is building RBP\'s full digital and growth infrastructure: HubSpot CRM, Apollo prospect engine, Google Ads, automated reporting, website management · Rex is purpose-built for Ken\'s sales team — each rep gets their own vertical-specific tool.',
+    whatWeKnow: 'Ken Kocolowski · Sales Manager · RBP Chemical Technology · West Allis (Milwaukee), WI · Manages ~7 field reps across RBP\'s four primary verticals: Pressroom/Printing (fountain solutions, press washes, flexo, blankets, additives), Medical Implant Devices (nitinol and cobalt-chrome electropolishing, room-temp Nitinol EP, FDA/EH&S documentation), Electronics/PCB (developing, resist stripping, copper cleaning, through-hole and electrolytic plating, etching, waste treatment — aerospace, medical, defense, consumer), Toll Blending/Industrial Finishing (custom formulation, scale-up, blending, packaging, warehouse, JIT delivery, ISO 9001) · Additional verticals: Mining, Automotive, Custom Chemistry · RBP ISO 9001:2015 certified · ~200 employees · 48,000 sq ft Milwaukee facility + Chennai India manufacturing · Distribution: factory-trained reps + distributors in North America and Asia · Top prospect accounts: Quad, Medtronic, Boston Scientific, TTM Technologies, Zimmer Biomet, Sanmina, Integer Holdings, Pioneer Metal Finishing, Cabot Microelectronics, LSC Communications · ASG is building RBP\'s full digital and growth infrastructure: HubSpot CRM, Apollo prospect engine, Google Ads, automated reporting, website management · Kit is purpose-built for Ken\'s sales team — each rep gets their own vertical-specific tool.',
     chatPlaceholder: 'Pipeline, prospect research, outreach, objection handling, vertical intel — what are we working on?',
     chatGreeting: (saved) => saved
       ? "Ken — context loaded. What's the priority today?"
-      : "Ken — I'm Rex. I've been briefed on RBP's products, your verticals, and your buyer types. I work best when I know what you're working on — pipeline, a specific account, outreach for a vertical, or something else entirely. What's the priority?",
+      : "Ken — I'm Kit. I've been briefed on RBP's products, your verticals, and your buyer types. I work best when I know what you're working on — pipeline, a specific account, outreach for a vertical, or something else entirely. What's the priority?",
     intakeFields: [
       {
         key: 'activeVerticals',
@@ -696,7 +513,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       },
       {
         key: 'context',
-        label: 'Anything else Rex should know about where your team is right now?',
+        label: 'Anything else Kit should know about where your team is right now?',
         type: 'textarea',
         placeholder: 'Rep coverage gaps, a deal in progress, a vertical you want to break into...',
       },
@@ -705,22 +522,22 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       {
         icon: '\u25A0',
         title: 'Built for RBP Sales',
-        body: 'Rex knows your products, your verticals, and your buyer types. Not a generic tool — pre-loaded with RBP chemistry, competitive positioning, and prospect data before you typed anything.',
+        body: 'Kit knows your products, your verticals, and your buyer types. Not a generic tool — pre-loaded with RBP chemistry, competitive positioning, and prospect data before you typed anything.',
       },
       {
         icon: '\u25A0',
         title: 'Prospect Intelligence',
-        body: 'Ask Rex to find buyers in any vertical, draft outreach for a specific account, or build a target list for a rep. Apollo-sourced data, RBP-specific positioning.',
+        body: 'Ask Kit to find buyers in any vertical, draft outreach for a specific account, or build a target list for a rep. Apollo-sourced data, RBP-specific positioning.',
       },
       {
         icon: '\u25A0',
-        title: 'Your Team Gets Their Own Rex',
+        title: 'Your Team Gets Their Own Kit',
         body: 'Each rep on your team gets a vertical-specific version — loaded with their products, their buyers, and their objection handling. Built the same way, pointed at their world.',
       },
       {
         icon: '\u25A0',
         title: 'Pipeline Visibility',
-        body: 'Rex connects to HubSpot. Ask about deal status, rep activity, or which accounts need follow-up — without digging through the CRM yourself.',
+        body: 'Kit connects to HubSpot. Ask about deal status, rep activity, or which accounts need follow-up — without digging through the CRM yourself.',
       },
     ],
     poweredBy: 'Powered by AxiomStream Group · Built for RBP Chemical Technology',
@@ -892,15 +709,15 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     clientName: 'Andrew',
     memberName: 'Andrew Armour',
     company: 'Winthrop Realty Group',
-    agentId: 'rex',
-    agentLabel: 'Rex',
-    accentColor: '#4ADE80',
+    agentId: 'kit',
+    agentLabel: 'Kit',
+    accentColor: '#4A7FA5',
     tagline: 'CRE Transaction Intelligence · Houston Metro',
     whatWeKnow: 'Partner at Winthrop Realty Group · Houston TX · Winthrop is a full-service CRE firm operating across the Houston metro market · office, industrial, retail, multifamily, and land transactions.',
     chatPlaceholder: 'Paste a clause, describe a deal, ask anything about a transaction...',
     chatGreeting: (saved) => saved
       ? "Hey Andrew — your context is loaded. What are you working on?"
-      : "Hey Andrew — I'm Rex. I've been briefed on Winthrop and your background. What are you working on right now?",
+      : "Hey Andrew — I'm Kit. I've been briefed on Winthrop and your background. What are you working on right now?",
     intakeFields: REX_CRE_INTAKE,
     poweredBy: 'Powered by AxiomStream Group · Built for Winthrop Realty Group',
   },

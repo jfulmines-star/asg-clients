@@ -2965,8 +2965,11 @@ const SHIELD_SLUG_UPNS: Record<string, string> = {
   ryanh:  'ryan.hopper@shieldtechnologies.com',
   markb:  'mark.bechtel@shieldtechnologies.com',
   caleb:  'caleb.sabroski@shieldtechnologies.com',
+  'shield-caleb': 'caleb.sabroski@shieldtechnologies.com',
   jimoaks:'jim.oaks@shieldtechnologies.com',
+  'shield-jimoaks':'jim.oaks@shieldtechnologies.com',
   jeffd:  'jeff.dicks@shieldtechnologies.com',
+  'shield-jeffd':  'jeff.dicks@shieldtechnologies.com',
 };
 
 let shieldPortalTokenCache: { accessToken: string; expiresAtMs: number } | null = null;
@@ -3113,8 +3116,12 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
     ryanh:  'ryan.hopper@shieldtechnologies.com',
     markb:  'mark.bechtel@shieldtechnologies.com',
     caleb:  'caleb.sabroski@shieldtechnologies.com',
+    'shield-caleb': 'caleb.sabroski@shieldtechnologies.com',
     jimoaks:'jim.oaks@shieldtechnologies.com',
+    'shield-jimoaks':'jim.oaks@shieldtechnologies.com',
     jeffd:  'jeff.dicks@shieldtechnologies.com',
+    'shield-jeffd':  'jeff.dicks@shieldtechnologies.com',
+    'shield-admin': 'andy.parks@shieldtechnologies.com',
   };
   const upn = upnMap[slug];
   if (!upn) return 'Your profile is not configured for SharePoint access.';
@@ -3666,7 +3673,85 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { agent, message, history = [], teammates = [], slug = '', teamMember = 'Anonymous', isLead = true, tenantId = '', disableTeamContext = false } = req.body || {};
+  const { mode, agent, message, history = [], teammates = [], slug = '', teamMember = 'Anonymous', isLead = true, tenantId = '', disableTeamContext = false, productFamily, title, instructions } = req.body || {};
+
+  // ─── Cover Studio Document Generation ───────────────────────────────────────
+  if (mode === 'document-generation') {
+    try {
+      const ALLOWED_SLUGS = ['andrew', 'ryanh', 'markb', 'shield-caleb', 'shield-jeffd', 'shield-jimoaks', 'shield-admin'];
+      if (!slug || !ALLOWED_SLUGS.includes(slug)) {
+        return res.status(400).json({ error: 'Invalid or unauthorized portal slug' });
+      }
+
+      // Preserve authentication & validate PIN
+      const expectedPin = shieldGraphPins()[slug];
+      if (!expectedPin || String(req.body?.portalPin || '') !== expectedPin) {
+        return res.status(401).json({ error: 'Portal authentication/PIN required for document generation' });
+      }
+
+      const ALLOWED_FAMILIES = ['aviation', 'marine', 'vehicles', 'weapons', 'communications', 'support'];
+      if (!productFamily || !ALLOWED_FAMILIES.includes(productFamily)) {
+        return res.status(400).json({ error: 'Invalid product family' });
+      }
+
+      if (!title || typeof title !== 'string' || title.trim().length === 0 || title.length > 150) {
+        return res.status(400).json({ error: 'Invalid document title (max 150 characters)' });
+      }
+
+      if (!instructions || typeof instructions !== 'string' || instructions.trim().length === 0 || instructions.length > 2000) {
+        return res.status(400).json({ error: 'Invalid generation instructions (max 2000 characters)' });
+      }
+
+      const familyLabels: Record<string, string> = {
+        aviation: 'Aviation Systems',
+        marine: 'Marine & Naval Deck',
+        vehicles: 'Tactical Ground Vehicles',
+        weapons: 'Weapons & Missile Mounts',
+        communications: 'Radars & Communications',
+        support: 'Auxiliary Support Equipment'
+      };
+
+      const systemPrompt = `You are Rex — the lead environmental engineering and technical specification advisor for Shield Technologies Corporation.
+Your job is to draft a comprehensive, publication-ready technical specification, brief, or proposal for the Envelop protective covers line.
+The document must be structured with clear markdown headings (# for title, ## for main sections, ### for subsections) and bullet points.
+
+Generate content for the following product family: "${familyLabels[productFamily]}".
+Follow the user's instructions carefully.
+
+Formatting rules:
+1. First line must be the Document Title starting with a single '#' (e.g. "# Technical Specification for F414 Engine Intake Covers").
+2. Subsequent main sections must start with '## ' (e.g. "## 1. Scope of Protection").
+3. Subsections must start with '### ' (e.g. "### 1.1 Environmental Conditions").
+4. List items must use standard bullet points starting with '- ' or '* '.
+5. Avoid excessive conversational introductory or concluding text outside the document structure. Just output the document itself.`;
+
+      const userPrompt = `Document Title: ${title}
+User Requirements/Instructions:
+${instructions}`;
+
+      const generatedText = await callAnthropic(systemPrompt, [{ role: 'user', content: userPrompt }]);
+      if (!generatedText || generatedText.trim().length === 0) {
+        return res.status(500).json({ error: 'Failed to generate document content from AI model' });
+      }
+
+      const safeTitle = title.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `${safeTitle || 'Shield_Document'}.docx`;
+
+      const resultMsg = await saveSharePointDocForSlug(slug, filename, generatedText);
+      const urlMatch = resultMsg.match(/https?:\/\/[^\s]+/);
+      const docUrl = urlMatch ? urlMatch[0] : null;
+
+      return res.status(200).json({
+        success: true,
+        filename,
+        message: resultMsg,
+        content: generatedText,
+        url: docUrl
+      });
+    } catch (e: any) {
+      return res.status(500).json({ error: `Server error during document generation: ${e?.message || e}` });
+    }
+  }
 
   // ─── Personalized opener ────────────────────────────────────────────────────
   // Per-slug opener personas — who Kit is and what they know about this person

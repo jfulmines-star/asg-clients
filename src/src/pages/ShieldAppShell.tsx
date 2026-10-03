@@ -517,6 +517,309 @@ function UpdatesTab({ light, colors, accent }: { light: boolean; colors: ReturnT
   )
 }
 
+function StudioTab({ light, colors, accent, slug, pin }: { light: boolean; colors: ReturnType<typeof getColors>; accent: string; slug: string; pin: string }) {
+  const { surface, border, text, muted, inputBg } = colors
+  const [productFamily, setProductFamily] = useState<string>('')
+  const [title, setTitle] = useState('')
+  const [instructions, setInstructions] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
+  const [docUrl, setDocUrl] = useState('')
+  const [generatedText, setGeneratedText] = useState('')
+
+  const families = [
+    { id: 'aviation', label: 'Aviation Systems', icon: '✈️', desc: 'Fighters, helicopters, engines and ground support' },
+    { id: 'marine', label: 'Marine & Naval Deck', icon: '⚓', desc: 'Deck machinery, weapon systems and naval fittings' },
+    { id: 'vehicles', label: 'Tactical Ground Vehicles', icon: '🛞', desc: 'Humvees, JLTVs, transport and armored plating' },
+    { id: 'weapons', label: 'Weapons & Missile Mounts', icon: '💥', desc: 'Artillery, gun mounts, launchers and optics' },
+    { id: 'communications', label: 'Radars & Communications', icon: '📡', desc: 'Antennas, SATCOM dishes and sensitive electronics' },
+    { id: 'support', label: 'Auxiliary Support Equipment', icon: '🔌', desc: 'Generators, trailers, HVAC and storage units' },
+  ]
+
+  async function generateDoc(e: React.FormEvent) {
+    e.preventDefault()
+    if (!productFamily || !title.trim() || !instructions.trim() || status === 'loading') return
+
+    setStatus('loading')
+    setErrorMsg('')
+    setSuccessMsg('')
+    setDocUrl('')
+    setGeneratedText('')
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'document-generation',
+          slug,
+          portalPin: pin,
+          productFamily,
+          title: title.trim(),
+          instructions: instructions.trim()
+        })
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setStatus('success')
+        setSuccessMsg(data.message || 'Document generated successfully!')
+        setGeneratedText(data.content || '')
+        if (data.url && typeof data.url === 'string' && data.url.startsWith('https://')) {
+          setDocUrl(data.url)
+        }
+      } else {
+        setStatus('error')
+        setErrorMsg(data.error || 'Failed to generate document. Please try again.')
+      }
+    } catch (err: any) {
+      setStatus('error')
+      setErrorMsg(err?.message || 'A network error occurred. Please try again.')
+    }
+  }
+
+  function handleReset() {
+    setProductFamily('')
+    setTitle('')
+    setInstructions('')
+    setStatus('idle')
+    setErrorMsg('')
+    setSuccessMsg('')
+    setDocUrl('')
+    setGeneratedText('')
+  }
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '4px 0 24px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 800, color: text, margin: '0 0 4px' }}>Shield Cover Studio</h2>
+        <p style={{ fontSize: '13px', color: muted, margin: 0 }}>Select a product family and specify technical requirements to generate a publication-ready .docx spec sheet, automatically synced to your SharePoint.</p>
+      </div>
+
+      {status === 'success' ? (
+        <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>✓</div>
+            <div>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: text, margin: '0 0 4px' }}>Generation Complete</h3>
+              <p style={{ fontSize: '13px', color: muted, margin: 0 }}>{successMsg}</p>
+            </div>
+          </div>
+
+          {docUrl && (
+            <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+              <a
+                href={docUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: accent,
+                  color: '#0a0f1e',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'opacity 0.15s'
+                }}
+              >
+                <span>📂</span> Open in SharePoint
+              </a>
+            </div>
+          )}
+
+          <div style={{ border: `1px solid ${border}`, borderRadius: '8px', background: light ? '#f1f5f9' : '#0d1020', padding: '16px', marginTop: '8px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: muted, marginBottom: '8px' }}>Preview</div>
+            <div style={{ maxHeight: '300px', overflowY: 'auto', fontSize: '13px', color: text, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+              {generatedText}
+            </div>
+          </div>
+
+          <button
+            onClick={handleReset}
+            style={{
+              alignSelf: 'flex-start',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: `1px solid ${border}`,
+              background: 'transparent',
+              color: text,
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginTop: '8px'
+            }}
+          >
+            Create Another Document
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={generateDoc} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: muted, display: 'block', marginBottom: '12px' }}>
+              01. Select Product Family
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '12px' }}>
+              {families.map(f => {
+                const isSelected = productFamily === f.id
+                return (
+                  <div
+                    key={f.id}
+                    role="radio"
+                    aria-checked={isSelected}
+                    tabIndex={0}
+                    onClick={() => setProductFamily(f.id)}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setProductFamily(f.id) } }}
+                    style={{
+                      background: surface,
+                      border: `1.5px solid ${isSelected ? accent : border}`,
+                      borderRadius: '10px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      transition: 'all 0.15s ease-in-out',
+                      boxShadow: isSelected ? `0 0 12px ${accent}20` : 'none'
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: '20px' }}>{f.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '13.5px', fontWeight: 700, color: text, marginBottom: '2px' }}>{f.label}</div>
+                        <div style={{ fontSize: '11px', color: muted, lineHeight: '1.4' }}>{f.desc}</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: muted, display: 'block', margin: 0 }}>
+              02. Document Details
+            </label>
+
+            <div>
+              <label htmlFor="doc-title" style={{ fontSize: '12.5px', fontWeight: 600, color: text, display: 'block', marginBottom: '6px' }}>
+                Document Title
+              </label>
+              <input
+                id="doc-title"
+                type="text"
+                placeholder="e.g. F414 Engine Intake Protective Cover Brief"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                maxLength={150}
+                required
+                disabled={status === 'loading'}
+                style={{
+                  width: '100%',
+                  background: inputBg,
+                  border: `1.5px solid ${border}`,
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  fontSize: '13px',
+                  color: text,
+                  fontFamily: 'inherit',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="doc-instructions" style={{ fontSize: '12.5px', fontWeight: 600, color: text, display: 'block', marginBottom: '6px' }}>
+                Requirements & Technical Instructions
+              </label>
+              <textarea
+                id="doc-instructions"
+                placeholder="Specify target aircraft or equipment variants, target environments, exact mounting configurations, or any specific DoD/MRO requirements for Rex to draft..."
+                value={instructions}
+                onChange={e => setInstructions(e.target.value)}
+                maxLength={2000}
+                rows={5}
+                required
+                disabled={status === 'loading'}
+                style={{
+                  width: '100%',
+                  background: inputBg,
+                  border: `1.5px solid ${border}`,
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  fontSize: '13px',
+                  color: text,
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  resize: 'none',
+                  lineHeight: '1.5'
+                }}
+              />
+            </div>
+          </div>
+
+          <div role="status" aria-live="polite" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {status === 'loading' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px', background: `${accent}0d`, border: `1px solid ${accent}30` }}>
+                <span style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>
+                  {[0,1,2].map(j => <span key={j} style={{ width: '6px', height: '6px', borderRadius: '50%', background: accent, opacity: 0.6, animation: `rexbounce 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}
+                </span>
+                <span style={{ fontSize: '13px', color: text, fontWeight: 500 }}>Generating technical specification and preparing native .docx package... This may take up to a minute.</span>
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                <span style={{ color: '#ef4444', fontWeight: 800 }}>⚠️</span>
+                <span style={{ fontSize: '13px', color: '#ef4444', flex: 1 }}>{errorMsg}</span>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(239, 68, 68, 0.4)',
+                    background: 'transparent',
+                    color: '#ef4444',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!productFamily || !title.trim() || !instructions.trim() || status === 'loading'}
+            style={{
+              background: accent,
+              color: '#0a0f1e',
+              fontWeight: 800,
+              fontSize: '14px',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              opacity: (!productFamily || !title.trim() || !instructions.trim() || status === 'loading') ? 0.4 : 1,
+              transition: 'opacity 0.15s',
+              alignSelf: 'flex-start',
+              boxShadow: `0 2px 12px ${accent}40`
+            }}
+          >
+            {status === 'loading' ? 'Generating Spec Sheet...' : 'Generate Specification Document'}
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
+
 export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellProps) {
   const meta = PORTAL_META[slug] ?? PORTAL_META['andrew']
   const accent = '#4ADE80'
@@ -524,7 +827,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const [unlocked, setUnlocked] = useState(false)
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
-  const [activeTab, setActiveTab] = useState<'chat' | 'documents' | 'updates' | 'dining'>('chat')
+  const [activeTab, setActiveTab] = useState<'chat' | 'documents' | 'updates' | 'dining' | 'studio'>('chat')
   const [lightMode, setLightMode] = useState(false)
   const colors = getColors(lightMode)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -657,6 +960,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const navItems = [
     { id: 'chat' as const, label: 'Chat', icon: '💬' },
     { id: 'documents' as const, label: 'Documents', icon: '📁' },
+    { id: 'studio' as const, label: 'Cover Studio', icon: '🛡️' },
     { id: 'dining' as const, label: 'Dining', icon: '🍽️' },
     { id: 'updates' as const, label: 'What\'s New', icon: '🆕' },
   ]
@@ -730,7 +1034,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
           <span style={{ fontSize: '16px' }}>{navItems.find(n => n.id === activeTab)?.icon}</span>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 700, color: textColor }}>{navItems.find(n => n.id === activeTab)?.label}</div>
-            <div style={{ fontSize: '11px', color: muted }}>{activeTab === 'chat' ? 'Rex — your sales AI' : activeTab === 'documents' ? 'Upload documents · Ask Rex anything' : activeTab === 'dining' ? 'Where to eat — client dinners, team nights, hidden gems' : 'Portal updates from AxiomStream Group'}</div>
+            <div style={{ fontSize: '11px', color: muted }}>{activeTab === 'chat' ? 'Rex — your sales AI' : activeTab === 'documents' ? 'Upload documents · Ask Rex anything' : activeTab === 'studio' ? 'Generate technical specifications and product briefs' : activeTab === 'dining' ? 'Where to eat — client dinners, team nights, hidden gems' : 'Portal updates from AxiomStream Group'}</div>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 6px #22c55e80' }} />
@@ -746,6 +1050,10 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
             </div>
           ) : activeTab === 'dining' ? (
             <DiningTab light={lightMode} colors={colors} accent={accent} />
+          ) : activeTab === 'studio' ? (
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <StudioTab light={lightMode} colors={colors} accent={accent} slug={slug} pin={pin} />
+            </div>
           ) : activeTab === 'chat' ? (
             <>
               {/* Intel banner */}

@@ -287,7 +287,7 @@ export default function MarkPortal() {
               key={item.id}
               onClick={() => setActiveSection(item.id)}
               style={{
-                width: '100%', textAlign: 'left', background: 'none',
+                width: '100%', textAlign: 'left',
                 border: 'none', padding: '10px 20px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: '10px',
                 color: activeSection === item.id ? '#FAFAFA' : GRAY,

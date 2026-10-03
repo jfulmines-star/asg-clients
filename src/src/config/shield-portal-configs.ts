@@ -71,7 +71,7 @@ export const ANDREW_CONFIG: PortalConfig = {
     },
   ],
 
-  modules: ['welcome', 'chat', 'documents', 'dining'],
+  modules: ['welcome', 'chat', 'cover-studio', 'documents', 'dining'],
 
   moduleOptions: {
     documents: {
@@ -179,7 +179,7 @@ export const RYANH_CONFIG: PortalConfig = {
     },
   ],
 
-  modules: ['welcome', 'chat', 'documents', 'dining'],
+  modules: ['welcome', 'chat', 'cover-studio', 'documents', 'dining'],
 
   moduleOptions: {
     documents: {
@@ -289,7 +289,7 @@ export const CALEB_CONFIG: PortalConfig = {
     },
   ],
 
-  modules: ['welcome', 'chat', 'documents', 'dining'],
+  modules: ['welcome', 'chat', 'cover-studio', 'documents', 'dining'],
 
   moduleOptions: {
     documents: {

@@ -24,6 +24,7 @@ import { timeTrackerModule } from './timeTracker'
 import { crossSellBannerModule } from './crossSellBanner'
 import { hubspotHookModule } from './hubspotHook'
 import { DiningSection } from './dining'
+import { coverStudioModule } from './coverStudio'
 
 // ── Built-in module nav metadata ────────────────────────────────────────────
 // Section components for these are rendered by ASGPortalBase because they need
@@ -67,6 +68,7 @@ export const MODULE_REGISTRY: Record<ModuleId, Module> = {
   'time-tracker': timeTrackerModule,
   'cross-sell-banner': crossSellBannerModule,
   'hubspot-hook': hubspotHookModule,
+  'cover-studio': coverStudioModule,
   dining: {
     id: 'dining',
     nav: { label: 'Dining', icon: '🍽️' },

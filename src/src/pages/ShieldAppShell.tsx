@@ -421,6 +421,80 @@ function DiningTab({ light, colors, accent }: { light: boolean; colors: ReturnTy
   )
 }
 
+function CoverStudioTab({ slug, rep, light, colors, accent }: { slug: string; rep: string; light: boolean; colors: ReturnType<typeof getColors>; accent: string }) {
+  const { surface, border, text, muted, inputBg } = colors
+  const [docType, setDocType] = useState('Quote Request')
+  const [targetSystem, setTargetSystem] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState('')
+  const productFamilies = [
+    ['🛩️', 'Engine Covers', 'CFM56, LEAP, V2500, GE90, PW4000 series'],
+    ['🚁', 'Rotary Wing', 'UH-60, CH-47, AH-64, MH-60 variants'],
+    ['⚓', 'Naval Systems', 'MK38, MK45, Phalanx CIWS, ship gun mounts'],
+    ['🪖', 'Ground Systems', 'M1 Abrams, M777, Stryker, vehicle systems'],
+    ['🚀', 'Missile/Ordnance', 'Sidewinder, AMRAAM, Tomahawk, storage covers'],
+    ['✈️', 'Fixed Wing', 'C-130, P-8, F-35, B-52 airframe covers'],
+  ]
+
+  async function generateDocument() {
+    if (!targetSystem.trim() || loading) return
+    setLoading(true)
+    setResult('')
+    const filename = `${docType.replace(/ /g, '-')}-${targetSystem.replace(/[^a-z0-9]/gi, '-')}.docx`
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agent: 'rex',
+          message: `Create a professional ${docType} for ${targetSystem} as a Word document. Save it to my SharePoint Documents as "${filename}". Format it as a McKinsey-grade deliverable with Shield Technologies / Envelop® branding.`,
+          history: [],
+          slug,
+          teamMember: rep,
+          isLead: false,
+        }),
+      })
+      const data = await res.json() as { reply?: string; text?: string; message?: string }
+      if (!res.ok) throw new Error(data.reply || data.message || 'Generation failed')
+      setResult(data.reply || data.text || data.message || `Document generated: ${filename}`)
+    } catch (error) {
+      setResult(error instanceof Error ? error.message : 'Connection issue. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', color: text }}>
+      <div style={{ marginBottom: '18px' }}>
+        <div style={{ fontSize: '22px', fontWeight: 800, color: text }}>Envelop® Cover Studio</div>
+        <div style={{ fontSize: '13px', color: muted, marginTop: '4px' }}>MK38 · MK45 · V2500 · Custom Designs</div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+        {productFamilies.map(([icon, name, systems]) => (
+          <div key={name} style={{ background: surface, border: `1px solid ${accent}30`, borderRadius: '12px', padding: '16px' }}>
+            <div style={{ fontSize: '26px', marginBottom: '10px' }}>{icon}</div>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: text }}>{name}</div>
+            <div style={{ fontSize: '12px', color: muted, lineHeight: '1.5', marginTop: '5px' }}>{systems}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: surface, border: `1px solid ${accent}30`, borderRadius: '12px', padding: '18px', maxWidth: '720px' }}>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: text, marginBottom: '4px' }}>Generate Document</div>
+        <div style={{ fontSize: '12px', color: muted, marginBottom: '14px' }}>Have Rex turn a cover requirement into a SharePoint-ready deliverable.</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <select value={docType} onChange={e => setDocType(e.target.value)} style={{ background: inputBg, border: `1px solid ${border}`, borderRadius: '8px', padding: '11px 12px', color: text, fontFamily: 'inherit', fontSize: '13px' }}>
+            {['Quote Request', 'Capability Brief', 'NSN Lookup Report', 'Custom Cover Spec Sheet', 'Client Proposal'].map(type => <option key={type}>{type}</option>)}
+          </select>
+          <input value={targetSystem} onChange={e => setTargetSystem(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') generateDocument() }} placeholder="e.g. MRO Americas — Southwest Airlines CFM56" style={{ background: inputBg, border: `1px solid ${border}`, borderRadius: '8px', padding: '11px 12px', color: text, fontFamily: 'inherit', fontSize: '13px' }} />
+          <button onClick={generateDocument} disabled={!targetSystem.trim() || loading} style={{ background: accent, color: '#fff', borderRadius: '10px', padding: '12px 20px', fontWeight: 700, fontSize: '14px', width: '100%', border: 'none', cursor: 'pointer', opacity: !targetSystem.trim() || loading ? 0.55 : 1 }}>{loading ? '⏳ Generating with Rex...' : 'Generate with Rex →'}</button>
+        </div>
+        {result && <div style={{ marginTop: '14px', padding: '10px 12px', borderRadius: '8px', background: light ? `${accent}10` : `${accent}18`, color: text, fontSize: '12px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{result}</div>}
+      </div>
+    </div>
+  )
+}
+
 interface ReleaseNote {
   version: string
   date: string
@@ -524,7 +598,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const [unlocked, setUnlocked] = useState(false)
   const [digits, setDigits] = useState(['', '', '', ''])
   const [pinError, setPinError] = useState(false)
-  const [activeTab, setActiveTab] = useState<'chat' | 'documents' | 'updates' | 'dining'>('chat')
+  const [activeTab, setActiveTab] = useState<'chat' | 'documents' | 'cover-studio' | 'updates' | 'dining'>('chat')
   const [lightMode, setLightMode] = useState(false)
   const colors = getColors(lightMode)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -657,6 +731,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
   const navItems = [
     { id: 'chat' as const, label: 'Chat', icon: '💬' },
     { id: 'documents' as const, label: 'Documents', icon: '📁' },
+    { id: 'cover-studio' as const, label: 'Cover Studio', icon: '🛡️' },
     { id: 'dining' as const, label: 'Dining', icon: '🍽️' },
     { id: 'updates' as const, label: 'What\'s New', icon: '🆕' },
   ]
@@ -730,7 +805,7 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
           <span style={{ fontSize: '16px' }}>{navItems.find(n => n.id === activeTab)?.icon}</span>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 700, color: textColor }}>{navItems.find(n => n.id === activeTab)?.label}</div>
-            <div style={{ fontSize: '11px', color: muted }}>{activeTab === 'chat' ? 'Rex — your sales AI' : activeTab === 'documents' ? 'Upload documents · Ask Rex anything' : activeTab === 'dining' ? 'Where to eat — client dinners, team nights, hidden gems' : 'Portal updates from AxiomStream Group'}</div>
+            <div style={{ fontSize: '11px', color: muted }}>{activeTab === 'chat' ? 'Rex — your sales AI' : activeTab === 'documents' ? 'Upload documents · Ask Rex anything' : activeTab === 'cover-studio' ? 'Envelop® catalog · 3D renders · document builder' : activeTab === 'dining' ? 'Where to eat — client dinners, team nights, hidden gems' : 'Portal updates from AxiomStream Group'}</div>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 6px #22c55e80' }} />
@@ -744,6 +819,8 @@ export default function ShieldAppShell({ slug, pin, rep, territory }: AppShellPr
             <div style={{ flex: 1, overflowY: 'auto' }}>
               <UpdatesTab light={lightMode} colors={colors} accent={accent} />
             </div>
+          ) : activeTab === 'cover-studio' ? (
+            <CoverStudioTab slug={slug} rep={rep} light={lightMode} colors={colors} accent={accent} />
           ) : activeTab === 'dining' ? (
             <DiningTab light={lightMode} colors={colors} accent={accent} />
           ) : activeTab === 'chat' ? (

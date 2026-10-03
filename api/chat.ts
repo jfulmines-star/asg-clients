@@ -3084,44 +3084,27 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
   if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
     safeName = lower.endsWith('.docx') ? filename : filename.replace(/\.doc$/, '.docx');
     mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    const lines = content.split('\n').filter(l => l.trim());
-    const titleText = lines[0] || filename.replace('.docx', '');
-    const bodyLines = lines.slice(1);
-    const doc = new Document({
-      styles: {
-        default: {
-          document: {
-            run: { font: 'Arial', color: '1a1a2e' },
-            paragraph: { spacing: { after: 120 } },
-          },
-        },
-      },
-      sections: [{
-        children: [
-          new Paragraph({
-            text: titleText,
-            heading: HeadingLevel.HEADING_1,
-            alignment: AlignmentType.CENTER,
-            shading: { fill: '0A0F1E' },
-            children: [new TextRun({ text: titleText, bold: true, color: '2563eb', size: 36 })],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: 'Shield Technologies — Envelop®', color: '2563eb', size: 24 })],
-          }),
-          new Paragraph({ text: '' }),
-          ...bodyLines.map(line => {
-            const isHeading = line.startsWith('## ') || line.startsWith('# ');
-            const text = line.replace(/^#+\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1');
-            return new Paragraph({
-              heading: isHeading ? HeadingLevel.HEADING_2 : undefined,
-              children: [new TextRun({ text, size: isHeading ? 28 : 22, bold: isHeading, color: isHeading ? '2563eb' : '1a1a2e' })],
-            });
-          }),
-        ],
-      }],
-    });
-    const buffer = await Packer.toBuffer(doc);
+    // Build branded Shield/Envelop .docx via Python builder (matches Poland/Croatia VP template exactly)
+    const tmpOut = `/tmp/rex-doc-${Date.now()}.docx`;
+    const titleLine = content.split('\n')[0] || filename.replace('.docx','');
+    const bodyContent = content;
+    const { execSync } = await import('child_process');
+    try {
+      execSync(
+        `python3 /root/Projects/asg-clients/scripts/build-shield-doc.py ` +
+        `--title ${JSON.stringify(titleLine)} ` +
+        `--subtitle ${JSON.stringify(slug)} ` +
+        `--content ${JSON.stringify(bodyContent)} ` +
+        `--out ${JSON.stringify(tmpOut)}`,
+        { timeout: 30000 }
+      );
+    } catch (pyErr: unknown) {
+      const msg = pyErr instanceof Error ? pyErr.message : String(pyErr);
+      return `Failed to build document: ${msg.slice(0,200)}`;
+    }
+    const { readFileSync, unlinkSync } = await import('fs');
+    const buffer = readFileSync(tmpOut);
+    try { unlinkSync(tmpOut); } catch {}
     // Upload binary buffer
     const tokenResult2 = await getShieldPortalToken();
     if (!tokenResult2.ok || !tokenResult2.accessToken) return 'Could not reach Shield M365 right now.';

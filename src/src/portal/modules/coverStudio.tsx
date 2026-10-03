@@ -1,0 +1,83 @@
+import { useEffect, useRef, useState } from 'react'
+import { createEngineScene, type CameraView, type SceneSettings, type ViewMode, type CoverSet } from '../studio/engineScene'
+import { loadF35, disposeAircraft, F35_CREDIT } from '../studio/f35Model'
+import { EQUIPMENT, type EquipmentId } from '../studio/catalog'
+import type { ModuleContext } from '../types'
+import '../studio/cover-studio.css'
+import FlightDeckEgg from '../studio/FlightDeckEgg'
+const COLORS=[{name:'Field olive',hex:'#677665'},{name:'Graphite',hex:'#444b4e'},{name:'Sand',hex:'#a79577'},{name:'Silver',hex:'#a5adae'}]
+const CONCEPT='Concept preview — equipment geometry, cover details and supports are illustrative. Fit, materials and attachment locations require engineering verification.'
+const escapeHtml=(v:string)=>v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))
+function download(blob:Blob,name:string){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+export default function CoverStudio(props:ModuleContext){
+ const [equipment,setEquipment]=useState<EquipmentId>('v2500')
+ return <StudioSession key={equipment} {...props} equipment={equipment} onEquipment={setEquipment}/>
+}
+function StudioSession({config,navigateTo,equipment,onEquipment}:ModuleContext & {equipment:EquipmentId;onEquipment:(id:EquipmentId)=>void}){
+ const item=EQUIPMENT[equipment],POINTS=item.points,SOURCE=item.source
+
+ const [flightOpen,setFlightOpen]=useState(false)
+ const [sideGun,setSideGun]=useState(equipment==='mk38')
+ const [coverSet,setCoverSet]=useState<CoverSet>('both')
+ const coverOptions:Partial<Record<CoverSet,string>>=equipment==='f35a'?{both:'All three cover groups',canopy:'Canopy only',intakes:'Intakes only',exhaust:'Exhaust only'}:{both:'All fitted covers',main:'Main only',eos:'EOS only',...(sideGun?{side:'Side cover only'}:{})}
+ const coverSetLabel=coverOptions[coverSet]||coverOptions.both
+ const hasCoverSelection=equipment==='mk38'||equipment==='f35a'
+ const host=useRef<HTMLDivElement>(null),api=useRef<ReturnType<typeof createEngineScene>>(),markers=useRef<(HTMLButtonElement|null)[]>([])
+ const [mode,setMode]=useState<ViewMode>(equipment==='f35a'?'covered':'transparent'),[color,setColor]=useState<string>(item.color),[lift,setLift]=useState(0),[rotate,setRotate]=useState(false),[hotspots,setHotspots]=useState(true),[selected,setSelected]=useState<number|null>(null),[view,setView]=useState<CameraView>('hero'),[ready,setReady]=useState(false),[error,setError]=useState(''),[status,setStatus]=useState(''),[notes,setNotes]=useState(''),[saving,setSaving]=useState(false)
+ const [saved,setSaved]=useState<{mode:ViewMode;color:string;lift:number;notes:string;date:string;coverSet?:CoverSet;sideGun?:boolean}|null>(null)
+ const settings=useRef<SceneSettings>({mode,color,lift,rotate,hotspots,coverSet,sideGun});settings.current={mode,color,lift,rotate,hotspots,coverSet,sideGun}
+ const key=`rex-cover-studio:${config.slug}:${equipment}`
+ useEffect(()=>{try{const raw=sessionStorage.getItem(key);if(raw){const d=JSON.parse(raw);if(['covered','transparent','uncovered'].includes(d.mode)&&COLORS.some(c=>c.hex===d.color)&&typeof d.lift==='number'&&d.lift>=0&&d.lift<=100&&typeof d.notes==='string')setSaved(d)}}catch{}},[key])
+ useEffect(()=>{
+  if(flightOpen)return
+  setReady(false);setError('')
+  let cancelled=false
+  async function initialize(){
+   let aircraft:Awaited<ReturnType<typeof loadF35>>|undefined
+   try {
+    if(equipment==='f35a')aircraft=await loadF35()
+    if(cancelled||!host.current){if(aircraft)disposeAircraft(aircraft);return}
+    api.current=createEngineScene(host.current,points=>points.forEach((p,i)=>{const el=markers.current[i];if(el){el.style.transform=`translate(${p.x}px,${p.y}px) translate(-50%,-50%)`;el.style.visibility=p.visible?'visible':'hidden'}}),()=>setRotate(false),equipment,aircraft)
+    api.current.set(settings.current);if(view!=='hero')api.current.view(view);setReady(true)
+   }catch{
+    if(aircraft&&!api.current)disposeAircraft(aircraft)
+    if(!cancelled){setError(equipment==='f35a'?'The aircraft could not load. Check your connection and reopen Cover Studio.':'The 3D view needs WebGL. Try an updated browser with hardware acceleration enabled.');setReady(false)}
+   }
+  }
+  initialize()
+  return()=>{cancelled=true;api.current?.dispose();api.current=undefined}
+ },[flightOpen])
+ useEffect(()=>{api.current?.set({mode,color,lift,rotate,hotspots,coverSet,sideGun})},[mode,color,lift,rotate,hotspots,coverSet,sideGun])
+ function camera(v:CameraView){setView(v);setRotate(false);api.current?.view(v)}
+ function saveDraft(){const draft={mode,color,lift,notes,coverSet,sideGun,date:new Date().toLocaleString()};try{sessionStorage.setItem(key,JSON.stringify(draft));setSaved(draft);setStatus('Draft saved for this tab. Download a review sheet to keep it.')}catch{setStatus('Draft could not be saved. Use Download review sheet.')}}
+ async function exportReview(){if(!api.current||saving)return;setSaving(true);setStatus('Preparing review sheet…');setRotate(false);try{await new Promise(r=>setTimeout(r,450));const image=api.current.capture(),finish=COLORS.find(c=>c.hex===color)?.name||color
+ const html=`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rex · ${item.title} concept review</title><style>body{font:16px/1.6 system-ui;max-width:1000px;margin:40px auto;padding:0 24px;color:#172a22}h1{font-size:40px;letter-spacing:-2px}small{letter-spacing:2px}img{width:100%;border-radius:12px}section{padding:18px 0;border-bottom:1px solid #cad3cc}pre{white-space:pre-wrap;font:inherit}aside{background:#eef4ee;padding:16px;border-radius:8px}@media print{body{margin:0}img{max-height:420px;object-fit:contain}}</style><small>SHIELD / REX COVER STUDIO</small><h1>Envelop / ${item.title} · Concept review</h1><p>${escapeHtml(new Date().toLocaleString())}</p><img alt="Selected equipment and cover concept" src="${image}"><section><b>View:</b> ${escapeHtml(mode)} · ${escapeHtml(view)}<br>${hasCoverSelection?`<b>Cover selection:</b> ${coverSetLabel}<br>`:''}${equipment==='mk38'?`<b>Side-mounted detail:</b> ${sideGun?'Included':'Not included'}<br>`:''}<b>Appearance:</b> ${escapeHtml(finish)} — visual color only; no material specification<br><b>Cover lift:</b> ${lift}% of illustrative separation</section><section><h2>Review notes</h2><pre>${escapeHtml(notes||'No notes added.')}</pre></section><section><h2>Engineering discussion points</h2>${POINTS.map(p=>`<p><b>${p.label} · ${escapeHtml(p.title)}</b><br>${escapeHtml(p.detail)}</p>`).join('')}</section><aside>${CONCEPT} This is not CAD, a fit approval, or an OEM-endorsed design.</aside><p>Reference: ${SOURCE?`<a href="${SOURCE}">${escapeHtml(item.sourceLabel)}</a>`:escapeHtml(item.sourceLabel)}</p>${equipment==='f35a'?`<p>Aircraft: <a href="${F35_CREDIT.url}">${F35_CREDIT.title}</a> by ${F35_CREDIT.author} · <a href="${F35_CREDIT.licenseUrl}">${F35_CREDIT.license}</a>. ${F35_CREDIT.changes}</p>`:''}</html>`
+ download(new Blob([html],{type:'text/html'}),`rex-${equipment}-concept-review.html`);setStatus('Review sheet downloaded. Open it to view or print to PDF.')}catch{setStatus('The review sheet could not be exported. Please try again.')}finally{setSaving(false)}}
+ async function exportModel(){if(!api.current||saving)return;setSaving(true);setStatus('Preparing Blender-compatible concept…');try{const data=await api.current.exportModel();download(new Blob([data],{type:'model/gltf-binary'}),`rex-${equipment}-ILLUSTRATIVE-CONCEPT.glb`);setStatus('3D concept downloaded. Import the GLB into Blender; geometry is illustrative.')}catch{setStatus('The 3D file could not be exported. Please try again.')}finally{setSaving(false)}}
+ function snapshot(){if(!api.current)return;try{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height+(equipment==='f35a'?165:100);const ctx=c.getContext('2d')!;ctx.fillStyle='#0b1110';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0);ctx.fillStyle='#e6f0e9';ctx.font=`${Math.max(12,c.width/65)}px sans-serif`;ctx.fillText(`REX / ENVELOP — ${item.title} concept preview${hasCoverSelection?' / '+coverSetLabel:''}`,24,img.height+36);ctx.fillStyle='#a4b4a9';ctx.font=`${Math.max(10,c.width/85)}px sans-serif`;ctx.fillText('Illustrative geometry and cover details. Not a verified fit or manufacturing design.',24,img.height+65);if(equipment==='f35a'){ctx.font=`${Math.max(8,c.width/90)}px sans-serif`;ctx.fillText('Aircraft: F-35A Lightning II by shangus930 · CC BY 4.0',24,img.height+91);ctx.fillText('sketchfab.com/3d-models/a06d6113cfb44a0aa7b8f17106aca9c4',24,img.height+112);ctx.fillText('creativecommons.org/licenses/by/4.0/ · Adapted by ASG',24,img.height+133)}c.toBlob(b=>{if(b){download(b,`rex-${equipment}-concept.png`);setStatus('Labeled snapshot downloaded.')}else setStatus('Snapshot could not be exported.')},'image/png')};img.src=api.current.capture()}catch{setStatus('Snapshot could not be exported. Please try again.')}}
+ return <section className="rcs" aria-label="Rex Cover Studio">
+ <header className="rcs-header"><div className="rcs-brand">Rex<span>.</span><i/><small>SHIELD TECHNOLOGIES</small></div><button className="rcs-quiet" onClick={()=>navigateTo('chat')}>Back to chat ↗</button></header>
+ <div className="rcs-intro"><div><div className="rcs-eyebrow"><span/>COVER STUDIO BETA / {item.title}</div><h1>Protection. <em>In perspective.</em></h1><p>Explore the cover. Reveal the equipment. Start a better design conversation.</p></div><div className="rcs-badge">◇ COVER STUDIO<b>BETA · CONCEPT LAB</b></div></div>
+ <div className="rcs-workspace"><div className="rcs-visual-column"><div className="rcs-stage"><div className="rcs-stage-title"><span>{equipment==='f35a'?<FlightDeckEgg title={item.title} onActiveChange={setFlightOpen}/>:item.title}</span><small>{item.category}</small></div><span className="rcs-live"><i/>{ready?'LIVE 3D':'INITIALIZING'}</span><div ref={host} className="rcs-canvas"/>{!ready&&<div className="rcs-loading" role="status">{error||(equipment==='f35a'?'Loading detailed F-35A…':'Preparing your preview…')}</div>}
+ <div className="rcs-hotspots" style={{display:hotspots&&ready?'block':'none'}}>{POINTS.map((p,i)=><button key={p.label} ref={el=>{markers.current[i]=el}} className={selected===i?'active':''} aria-label={`Inspect ${p.title}`} aria-pressed={selected===i} onClick={()=>setSelected(selected===i?null:i)}>{p.label}</button>)}</div>
+ {selected!==null&&<div className="rcs-inspection"><button aria-label="Close inspection" onClick={()=>setSelected(null)}>×</button><small>REVIEW POINT {POINTS[selected].label}</small><strong>{POINTS[selected].title}</strong><p>{POINTS[selected].detail}</p></div>}
+ <div className="rcs-stage-footer"><span>↔ Drag to orbit <i>·</i> Scroll or pinch to zoom</span><div><button aria-label="Zoom in" disabled={!ready} onClick={()=>api.current?.zoom(.85)}>+</button><button aria-label="Zoom out" disabled={!ready} onClick={()=>api.current?.zoom(1.18)}>−</button><button aria-label="Reset camera" disabled={!ready} onClick={()=>camera('hero')}>↺</button></div></div></div>
+ <div className="rcs-viewbar"><div className="rcs-segment">{(['hero','front','side','rear'] as CameraView[]).map(v=><button key={v} disabled={!ready} className={view===v?'active':''} aria-pressed={view===v} onClick={()=>camera(v)}>{v==='hero'?'Perspective':v[0].toUpperCase()+v.slice(1)}</button>)}</div><button className={rotate?'rcs-toggle active':'rcs-toggle'} disabled={!ready} aria-pressed={rotate} onClick={()=>setRotate(!rotate)}>{rotate?'Ⅱ Pause orbit':'↻ Auto orbit'}</button></div>
+ <div className="rcs-bottomline"><span>ILLUSTRATIVE MODEL · NOT TO SCALE</span><button className="rcs-quiet" disabled={!ready} onClick={snapshot}>↓ Save image</button></div></div>
+ <aside className="rcs-controls"><div className="rcs-panel-heading"><small>MAKE IT YOURS</small><h2>Envelop configuration</h2></div><div className="rcs-equipment"><label htmlFor="rcs-equipment">Equipment</label><select id="rcs-equipment" value={equipment} disabled={saving} onChange={e=>onEquipment(e.target.value as EquipmentId)}>{Object.entries(EQUIPMENT).map(([id,demo])=><option key={id} value={id}>{demo.name}</option>)}</select></div>
+ {hasCoverSelection&&<div className="rcs-equipment"><label htmlFor="rcs-cover-set">Envelop covers</label><select id="rcs-cover-set" value={coverSet} onChange={e=>setCoverSet(e.target.value as CoverSet)}>{Object.entries(coverOptions).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div>}
+ {equipment==='mk38'&&<label className="rcs-switch rcs-variant"><span>Side-mounted gun + cover</span><input aria-label="Side-mounted gun and cover" type="checkbox" checked={sideGun} onChange={e=>{setSideGun(e.target.checked);if(!e.target.checked&&coverSet==='side')setCoverSet('both')}}/></label>}
+ <fieldset disabled={!ready}><legend>01 <span>Visibility</span></legend><div className="rcs-mode-buttons">{(['covered','transparent','uncovered'] as ViewMode[]).map(m=><button key={m} aria-pressed={mode===m} className={mode===m?'active':''} onClick={()=>setMode(m)}><span>{m==='covered'?'▰':m==='transparent'?'▧':'◇'}</span>{m==='covered'?'Covered':m==='transparent'?'X-ray':item.uncovered}</button>)}</div></fieldset>
+ <fieldset disabled={!ready}><legend>02 <span>Cover appearance</span></legend><div className="rcs-swatches">{COLORS.map(c=><button key={c.hex} style={{'--swatch':c.hex} as React.CSSProperties} aria-label={c.name} aria-pressed={color===c.hex} className={color===c.hex?'active':''} onClick={()=>setColor(c.hex)}>{color===c.hex?'✓':''}</button>)}</div><p className="rcs-selection">{COLORS.find(c=>c.hex===color)?.name}<span>Woven finish · visual only</span></p></fieldset>
+ <fieldset disabled={!ready||mode==='uncovered'}><legend>03 <span>Lift the cover</span><output>{lift}%</output></legend><input aria-label="Cover separation" type="range" min="0" max="100" value={lift} onChange={e=>setLift(Number(e.target.value))}/><div className="rcs-range-labels"><span>On equipment</span><span>Separated</span></div></fieldset>
+ <label className="rcs-switch"><span>Engineering review points</span><input type="checkbox" checked={hotspots} onChange={e=>setHotspots(e.target.checked)}/></label>
+ <div className="rcs-notes"><label htmlFor="rcs-notes">Review notes</label><textarea id="rcs-notes" maxLength={4000} rows={3} placeholder="What would you change? Note a clearance, opening, or material question…" value={notes} onChange={e=>setNotes(e.target.value)}/></div>
+ <button className="rcs-primary" disabled={!ready||saving} onClick={exportReview}>{saving?'Preparing…':'↓ Download review sheet'}</button><button className="rcs-save" disabled={!ready||saving} onClick={exportModel}>↓ 3D concept for Blender (.glb)</button><button className="rcs-save" disabled={!ready} onClick={saveDraft}>Save draft in this tab</button>{saved&&<button className="rcs-restore" onClick={()=>{setMode(saved.mode);setColor(saved.color);setLift(saved.lift);setNotes(saved.notes);setCoverSet(saved.coverSet&&(equipment==='f35a'?['both','canopy','intakes','exhaust']:['both','main','eos',...(saved.sideGun?['side']:[])]).includes(saved.coverSet)?saved.coverSet:'both');setSideGun(saved.sideGun===true);setStatus('Saved draft restored.')}}>↶ Restore draft · {saved.date}</button>}<div role="status" className="rcs-status">{status}</div></aside></div>
+ <footer className="rcs-disclosure"><span>◇</span><p><strong>A starting point for engineering.</strong> {CONCEPT}</p>{SOURCE?<a href={SOURCE} target="_blank" rel="noreferrer">Equipment reference ↗</a>:<span className="rcs-reference">Photo + video reference</span>}</footer>{equipment==='f35a'&&<p className="rcs-attribution">Aircraft: <a href={F35_CREDIT.url} target="_blank" rel="noreferrer">{F35_CREDIT.title}</a> by {F35_CREDIT.author} · <a href={F35_CREDIT.licenseUrl} target="_blank" rel="noreferrer">{F35_CREDIT.license}</a>. Web adaptation and concept covers by ASG. <a href="/models/f35a/attribution.txt" target="_blank" rel="noreferrer">Full credits</a></p>}</section>
+}
+
+export const coverStudioModule = {
+  id: 'cover-studio' as const,
+  nav: { label: 'Cover Studio', icon: '🛡️' },
+  Section: CoverStudio,
+}

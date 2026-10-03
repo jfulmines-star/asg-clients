@@ -22,7 +22,7 @@ import StatusPage from './components/StatusPage'
 import { PORTAL_CONFIGS } from './config/portal-configs'
 import NotFound from './pages/NotFound'
 import { ASGPortalBase } from './portal/ASGPortalBase'
-import { ANDREW_CONFIG, RYANH_CONFIG, GNOLES_CONFIG, CALEB_CONFIG } from './config/shield-portal-configs'
+import { ANDREW_CONFIG, RYANH_CONFIG, GNOLES_CONFIG, CALEB_CONFIG, MARKB_CONFIG, JEFFD_CONFIG, JIMOAKS_CONFIG } from './config/shield-portal-configs'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -58,6 +58,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/ryanh" element={<ASGPortalBase config={RYANH_CONFIG} />} />
         <Route path="/shield-caleb" element={<ASGPortalBase config={CALEB_CONFIG} />} />
         <Route path="/gnoles" element={<ASGPortalBase config={GNOLES_CONFIG} />} />
+        <Route path="/markb" element={<ASGPortalBase config={MARKB_CONFIG} />} />
+        <Route path="/shield-jeffd" element={<ASGPortalBase config={JEFFD_CONFIG} />} />
+        <Route path="/shield-jimoaks" element={<ASGPortalBase config={JIMOAKS_CONFIG} />} />
         {/* /terry shortcut removed — all portals use /client-person format only */}
         {/* Status pages */}
         <Route path="/status" element={<StatusPage />} />

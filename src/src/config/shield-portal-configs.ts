@@ -441,3 +441,311 @@ export const GNOLES_CONFIG: PortalConfig = {
     },
   ],
 }
+
+// ─── MARKB — Shield Technologies / Rex ──────────────────────────────────────
+// clients.axiomstreamgroup.com/markb
+// Mark Bechtel — Shield Technologies rep portal. Rex agent, green accent.
+export const MARKB_CONFIG: PortalConfig = {
+  slug: 'markb',
+  pin: '9993',
+  clientName: 'Mark Bechtel',
+  company: 'Shield Technologies — Aviation',
+  memberName: 'Mark',
+  agentLabel: 'Rex',
+  agentId: 'rex',
+  accentColor: '#4ADE80',
+  themeMode: 'dark',
+  tagline:
+    "Private access to Rex — your Shield Technologies AI, pre-loaded with your aviation " +
+    "pipeline and territory. Every conversation starts from there.",
+  whatWeKnow: [
+    { label: 'Role',      value: 'Field Services Rep, Aviation' },
+    { label: 'Firm',      value: 'Shield Technologies Corporation' },
+    { label: 'Territory', value: 'Commercial MROs · Airline Maintenance · Military Aviation Depots' },
+    { label: 'Targets',   value: 'Southwest Airlines (all-737 fleet) · RAAF · JSDF F-35 MRO · US carrier expansion' },
+  ],
+  poweredBy: 'AxiomStream Group · Rex',
+
+  intakeLabel: 'My Pipeline — 2 Minutes',
+  intakeTitle: 'Load Your Pipeline',
+  intakeSubtitle: 'Give Rex your accounts, follow-ups, and territory. Takes 2 minutes. Every conversation after this starts smarter.',
+
+  chat: {
+    transport: 'api-proxy',
+    placeholder: 'Aviation accounts, MRO outreach, pitch strategy — what are we working on?',
+    greeting: (savedContext) =>
+      savedContext
+        ? "Mark — context loaded. What's the aviation priority today?"
+        : "Mark — I'm up to speed on your territory: Southwest, the commercial MRO pipeline, and military aviation. What are we working on?",
+    apiEndpoint: '/api/chat',
+    historyEndpoint: '/api/history',
+    persistEndpoint: '/api/portal-chat-history',
+  },
+
+  intakeFields: [
+    {
+      key: 'topAccounts',
+      label: 'Top 3 accounts right now',
+      type: 'textarea',
+      placeholder: 'Company, contact, where they are in the pipeline…',
+    },
+    {
+      key: 'followUps',
+      label: 'Follow-ups due this week',
+      type: 'textarea',
+      placeholder: 'Who, about what, by when',
+    },
+    {
+      key: 'objections',
+      label: 'Common objections you are hearing',
+      type: 'chips',
+      options: ['Price', 'Procurement timeline', 'Vendor approval process', 'Incumbent vendor', 'Proving ROI', 'Decision authority'],
+    },
+    {
+      key: 'territory',
+      label: 'Primary buying commands / depots',
+      type: 'textarea',
+      placeholder: 'Norfolk, Puget Sound, Cherry Point…',
+    },
+  ],
+
+  modules: ['welcome', 'chat', 'cover-studio', 'documents', 'dining'],
+
+  moduleOptions: {
+    documents: {
+      tenantId: 'markb',
+      description:
+        'Upload Shield product sheets, aviation MRO specs, Southwest pitch decks, or any file you want Rex to reference.',
+    },
+  },
+
+  aboutPoints: [
+    {
+      icon: '🛡️',
+      title: 'Shield Context Loaded',
+      body:
+        'Rex opens already knowing Shield Technologies, the Envelop product line, your territory, ' +
+        'and your pipeline. Skip the brief — start where the work is.',
+    },
+    {
+      icon: '📋',
+      title: 'Pipeline Ready',
+      body:
+        'Track your top accounts, follow-ups, and next actions. Rex keeps your pipeline organized ' +
+        'without adding CRM overhead.',
+    },
+    {
+      icon: '💬',
+      title: 'Talking Points on Demand',
+      body:
+        'Ask Rex for objection handling, competitive positioning, or a quick brief on a buying ' +
+        'command before you walk in the room.',
+    },
+    {
+      icon: '📂',
+      title: 'Docs in the Room',
+      body:
+        'Upload product sheets, specs, or meeting notes. Rex references them in every conversation.',
+    },
+  ],
+}
+
+// ─── JEFFD — Shield Technologies / Rex ──────────────────────────────────────
+// clients.axiomstreamgroup.com/shield-jeffd
+// Jeff Dicks — CFO, Shield Technologies. Rex agent, green accent.
+export const JEFFD_CONFIG: PortalConfig = {
+  slug: 'shield-jeffd',
+  pin: '7742',
+  clientName: 'Jeff Dicks',
+  company: 'Shield Technologies Corporation',
+  memberName: 'Jeff',
+  agentLabel: 'Rex',
+  agentId: 'rex',
+  accentColor: '#4ADE80',
+  themeMode: 'dark',
+  tagline: 'Your Rex — Shield business intelligence + advanced accounting',
+  whatWeKnow: [
+    { label: 'Role',      value: 'CFO & Controller' },
+    { label: 'Firm',      value: 'Shield Technologies Corporation' },
+    { label: 'Focus',     value: 'DCAA audits · CAS compliance · Indirect rates · Margin analysis' },
+    { label: 'Products',  value: 'Envelop environmental protective covers (military & commercial)' },
+  ],
+  poweredBy: 'AxiomStream Group · Rex',
+
+  intakeLabel: 'My Business — 2 Minutes',
+  intakeTitle: 'Load Your Context',
+  intakeSubtitle: 'Give Rex your current business priorities, DCAA goals, or margin analysis targets. Takes 2 minutes.',
+
+  chat: {
+    transport: 'api-proxy',
+    placeholder: 'Contract accounting, DCAA prep, margin analysis, revenue recognition — what are we working on?',
+    greeting: (savedContext) =>
+      savedContext
+        ? "Jeff — context loaded. What's the priority?"
+        : "Jeff — your Rex is tuned specifically to Shield's business — the Envelop product line, government contract vehicles, DoD customers, and the commercial MRO pipeline. I'm also advanced on the accounting side: DCAA audit readiness, Cost Accounting Standards, government contract revenue recognition, indirect cost structures. Where do you want to start?",
+    apiEndpoint: '/api/chat',
+    historyEndpoint: '/api/history',
+    persistEndpoint: '/api/portal-chat-history',
+  },
+
+  intakeFields: [
+    {
+      key: 'accountingPriorities',
+      label: 'Current accounting or audit priorities',
+      type: 'textarea',
+      placeholder: 'DCAA audit prep, indirect cost structures, CAS compliance questions…',
+    },
+    {
+      key: 'marginTargets',
+      label: 'Margin analysis or contract bids',
+      type: 'textarea',
+      placeholder: 'Bids under review, NSN margin targets, SBIR Phase III pricing…',
+    },
+    {
+      key: 'challenges',
+      label: 'Current business challenges',
+      type: 'chips',
+      options: ['DCAA compliance', 'CAS rules', 'Indirect rates', 'Revenue recognition', 'Margin improvement', 'DoD payment cycles', 'SBIR Phase III'],
+    },
+  ],
+
+  modules: ['welcome', 'chat', 'cover-studio', 'documents', 'dining'],
+
+  moduleOptions: {
+    documents: {
+      tenantId: 'shield-jeffd',
+      description:
+        'Upload Shield financial models, FAR/DFARS compliance docs, DCAA guidelines, or indirect rate cost structures.',
+    },
+  },
+
+  aboutPoints: [
+    {
+      icon: '🛡️',
+      title: 'Shield Context Loaded',
+      body:
+        'Rex opens already knowing Shield Technologies, the Envelop product line, your territory, ' +
+        'and your pipeline. Skip the brief — start where the work is.',
+    },
+    {
+      icon: '📊',
+      title: 'Financial Intelligence',
+      body:
+        'Ask Rex about DCAA audit readiness, indirect cost structures, revenue recognition on contracts, ' +
+        'or cost accounting rules. It talks finance and compliance fluently.',
+    },
+    {
+      icon: '💬',
+      title: 'Strategic Insights',
+      body:
+        'Obtain detailed analysis of DoD contract pricing, margin calculation support, ' +
+        'and government capture finance strategy in seconds.',
+    },
+    {
+      icon: '📂',
+      title: 'Docs in the Room',
+      body:
+        'Upload spreadsheets, FAR guidelines, or audit drafts. Rex references them in every conversation.',
+    },
+  ],
+}
+
+// ─── JIMOAKS — Shield Technologies / Rex ────────────────────────────────────
+// clients.axiomstreamgroup.com/shield-jimoaks
+// Jim Oaks — COO, Shield Technologies. Rex agent, green accent.
+export const JIMOAKS_CONFIG: PortalConfig = {
+  slug: 'shield-jimoaks',
+  pin: '3381',
+  clientName: 'Jim Oaks',
+  company: 'Shield Technologies Corporation',
+  memberName: 'Jim',
+  agentLabel: 'Rex',
+  agentId: 'rex',
+  accentColor: '#4ADE80',
+  themeMode: 'dark',
+  tagline: 'COO Intelligence — Operations, Compliance & Capture Strategy',
+  whatWeKnow: [
+    { label: 'Role',      value: 'COO' },
+    { label: 'Firm',      value: 'Shield Technologies Corporation' },
+    { label: 'Focus',     value: 'Operations · Supply chain · Compliance (ITAR/EAR, CMMC 2.0)' },
+    { label: 'Strategic', value: 'Capture strategy · International export · ADF/JSDF programs' },
+  ],
+  poweredBy: 'AxiomStream Group · Rex',
+
+  intakeLabel: 'My Operations — 2 Minutes',
+  intakeTitle: 'Load Your Operational Context',
+  intakeSubtitle: 'Give Rex your active supply chain projects, compliance timelines, or capture goals. Takes 2 minutes.',
+
+  chat: {
+    transport: 'api-proxy',
+    placeholder: 'Compliance, operations, export controls, capture strategy — what are we working on?',
+    greeting: (savedContext) =>
+      savedContext
+        ? "Jim — context loaded. What's the priority?"
+        : "Jim — I'm up to speed on Shield's operations: ITAR posture, CMMC 2.0 requirements, FAR/DFARS compliance, and the RAAF/JSDF programs. What do you want to dig into?",
+    apiEndpoint: '/api/chat',
+    historyEndpoint: '/api/history',
+    persistEndpoint: '/api/portal-chat-history',
+  },
+
+  intakeFields: [
+    {
+      key: 'opsPriorities',
+      label: 'Operational or logistics priorities',
+      type: 'textarea',
+      placeholder: 'Production lines, supply chain coordination, NSN validation tasks…',
+    },
+    {
+      key: 'complianceTimeline',
+      label: 'Compliance rules or deadlines',
+      type: 'textarea',
+      placeholder: 'CMMC 2.0 readiness, NIST 800-171 controls, ITAR export licenses…',
+    },
+    {
+      key: 'operationsChallenges',
+      label: 'Key operational challenges',
+      type: 'chips',
+      options: ['Supply chain gaps', 'CMMC 2.0 prep', 'ITAR compliance', 'AS9100 quality', 'Production throughput', 'NSN administration'],
+    },
+  ],
+
+  modules: ['welcome', 'chat', 'cover-studio', 'documents', 'dining'],
+
+  moduleOptions: {
+    documents: {
+      tenantId: 'shield-jimoaks',
+      description:
+        'Upload operations workflows, supply chain logs, CMMC 2.0 readiness assessments, or ITAR licensing agreements.',
+    },
+  },
+
+  aboutPoints: [
+    {
+      icon: '🛡️',
+      title: 'Shield Context Loaded',
+      body:
+        'Rex opens already knowing Shield Technologies, the Envelop product line, your territory, ' +
+        'and your pipeline. Skip the brief — start where the work is.',
+    },
+    {
+      icon: '⚙️',
+      title: 'Operations & Compliance',
+      body:
+        'Verify ITAR rules, CMMC 2.0 framework steps, FAR/DFARS operations clauses, ' +
+        'and quality standards like AS9100. Rex keeps operations aligned and compliant.',
+    },
+    {
+      icon: '💬',
+      title: 'Capture Support',
+      body:
+        'Get rapid operational calculations, strategic messaging for international programs, ' +
+        'and sole-source spec arguments on demand.',
+    },
+    {
+      icon: '📂',
+      title: 'Docs in the Room',
+      body:
+        'Upload workflows, compliance checks, or logistical plans. Rex references them in every conversation.',
+    },
+  ],
+}

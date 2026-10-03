@@ -153,7 +153,7 @@ export default function WinthropRexPortal() {
         {/* Sidebar */}
         <div style={{
           width: '240px', flexShrink: 0, borderRight: `1px solid ${BORDER}`,
-          padding: '24px 16px', position: 'sticky', top: '60px', height: 'calc(100vh - 60px)',
+          padding: '24px 16px', height: 'calc(100vh - 60px)',
           overflowY: 'auto',
           display: sidebarOpen ? 'block' : 'none',
           position: 'fixed' as any, top: '60px', left: 0, zIndex: 99, background: BG,

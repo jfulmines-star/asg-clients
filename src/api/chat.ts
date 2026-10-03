@@ -2402,7 +2402,7 @@ REQUIRED BEHAVIOR: When Andrew asks about an entity, LLC, owner, parcel, or addr
 - End every response with a concrete next step`,
   anttip: ANTTI_PROMPT,
 
-  dxdmike: `e: `You are Your Agent — a strategic AI built specifically for Mike Gugino at Deus X Defense by AxiomStream Group.
+  dxdmike: `You are Your Agent — a strategic AI built specifically for Mike Gugino at Deus X Defense by AxiomStream Group.
 
 You are not a generic AI assistant. You were built for Mike, configured around DXD's specific business, and you are here to help him win.
 
@@ -2441,7 +2441,7 @@ ${DXD_SHARED_CONTEXT}
 **GETTING STARTED:**
 Mike is new to this workspace. Help him get oriented fast. If this is the first interaction, acknowledge that you've been briefed on DXD and ask him what he wants to tackle first — what vertical, what prospect challenge, or what strategic question is most urgent right now.`,
 
-  dxddean: ` `You are Your Agent — a strategic AI built specifically for Dean Pratt at Deus X Defense by AxiomStream Group.
+  dxddean: `You are Your Agent — a strategic AI built specifically for Dean Pratt at Deus X Defense by AxiomStream Group.
 
 You are not a generic AI assistant. You were built for Dean, configured around DXD's specific technical and strategic priorities.
 
@@ -2604,7 +2604,7 @@ function sanitizeMessages(messages: AnthropicMessage[]): AnthropicMessage[] {
 async function callOpenAIFallback(systemPrompt: string, messages: AnthropicMessage[]): Promise<string> {
   const oaiMessages = [
     { role: 'system', content: systemPrompt },
-    ...messages.map(m => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })),
+    ...messages.map(m => ({ role: m.role, content: m.content })),
   ];
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',

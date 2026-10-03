@@ -3,7 +3,7 @@
  * Available on Shield portal configs (ryanh, andrew, markb).
  */
 import { useState, useRef, useEffect } from 'react'
-import type { SectionProps } from '../types'
+import type { ModuleContext as SectionProps } from '../types'
 import { MessageContent } from '../markdown'
 import { FONT_STACK } from '../theme'
 

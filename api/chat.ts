@@ -7,6 +7,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import PptxGenJS from 'pptxgenjs';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
 const OPENAI_API_KEY_PORTAL = process.env.OPENAI_API_KEY || '';
 const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';
@@ -2911,6 +2912,32 @@ async function hsLogActivity(contactEmail: string, note: string): Promise<string
   const ed = await er.json() as { engagement?: { id: number } };
   const name = contact ? `${contact.properties.firstname||''} ${contact.properties.lastname||''}`.trim() : contactEmail;
   return ed.engagement?.id ? `Activity logged for ${name}: "${note.slice(0,80)}${note.length>80?'…':''}"` : `Failed to log activity`;
+}
+
+// Resend email fallback for document generation
+async function sendDocViaResend(docBuffer: Buffer, filename: string, recipientEmail: string, subject: string, body: string): Promise<{ ok: boolean; messageId?: string; error?: string }> {
+  if (!RESEND_API_KEY) {
+    return { ok: false, error: 'RESEND_API_KEY not configured' };
+  }
+  try {
+    const base64Doc = docBuffer.toString('base64');
+    const formData = new FormData();
+    formData.append('from', 'kit@axiomstreamgroup.com');
+    formData.append('to', recipientEmail);
+    formData.append('subject', subject);
+    formData.append('html', body);
+    formData.append('attachments', new File([new Uint8Array(docBuffer)], filename, { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+    
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'multipart/form-data' },
+      body: formData,
+    });
+    const data = await resp.json() as { id?: string; error?: string };
+    return resp.ok ? { ok: true, messageId: data.id } : { ok: false, error: data.error || 'Email send failed' };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
 }
 
 const SHIELD_GRAPH_TENANT   = '9df00d69-3980-486c-b81e-d6ef8ab81b10';

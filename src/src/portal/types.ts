@@ -19,6 +19,7 @@ export type ModuleId =
   | 'cross-sell-banner'
   | 'hubspot-hook'
   | 'dining'
+  | 'cover-studio'
 
 // ─── Intake field schema ─────────────────────────────────────────────────────
 export interface IntakeField {
@@ -87,6 +88,7 @@ export interface PortalConfig {
   whatWeKnow: string | Array<{ label: string; value: string }>
   aboutPoints?: Array<{ icon: string; title: string; body: string }>
   poweredBy?: string
+  ctaButton?: { label: string; url: string }
 
   // Chat
   chat: ChatConfig

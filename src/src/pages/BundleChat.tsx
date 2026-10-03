@@ -1306,14 +1306,6 @@ export default function BundleChat() {
         </div>
 
         {/* Session banner — shown when viewing a past session (still fully resumable) */}
-        {false && (
-          <div className="bt-archive-banner">
-            <span className="bt-archive-banner-label">
-              📖 {archivedSessionInfo.name || new Date(archivedSessionInfo.startTs).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} — continue below or
-            </span>
-            <button className="bt-archive-banner-back" onClick={returnToLive}>← Back to latest</button>
-          </div>
-        )}
 
         {/* Documents Panel */}
         {docsOpen && (

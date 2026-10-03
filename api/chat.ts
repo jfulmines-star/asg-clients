@@ -3084,27 +3084,45 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
   if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
     safeName = lower.endsWith('.docx') ? filename : filename.replace(/\.doc$/, '.docx');
     mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    // Build branded Shield/Envelop .docx via Python builder (matches Poland/Croatia VP template exactly)
-    const tmpOut = `/tmp/rex-doc-${Date.now()}.docx`;
-    const titleLine = content.split('\n')[0] || filename.replace('.docx','');
-    const bodyContent = content;
-    const { execSync } = await import('child_process');
-    try {
-      execSync(
-        `python3 /root/Projects/asg-clients/scripts/build-shield-doc.py ` +
-        `--title ${JSON.stringify(titleLine)} ` +
-        `--subtitle ${JSON.stringify(slug)} ` +
-        `--content ${JSON.stringify(bodyContent)} ` +
-        `--out ${JSON.stringify(tmpOut)}`,
-        { timeout: 30000 }
-      );
-    } catch (pyErr: unknown) {
-      const msg = pyErr instanceof Error ? pyErr.message : String(pyErr);
-      return `Failed to build document: ${msg.slice(0,200)}`;
+    // Build branded Shield/Envelop .docx natively via docx npm (Vercel-safe — no Python subprocess)
+    const titleLine = content.split('\n')[0].replace(/^#+\s*/, '') || filename.replace('.docx','');
+    const bodyLines = content.split('\n');
+    const docChildren: (Paragraph)[] = [];
+    // Title
+    docChildren.push(new Paragraph({
+      text: titleLine,
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+    }));
+    // Subtitle / portal slug
+    docChildren.push(new Paragraph({
+      children: [new TextRun({ text: `Shield Technologies — ${slug.toUpperCase()}`, italics: true, color: '4ADE80' })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 },
+    }));
+    // Body — parse markdown headings and paragraphs
+    for (const line of bodyLines.slice(1)) {
+      const h2 = line.match(/^##\s+(.+)/);
+      const h3 = line.match(/^###\s+(.+)/);
+      const bullet = line.match(/^[-*]\s+(.+)/);
+      if (h2) {
+        docChildren.push(new Paragraph({ text: h2[1], heading: HeadingLevel.HEADING_2, spacing: { before: 320, after: 120 } }));
+      } else if (h3) {
+        docChildren.push(new Paragraph({ text: h3[1], heading: HeadingLevel.HEADING_3, spacing: { before: 200, after: 80 } }));
+      } else if (bullet) {
+        docChildren.push(new Paragraph({ children: [new TextRun({ text: bullet[1] })], bullet: { level: 0 }, spacing: { after: 80 } }));
+      } else if (line.trim()) {
+        docChildren.push(new Paragraph({ children: [new TextRun({ text: line.trim() })], spacing: { after: 120 } }));
+      } else {
+        docChildren.push(new Paragraph({ text: '' }));
+      }
     }
-    const { readFileSync, unlinkSync } = await import('fs');
-    const buffer = readFileSync(tmpOut);
-    try { unlinkSync(tmpOut); } catch {}
+    const doc = new Document({
+      creator: 'Rex — Shield Technologies AI',
+      title: titleLine,
+      sections: [{ children: docChildren }],
+    });
+    const buffer = await Packer.toBuffer(doc);
     // Upload binary buffer
     const tokenResult2 = await getShieldPortalToken();
     if (!tokenResult2.ok || !tokenResult2.accessToken) return 'Could not reach Shield M365 right now.';

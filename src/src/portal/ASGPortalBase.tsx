@@ -56,7 +56,15 @@ export function ASGPortalBase({ config }: Props) {
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [unlocked, setUnlocked] = useState(false)
-  const [active, setActive] = useState<ModuleId>((config.defaultModule as ModuleId) || 'welcome')
+  // Honour ?view=<moduleId> deep-link on first load
+  const initialView = (() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('view');
+      if (p && config.modules.includes(p as ModuleId)) return p as ModuleId;
+    }
+    return (config.defaultModule as ModuleId) || 'welcome';
+  })()
+  const [active, setActive] = useState<ModuleId>(initialView)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const intake = useIntake(config)

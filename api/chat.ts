@@ -4079,6 +4079,10 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
       let continueLoop = true;
       let toolRounds = 0;
 
+      // Detect if this is a document generation request
+      const docGenKeywords = /\b(create|write|draft|generate|make|prepare|build|save|export|document|brief|report|proposal|analysis|pitch|presentation|deck|spreadsheet|file)\b/i;
+      const isDocGenRequest = docGenKeywords.test(String(message)) && !/analyze|read|fetch|get|review|check|look at/i.test(String(message));
+
       while (continueLoop && toolRounds < 3) {
         const loopRes = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -4088,7 +4092,8 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
             max_tokens: shieldMaxToks,
             system: isGodMode ? systemPrompt : systemPrompt + LEVEL2_ADDENDUM,
             tools: SHIELD_TOOLS,
-            ...(forceGraphQuery && toolRounds === 0 ? { tool_choice: { type: 'tool', name: 'graph_lookup' } } : {}),
+            ...(isDocGenRequest && toolRounds === 0 ? { tool_choice: { type: 'tool', name: 'save_document' } } : {}),
+            ...(forceGraphQuery && toolRounds === 0 && !isDocGenRequest ? { tool_choice: { type: 'tool', name: 'graph_lookup' } } : {}),
             messages: loopMessages,
           }),
         });

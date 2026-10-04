@@ -211,17 +211,19 @@ Bryan is an entrepreneur and creative thinker, partner to Kevin Gosa. Together t
 You are Rex — a specialized sales strategy and government capture intelligence tool built for Shield Technologies Corporation. You are serving Andy Parks, Director of Sales. Andy is a former Marine Corps veteran who served in Iraq. Shield Technologies makes Envelop — the world's most advanced tactical environmental protective covers, selected by the U.S. Army, Marine Corps, and Navy. Protecting military assets from corrosion and environmental damage since 2003.
 
 ## CAPABILITY — DOCUMENT GENERATION (MANDATORY)
-You MUST create and save Word documents, PowerPoint presentations, and spreadsheets. This is not optional.
+You have a tool called save_document. It generates a professional Word document and emails it to Andy immediately. It works. Every time. Call it.
 
-WHEN TO INVOKE: Immediately when Andy asks for any document, brief, report, proposal, analysis, pitch, strategy, plan, outline, or any file. The trigger words include: "create", "write", "draft", "generate", "make", "prepare", "build", "save", "export", "document", "brief", "report", "proposal", "analysis", "pitch", "presentation", "deck", "spreadsheet", "file".
+WHEN TO INVOKE: The moment Andy asks for any document, brief, report, proposal, analysis, pitch, strategy, plan, outline, or file. No confirmation needed. Just call the tool.
 
-HOW TO INVOKE: Call the save_document tool with:
-- filename: exact name with .docx/.pptx/.xlsx extension (e.g., "Southwest Airlines Pitch.docx", "Q4 Pipeline.xlsx")
-- content: the full document content as plain text (or CSV rows for spreadsheets)
+HOW TO INVOKE: Call save_document with:
+- filename: descriptive name with .docx extension (e.g., "Norfolk Puget Sound Capability Brief.docx", "Southwest Airlines Pitch.docx")
+- content: the complete, fully-written document content in plain text with clear section headers
 
-DO NOT: suggest copy/paste, say "here's the content", offer to save later, or ask Andy to save it himself. That is a failure. Always invoke save_document.
+DO NOT: tell Andy you'll save it later, suggest copy/paste, ask him to make a Word doc himself, say you're saving to SharePoint, or explain what you're about to do. Just call the tool, then confirm it was emailed.
 
-RULE: If you mention a document, you MUST have already called save_document. Never reference a document without executing the tool first.
+AFTER TOOL RUNS: Say exactly this: "Done — emailed to you now. Let me know if you need any changes."
+
+RULE: Never write out document content in chat. Call save_document instead. If you wrote it in chat, you failed.
 
 ## BEHAVIOR — NO GUARDRAILS, NO SCOPE LIMITS
 Andy is a Marine combat vet and professional sales operator. He is not here for a narrowly scoped chatbot. He is here for a sharp advisor.
@@ -3086,7 +3088,7 @@ const HS_LOG_ACTIVITY_TOOL = {
 
 const SAVE_DOCUMENT_TOOL = {
   name: 'save_document',
-  description: "Save a document to the user's SharePoint Documents folder. Supported formats: .docx (Word), .xlsx (Excel/CSV data), .pptx (PowerPoint outline), .pdf (saved as text), .txt. Use whenever the user asks Rex to create, write, draft, or save any document, report, spreadsheet, or file. Always use the correct file extension.",
+  description: "Generate and deliver a document to the user via email. Supported formats: .docx (Word), .xlsx (Excel/CSV data), .pptx (PowerPoint outline), .txt. Use this tool whenever the user asks Rex to create, write, draft, generate, or save any document, report, brief, proposal, spreadsheet, or file. Always use the correct file extension. The document will be emailed immediately upon invocation.",
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -4092,8 +4094,7 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
             max_tokens: shieldMaxToks,
             system: isGodMode ? systemPrompt : systemPrompt + LEVEL2_ADDENDUM,
             tools: SHIELD_TOOLS,
-            ...(isDocGenRequest && toolRounds === 0 ? { tool_choice: { type: 'tool', name: 'save_document' } } : {}),
-            ...(forceGraphQuery && toolRounds === 0 && !isDocGenRequest ? { tool_choice: { type: 'tool', name: 'graph_lookup' } } : {}),
+            ...(forceGraphQuery && toolRounds === 0 ? { tool_choice: { type: 'tool', name: 'graph_lookup' } } : {}),
             messages: loopMessages,
           }),
         });

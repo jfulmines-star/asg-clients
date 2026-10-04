@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-bda5b7309d-_383db1e216",
+  "featureId": "feat_cli-command_bda5b7309d",
+  "title": "Missing build verification scripts expose deployment to broken code",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 131,
+      "endLine": 135,
+      "symbol": "scripts",
+      "quote": "\"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  }"
+    }
+  ],
+  "reasoning": "The project includes TypeScript and strict type checking configuration, but package.json provides no typecheck, lint, or test scripts. The project metadata explicitly notes these commands are null. Without pre-build verification scripts, broken code can pass through the build pipeline - vite build may succeed even with TypeScript errors depending on configuration, and there's no automated way to verify code quality before deployment.",
+  "reproduction": "1. Introduce a TypeScript error in src/\n2. Run 'npm run build'\n3. Build may succeed without type checking depending on vite config\n4. Deploy broken code to production",
+  "recommendation": "Add verification scripts to package.json: 'typecheck': 'tsc --noEmit', 'lint': 'eslint src api', 'test': 'vitest run'. Update build process to run these checks before vite build. Configure CI to fail on verification errors.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature. This is a process/tooling gap rather than a runtime behavior issue.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "Add typecheck script running 'tsc --noEmit' and integrate into pre-build workflow",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-bda5b7309d_999a2e8726",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:22:41.815Z",
+  "updatedAt": "2026-08-22T05:22:41.815Z"
+}

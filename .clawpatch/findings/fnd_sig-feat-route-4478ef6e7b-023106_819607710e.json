@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4478ef6e7b-023106_819607710e",
+  "featureId": "feat_route_4478ef6e7b",
+  "title": "useIsMobile resize listener never throttled/debounced",
+  "category": "performance",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 136,
+      "endLine": 140,
+      "symbol": "useIsMobile",
+      "quote": "useEffect(() => {\n    const h = () => setIsMobile(window.innerWidth < 768)\n    window.addEventListener('resize', h)\n    return () => window.removeEventListener('resize', h)\n  }, [])"
+    }
+  ],
+  "reasoning": "Every window resize event triggers a setState call. On rapid resize (e.g., user dragging window border), this can cause dozens of re-renders per second, degrading performance. Standard practice is to debounce or throttle resize handlers.",
+  "reproduction": "1. Open /lindsay on desktop\n2. Rapidly resize browser window\n3. Observe performance panel shows many re-renders\n4. On slower devices, UI may lag during resize",
+  "recommendation": "Wrap the resize handler in a debounce (150-200ms) or throttle function. Libraries like lodash provide these, or implement a simple debounce using setTimeout.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. Performance regression tests would require measuring render counts during simulated resize events.",
+  "suggestedRegressionTest": "Performance test: simulate 50 rapid resize events within 1 second, assert state updates <= 10 times (confirming debounce/throttle active).",
+  "minimumFixScope": "useIsMobile hook in LindsayPortal.tsx",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4478ef6e7b_02310638e4",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:25.501Z",
+  "updatedAt": "2026-08-22T05:24:25.501Z"
+}

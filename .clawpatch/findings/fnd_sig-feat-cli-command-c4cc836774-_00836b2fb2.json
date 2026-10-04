@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-c4cc836774-_00836b2fb2",
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "Global CHART_REGEX with stateful lastIndex causes race condition in concurrent renders",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/MessageRenderer.tsx",
+      "startLine": 441,
+      "endLine": 441,
+      "symbol": "CHART_REGEX",
+      "quote": "const CHART_REGEX = /<chart>([\\s\\S]*?)<\\/chart>/g"
+    },
+    {
+      "path": "src/src/components/MessageRenderer.tsx",
+      "startLine": 449,
+      "endLine": 449,
+      "symbol": null,
+      "quote": "CHART_REGEX.lastIndex = 0"
+    },
+    {
+      "path": "src/src/components/MessageRenderer.tsx",
+      "startLine": 451,
+      "endLine": 451,
+      "symbol": null,
+      "quote": "while ((match = CHART_REGEX.exec(content)) !== null) {"
+    }
+  ],
+  "reasoning": "CHART_REGEX is a module-level constant with the /g flag, making it stateful (lastIndex property). In React, multiple instances of MessageRenderer can render concurrently or re-render rapidly. If two instances call exec() on the same regex simultaneously, they share lastIndex state, causing one to skip matches or iterate incorrectly. The manual reset (line 449) mitigates this within a single render but doesn't prevent interleaving between components.",
+  "reproduction": "Render multiple MessageRenderer components simultaneously with content containing <chart> tags. In React 18 concurrent mode or fast re-renders, some charts may fail to parse.",
+  "recommendation": "Move CHART_REGEX inside the component function or create a new RegExp instance per render: 'const chartRegex = /<chart>([\\s\\S]*?)<\\/chart>/g'. This ensures each component instance has isolated state.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests verify concurrent rendering or rapid re-renders of MessageRenderer with multiple chart blocks.",
+  "suggestedRegressionTest": "Render two MessageRenderer instances with identical multi-chart content in React.StrictMode (which double-invokes renders). Verify all charts parse correctly in both instances.",
+  "minimumFixScope": "src/src/components/MessageRenderer.tsx - move CHART_REGEX into component scope",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-c4cc836774_69103d2d72",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:37.648Z",
+  "updatedAt": "2026-08-22T05:23:37.648Z"
+}

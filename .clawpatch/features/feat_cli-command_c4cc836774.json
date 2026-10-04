@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "Node source src/src/components",
+  "summary": "Node/TypeScript source group src/src/components with 4 files.",
+  "kind": "cli-command",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "package.json",
+      "symbol": "src/src/components",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "reason": "source group src/src/components"
+    },
+    {
+      "path": "src/src/components/MessageRenderer.tsx",
+      "reason": "source group src/src/components"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "reason": "source group src/src/components"
+    },
+    {
+      "path": "src/src/components/portal/BasePortal.tsx",
+      "reason": "source group src/src/components"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:asg-clients",
+    "project-root:."
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "process-exec"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-cli-command-c4cc836774-_89338f7ef0",
+    "fnd_sig-feat-cli-command-c4cc836774-_01cbc94bae",
+    "fnd_sig-feat-cli-command-c4cc836774-_00836b2fb2",
+    "fnd_sig-feat-cli-command-c4cc836774-_f9b5e17dff",
+    "fnd_sig-feat-cli-command-c4cc836774-_04a8e18f22",
+    "fnd_sig-feat-cli-command-c4cc836774-_2a4b92d66a"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "6 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:23:37.654Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:23:37.654Z"
+}

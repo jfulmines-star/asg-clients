@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_4478ef6e7b",
+  "title": "React route /lindsay",
+  "summary": "React Router route '/lindsay' rendered by LindsayPortal.",
+  "kind": "route",
+  "source": "react-router-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "symbol": "LindsayPortal",
+      "route": "/lindsay",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "reason": "route component"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "reason": "route declaration"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "react-router",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-route-4478ef6e7b-e1a8ad_7e278e384e",
+    "fnd_sig-feat-route-4478ef6e7b-023106_819607710e",
+    "fnd_sig-feat-route-4478ef6e7b-3546ba_e1ba013a22",
+    "fnd_sig-feat-route-4478ef6e7b-dda352_61cc6dc7d5"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "4 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:24:25.504Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:24:25.504Z"
+}

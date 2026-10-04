@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-a5cb4f5c8c-_8d3b31d19e",
+  "featureId": "feat_cli-command_a5cb4f5c8c",
+  "title": "Race condition in justSaved state after navigation",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "startLine": 247,
+      "endLine": 252,
+      "symbol": "handleSubmit",
+      "quote": "function handleSubmit(e: React.FormEvent) {\n    e.preventDefault()\n    onSave()\n    setJustSaved(true)\n    setTimeout(() => navigateTo('chat'), 600)\n  }"
+    },
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "startLine": 206,
+      "endLine": 207,
+      "symbol": "IntakeSection",
+      "quote": "if (saved && !justSaved) {\n    // If they navigate back here after saving, show a confirmation"
+    }
+  ],
+  "reasoning": "handleSubmit sets justSaved=true then navigates after 600ms. If the component unmounts before the setTimeout fires (user navigates away quickly), the setTimeout callback still runs, potentially calling navigateTo on an unmounted component. This is a minor bug that won't crash but indicates missing cleanup. Additionally, justSaved state is never reset, so if user navigates back to intake after the first save, the confirmation view won't show again (saved && !justSaved will be false).",
+  "reproduction": "Submit the intake form, then immediately navigate to another section before 600ms elapses. The setTimeout will still fire.",
+  "recommendation": "Clear the setTimeout in a cleanup function (useEffect return). Also consider resetting justSaved when saved changes or when component mounts.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests cover async navigation timing or component lifecycle edge cases.",
+  "suggestedRegressionTest": "Test that simulates form submission followed by immediate unmount, ensuring no errors or state updates on unmounted component.",
+  "minimumFixScope": "Wrap setTimeout in useEffect and return clearTimeout cleanup. Reset justSaved when saved prop changes.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-a5cb4f5c8c_036b0f7513",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:09.640Z",
+  "updatedAt": "2026-08-22T05:23:09.640Z"
+}

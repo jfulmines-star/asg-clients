@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_6fa9cf5d7e",
+  "title": "React route /jj",
+  "summary": "React Router route '/jj' rendered by JJPortal.",
+  "kind": "route",
+  "source": "react-router-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "src/src/pages/JJPortal.tsx",
+      "symbol": "JJPortal",
+      "route": "/jj",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/pages/JJPortal.tsx",
+      "reason": "route component"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "reason": "route declaration"
+    },
+    {
+      "path": "src/src/components/MessageRenderer.tsx",
+      "reason": "direct import"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "react-router",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "pending",
+  "lock": null,
+  "findingIds": [],
+  "patchAttemptIds": [],
+  "analysisHistory": [],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:21:34.946Z"
+}

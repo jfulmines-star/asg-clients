@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-2da4d28026-28d766_b5455af0db",
+  "featureId": "feat_route_2da4d28026",
+  "title": "Dangling timeout IDs after replay with inflight timeouts",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 176,
+      "endLine": 176,
+      "symbol": "at",
+      "quote": "const at = (fn: () => void, ms: number) => { idsRef.current.push(setTimeout(fn, ms)) }"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 198,
+      "endLine": 198,
+      "symbol": "typewriter",
+      "quote": "const step = () => {\n      if (i <= text.length) { t.textContent = text.slice(0, i); i++; idsRef.current.push(setTimeout(step, 48)) }"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 177,
+      "endLine": 180,
+      "symbol": "clearAll",
+      "quote": "const clearAll = () => {\n    idsRef.current.forEach(clearTimeout); idsRef.current = []\n    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }\n  }"
+    }
+  ],
+  "reasoning": "The typewriter function at line 198 recursively schedules timeouts and pushes IDs to idsRef.current inside the timeout callback. If clearAll() is called while typewriter is mid-execution, already-scheduled but not-yet-fired typewriter steps will still fire and push new IDs after idsRef.current has been cleared, causing those IDs to never be cleared.",
+  "reproduction": "Start demo, trigger replay() during the typewriter animation. The typewriter step callbacks that were already scheduled will execute after clearAll() and add new timeout IDs that won't be tracked.",
+  "recommendation": "Add a cancellation flag that typewriter checks before scheduling the next step, or track a generation ID to ignore stale callbacks.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. This requires timing-sensitive testing to trigger replay during active typewriter animation and verify all timeouts are properly cancelled.",
+  "suggestedRegressionTest": "Unit test: start typewriter, immediately call clearAll, advance timers, verify no new timeout IDs are added to idsRef.current.",
+  "minimumFixScope": "Lines 195-202 in src/src/pages/MRODemo.tsx - add cancellation token to typewriter closure",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-2da4d28026_28d766afe3",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:04.514Z",
+  "updatedAt": "2026-08-22T05:24:04.514Z"
+}

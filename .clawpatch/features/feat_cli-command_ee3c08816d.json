@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_cli-command_ee3c08816d",
+  "title": "Node source src/src/pages#1",
+  "summary": "Node/TypeScript source group src/src/pages#1 with 12 files.",
+  "kind": "cli-command",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "package.json",
+      "symbol": "src/src/pages#1",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/pages/AnttipPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/BasePortalDemo.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/BrianPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/BundleChat.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/CampaignPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/ChardanPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/ClientPortalV2.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/DevalkSeanPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/JJPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/KitContextPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/KitFullPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    },
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "reason": "source group src/src/pages#1"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:asg-clients",
+    "project-root:."
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "process-exec"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-cli-command-ee3c08816d-_d489bb3d8a",
+    "fnd_sig-feat-cli-command-ee3c08816d-_e4e6c4eec9",
+    "fnd_sig-feat-cli-command-ee3c08816d-_78b0274fef",
+    "fnd_sig-feat-cli-command-ee3c08816d-_481f511c51",
+    "fnd_sig-feat-cli-command-ee3c08816d-_898327e252",
+    "fnd_sig-feat-cli-command-ee3c08816d-_dd3dbe6ee8"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "6 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:23:33.453Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:23:33.453Z"
+}

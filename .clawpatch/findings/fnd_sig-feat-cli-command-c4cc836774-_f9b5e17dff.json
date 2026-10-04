@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-c4cc836774-_f9b5e17dff",
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "PinGate lacks rate limiting enabling brute force attacks",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/portal/BasePortal.tsx",
+      "startLine": 956,
+      "endLine": 967,
+      "symbol": "checkPin",
+      "quote": "function checkPin(d: string[]) {\n    if (d.join('') === pin) {\n      onUnlock()\n    } else {\n      setPinError(true)\n      setShaking(true)\n      setDigits(['', '', '', ''])\n      setTimeout(() => {\n        setShaking(false)\n        document.getElementById('pin-0')?.focus()\n      }, 400)\n    }\n  }"
+    }
+  ],
+  "reasoning": "The PIN check is purely client-side with no rate limiting, exponential backoff, or attempt tracking. An attacker can attempt all 10,000 4-digit combinations rapidly via automated input or by modifying the DOM/React state. The 400ms setTimeout delay is cosmetic and doesn't prevent rapid retries. Since the PIN is hardcoded in the client bundle (passed as prop), this provides no real security—just obscurity.",
+  "reproduction": "Write a script that calls handleDigit programmatically or dispatches input events to cycle through all 4-digit combinations. With no server-side validation or rate limiting, all 10,000 PINs can be tested in seconds.",
+  "recommendation": "Implement exponential backoff (double delay after each failed attempt, cap at 30s). Track failed attempts in localStorage/sessionStorage and lock out after N failures. Better: move authentication server-side with proper session management and rate limiting. Document that client-side PIN is not a security control.",
+  "whyTestsDoNotAlreadyCoverThis": "No security tests verify rate limiting or brute force protection. The trust boundary tag 'user-input' suggests this was identified as a risk area but not hardened.",
+  "suggestedRegressionTest": "Automated test: attempt 20 incorrect PINs rapidly. Verify delay increases exponentially and component locks after threshold.",
+  "minimumFixScope": "src/src/components/portal/BasePortal.tsx PinGate component - add rate limiting and attempt tracking",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-c4cc836774_2145018e7e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:37.648Z",
+  "updatedAt": "2026-08-22T05:23:37.648Z"
+}

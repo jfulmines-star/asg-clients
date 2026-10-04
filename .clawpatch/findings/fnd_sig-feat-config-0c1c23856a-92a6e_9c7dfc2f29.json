@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-config-0c1c23856a-92a6e_9c7dfc2f29",
+  "featureId": "feat_config_0c1c23856a",
+  "title": "Missing outDir configuration may cause build output confusion",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "tsconfig.json",
+      "startLine": 131,
+      "endLine": 131,
+      "symbol": null,
+      "quote": "\"noEmit\": true"
+    }
+  ],
+  "reasoning": "The tsconfig.json has noEmit set to true and no outDir specified. While noEmit prevents compilation output, this configuration is fragile if someone removes noEmit without adding outDir, causing TypeScript to emit files to the source directory alongside .ts files, potentially polluting the source tree and causing confusion in version control.",
+  "reproduction": null,
+  "recommendation": "Add an explicit \"outDir\": \"dist\" (or appropriate directory) to compilerOptions even when noEmit is true, so that if noEmit is later removed, builds have a safe destination.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are associated with this configuration file. Build configuration issues typically manifest during CI/CD or local builds rather than in unit tests.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "Add outDir field to compilerOptions in tsconfig.json",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-config-0c1c23856a_92a6e92e68",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:22:54.604Z",
+  "updatedAt": "2026-08-22T05:22:54.604Z"
+}

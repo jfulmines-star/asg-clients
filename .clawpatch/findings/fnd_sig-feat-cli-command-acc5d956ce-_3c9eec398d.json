@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-acc5d956ce-_3c9eec398d",
+  "featureId": "feat_cli-command_acc5d956ce",
+  "title": "Error state does not clear on successful retry in PIN gate",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/hooks.ts",
+      "startLine": 1352,
+      "endLine": 1359,
+      "symbol": "handleDigit",
+      "quote": "function handleDigit(i: number, val: string) {\n    const d = val.replace(/\\D/g, '').slice(-1)\n    const next = [...digits]\n    next[i] = d\n    setDigits(next)\n    setError(false)\n    if (d && i < 3) focusInput(i + 1)\n    if (next.every(v => v !== '') && i === 3) setTimeout(() => check(next), 80)\n  }"
+    },
+    {
+      "path": "src/src/portal/hooks.ts",
+      "startLine": 1341,
+      "endLine": 1350,
+      "symbol": "check",
+      "quote": "function check(d = digits) {\n    if (d.join('') === expectedPin) {\n      setUnlocked(true)\n      setError(false)\n    } else {\n      setError(true)\n      setDigits(['', '', '', ''])\n      setTimeout(() => focusInput(0), 100)\n    }\n  }"
+    }
+  ],
+  "reasoning": "The check function sets setError(true) on failure but only sets setError(false) on success. The handleDigit function sets setError(false) immediately when the user types. However, if the user completes 4 digits and check() runs asynchronously via setTimeout (line 1359), there is a 80ms window where the error flag may briefly flash. More critically, the manualCheck button (line 1379) calls check() synchronously without clearing error first. If a user enters a wrong PIN via the button, then types a correct PIN, the error state clears in handleDigit, but the red border animation from PinGate.tsx line 1161 may briefly persist due to React render timing.",
+  "reproduction": "1. Enter wrong PIN via button → error state set\n2. Type correct PIN → error cleared by handleDigit, but animation timing may show stale error",
+  "recommendation": "In check(), call setError(false) at the start to ensure it clears before success/failure logic. Alternatively, ensure manualCheck clears error before calling check().",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. This timing issue requires UI testing with async state updates.",
+  "suggestedRegressionTest": "Enter wrong PIN, then correct PIN via typing, and assert error is false after completion.",
+  "minimumFixScope": "src/src/portal/hooks.ts check function: add setError(false) at start",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-acc5d956ce_5671e8fdaa",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:24.263Z",
+  "updatedAt": "2026-08-22T05:23:24.263Z"
+}

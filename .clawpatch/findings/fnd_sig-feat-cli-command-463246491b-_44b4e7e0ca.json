@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-463246491b-_44b4e7e0ca",
+  "featureId": "feat_cli-command_463246491b",
+  "title": "XSS vulnerability via unescaped message in crossSellBanner",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/modules/crossSellBanner.tsx",
+      "startLine": 200,
+      "endLine": 200,
+      "symbol": "CrossSellBanner",
+      "quote": "<span style={{ flex: 1 }}>{message}</span>"
+    },
+    {
+      "path": "src/src/portal/modules/crossSellBanner.tsx",
+      "startLine": 174,
+      "endLine": 174,
+      "symbol": "CrossSellBanner",
+      "quote": "const message = opts.message || config.crossSell?.message"
+    }
+  ],
+  "reasoning": "The message content is rendered directly into JSX without escaping. While React escapes text by default when using {variable}, if the config contains JSX or is preprocessed in an unsafe way upstream, this could be exploited. More critically, if config sources allow rich text or are populated from external CMS/APIs marked with 'user-input' trust boundary, this is a vector.",
+  "reproduction": "If config pipeline allows HTML or JSX injection: set config.crossSell.message to include malicious content. If the config is processed as JSX or dangerouslySetInnerHTML is used anywhere in the chain, XSS occurs.",
+  "recommendation": "Explicitly treat message as untrusted plain text. If rich formatting is needed, use a safe markdown/sanitization library. Document that config.crossSell.message must be plain text only. Add runtime type validation.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. No input sanitization or type guards are present to enforce plain text constraint.",
+  "suggestedRegressionTest": "Unit test: verify that message containing <script> tags or other HTML is rendered as escaped text, not executed. Config validation test: reject configs with HTML in message field.",
+  "minimumFixScope": "src/src/portal/modules/crossSellBanner.tsx: add explicit sanitization or validation for message field; document plain-text-only constraint",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-463246491b_a218aeb7c7",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:47.312Z",
+  "updatedAt": "2026-08-22T05:23:47.312Z"
+}

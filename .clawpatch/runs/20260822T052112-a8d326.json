@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "runId": "20260822T052112-a8d326",
+  "command": "review",
+  "args": [
+    "review",
+    "--limit",
+    "20"
+  ],
+  "rootPath": "/root/Projects/asg-clients",
+  "headSha": "8620c01a417276d5b9db726d652408991e30fc16",
+  "startedAt": "2026-08-22T05:21:12.761Z",
+  "finishedAt": "2026-08-22T05:21:12.764Z",
+  "status": "completed",
+  "claimedFeatureIds": [],
+  "findingIds": [],
+  "patchAttemptIds": [],
+  "errors": []
+}

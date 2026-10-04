@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4395698734-6dc527_18caf47775",
+  "featureId": "feat_route_4395698734",
+  "title": "No error handling for failed health checks",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {\n    setRefreshing(true)\n    // Stagger checks slightly so the UI feels live\n    const updated: StatusGroup[] = []\n    for (const group of INITIAL_GROUPS) {\n      const checkedServices = group.services.map(simulateCheck)\n      updated.push({ ...group, services: checkedServices })\n    }\n    setGroups(updated)\n    setLastRefresh(new Date())\n    setRefreshing(false)\n  }, [])"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 221,
+      "endLine": 230,
+      "symbol": "simulateCheck",
+      "quote": "function simulateCheck(service: ServiceStatus): ServiceStatus {\n  // In production, replace with: const res = await fetch(`/api/health/${encodeURIComponent(service.name)}`)\n  const rand = Math.random()\n  const status: StatusLevel =\n    rand > 0.10 ? 'operational' :\n    rand > 0.03 ? 'degraded'    :\n                  'outage'\n  const latency = Math.round(40 + Math.random() * 180)\n  return { ...service, status, latency, lastChecked: new Date() }\n}"
+    }
+  ],
+  "reasoning": "runChecks has no try/catch block. When simulateCheck is replaced with real fetch calls, any network error, timeout, or API failure will throw an unhandled promise rejection. This will leave setRefreshing(true) permanently, breaking the refresh button UI and potentially crashing the component in strict error boundaries.",
+  "reproduction": "1. Replace simulateCheck with fetch that throws (network offline, API 500, timeout)\n2. Click refresh button\n3. Observe unhandled promise rejection, refresh button stuck in 'Checking…' state, and no status update",
+  "recommendation": "Wrap runChecks body in try/catch. On error, set services to a fallback 'unknown' or 'outage' state, log the error, and always ensure setRefreshing(false) in a finally block.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests provided. Error handling for async operations is not exercised.",
+  "suggestedRegressionTest": "Unit test that mocks simulateCheck to throw, verifies runChecks catches the error, sets refreshing back to false, and optionally sets services to error state.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 392-403",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4395698734_6dc527eea3",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:42.045Z",
+  "updatedAt": "2026-08-22T05:24:42.045Z"
+}

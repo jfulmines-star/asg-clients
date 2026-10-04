@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-config-0c1c23856a-2d044_83dce329aa",
+  "featureId": "feat_config_0c1c23856a",
+  "title": "allowImportingTsExtensions with bundler resolution may break non-bundler builds",
+  "category": "build-release",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "tsconfig.json",
+      "startLine": 127,
+      "endLine": 128,
+      "symbol": null,
+      "quote": "\"moduleResolution\": \"bundler\",\n    \"allowImportingTsExtensions\": true"
+    }
+  ],
+  "reasoning": "The combination of moduleResolution: bundler and allowImportingTsExtensions: true allows importing .ts/.tsx files directly. This works only in bundler contexts (Vite, esbuild, etc.) and will break if someone tries to use tsc directly for builds or if the project is consumed by another TypeScript project. Since noEmit is true, this might be intentional for a bundler-only workflow, but it creates a tight coupling to bundler tooling.",
+  "reproduction": null,
+  "recommendation": "Document this bundler-only constraint clearly, or consider using extensionless imports to maintain broader compatibility if the project might need tsc-based builds in the future.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests cover build configuration. This would only surface if attempting to compile with tsc or import this code from another TypeScript project.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "Documentation or import style guidelines",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-config-0c1c23856a_2d044427e5",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:22:54.604Z",
+  "updatedAt": "2026-08-22T05:22:54.604Z"
+}

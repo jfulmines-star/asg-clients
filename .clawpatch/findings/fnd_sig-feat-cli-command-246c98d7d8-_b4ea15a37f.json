@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_b4ea15a37f",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "DOM manipulation via direct getElementById calls can fail if elements not mounted",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 210,
+      "endLine": 212,
+      "symbol": null,
+      "quote": "const el = (id: string) => document.getElementById(id)\nconst ac = (id: string, cls: string) => el(id)?.classList.add(cls)\nconst rc = (id: string, cls: string) => el(id)?.classList.remove(cls)"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 214,
+      "endLine": 222,
+      "symbol": null,
+      "quote": "const startProgress = () => {\n  const bar = el('mro-progress'); if (!bar) return\n  const tick = () => {\n    const pct = Math.min(((Date.now() - startMsRef.current) / TOTAL) * 100, 100)\n    bar.style.width = pct + '%'\n    if (pct < 100) rafRef.current = requestAnimationFrame(tick)\n  }\n  rafRef.current = requestAnimationFrame(tick)\n}"
+    }
+  ],
+  "reasoning": "The component uses direct DOM queries via `getElementById` throughout. While it includes null checks (`if (!bar) return`), the animation and demo logic is tightly coupled to DOM presence. If the component unmounts or DOM elements are removed during animation, the code defensively returns early, but the scheduled timeouts/animations may still reference stale DOM. The pattern is fragile: if elements are conditionally rendered or removed, the demo can silently fail or behave incorrectly. This is not a crash but a maintainability and reliability risk.",
+  "reproduction": null,
+  "recommendation": "Use React refs instead of getElementById for DOM manipulation. This ensures elements are correctly scoped to the component lifecycle and reduces reliance on global DOM queries.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. Testing would require mocking DOM and component lifecycle to trigger element removal during animation.",
+  "suggestedRegressionTest": "Simulate unmounting MRODemo during animation and verify no errors occur and animations stop cleanly.",
+  "minimumFixScope": "src/src/pages/MRODemo.tsx - refactor DOM queries to use refs",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_911a0713ac",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

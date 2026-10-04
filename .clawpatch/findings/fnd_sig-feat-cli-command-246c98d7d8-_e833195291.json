@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_e833195291",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Memory leak: setTimeout IDs accumulate without cleanup on component re-render",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 199,
+      "endLine": 209,
+      "symbol": null,
+      "quote": "const idsRef = useRef<ReturnType<typeof setTimeout>[]>([])\n...\nconst at = (fn: () => void, ms: number) => { idsRef.current.push(setTimeout(fn, ms)) }\nconst clearAll = () => {\n  idsRef.current.forEach(clearTimeout); idsRef.current = []\n  if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }\n}"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 334,
+      "endLine": 348,
+      "symbol": null,
+      "quote": "useEffect(() => {\n  audioRef.current = new Audio('/mro-voiceover.mp3')\n  ...\n  return () => {\n    clearAll()\n    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null }\n  }\n// eslint-disable-next-line react-hooks/exhaustive-deps\n}, [])"
+    }
+  ],
+  "reasoning": "The useEffect cleanup function calls `clearAll()`, but `clearAll` is defined outside the effect and depends on `idsRef` which is a ref. If the component re-renders and `clearAll` or its dependencies change, the cleanup may reference stale closures. More critically, the eslint-disable comment suppresses the exhaustive-deps warning, which means `clearAll` is not in the dependency array. If the component re-renders for any reason before unmount, new timeout IDs scheduled in `run()` or `replay()` will be added to `idsRef.current`, but the cleanup function closure captures the original `clearAll` reference. This pattern can lead to timeouts not being properly cleared if the component updates.",
+  "reproduction": null,
+  "recommendation": "Move `clearAll` inside the useEffect or ensure the cleanup function directly accesses `idsRef.current` and `rafRef.current` to clear timers. Remove the eslint-disable comment and include all dependencies, or use `useCallback` for `clearAll` with proper dependencies.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this feature. The behavior would require a test that triggers component re-renders or rapid mount/unmount cycles to observe leaked timers.",
+  "suggestedRegressionTest": "Mount MRODemo, trigger `run()`, then unmount before completion and verify all timeouts are cleared. Also test rapid replay clicks to ensure no timer leaks.",
+  "minimumFixScope": "src/src/pages/MRODemo.tsx useEffect cleanup and clearAll function",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_f31c7735d1",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-13681a331e-81bfe3_eb53538ddc",
+  "featureId": "feat_route_13681a331e",
+  "title": "useEffect dependency array causes infinite re-render risk",
+  "category": "bug",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 406,
+      "endLine": 408,
+      "symbol": "useEffect",
+      "quote": "useEffect(() => {\n    runChecks()\n  }, [runChecks])"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {\n    setRefreshing(true)\n    // Stagger checks slightly so the UI feels live\n    const updated: StatusGroup[] = []\n    for (const group of INITIAL_GROUPS) {\n      const checkedServices = group.services.map(simulateCheck)\n      updated.push({ ...group, services: checkedServices })\n    }\n    setGroups(updated)\n    setLastRefresh(new Date())\n    setRefreshing(false)\n  }, [])"
+    }
+  ],
+  "reasoning": "The runChecks callback has an empty dependency array ([]) but uses INITIAL_GROUPS in its closure. On mount, useEffect calls runChecks, which updates state. If INITIAL_GROUPS were ever dynamically constructed or if the callback needed access to updated props/state, this pattern could cause stale closures. While currently safe because INITIAL_GROUPS is a module constant, this is a fragile pattern that violates React's exhaustive-deps rule and could break if the code evolves.",
+  "reproduction": "1. Navigate to /status route\n2. Component mounts and triggers useEffect at line 406\n3. Currently works because INITIAL_GROUPS is static, but the pattern is violation-prone",
+  "recommendation": "Either include INITIAL_GROUPS in the useCallback dependency array, or better yet, remove the dependency on runChecks from the mount effect by inlining the initial call or using a separate initialization effect with an empty array and direct reference to the callback body.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in the feature definition (tests: []). This component has no unit or integration tests to verify mount behavior or catch dependency warnings.",
+  "suggestedRegressionTest": "Add a test that mounts StatusPage and verifies runChecks is called exactly once on mount, and that subsequent state updates don't trigger additional runChecks calls unless explicitly triggered by the refresh button or interval.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 392-408",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-13681a331e_81bfe372a5",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:18.331Z",
+  "updatedAt": "2026-08-22T05:24:18.331Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_0154a9a912",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Client state unlock bypasses authentication - no server verification",
+  "category": "security",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/MarkPortal.tsx",
+      "startLine": 785,
+      "endLine": 785,
+      "symbol": null,
+      "quote": "const [unlocked, setUnlocked] = useState(false)"
+    },
+    {
+      "path": "src/src/pages/MarkPortal.tsx",
+      "startLine": 831,
+      "endLine": 842,
+      "symbol": null,
+      "quote": "function checkPin(d = digits) {\n  if (d.join('') === PIN) {\n    setUnlocked(true)\n  ..."
+    }
+  ],
+  "reasoning": "The entire portal access control is client-side state (`unlocked`). An attacker can trivially bypass this by opening DevTools console and running `setUnlocked(true)` or modifying React component state. There is no server-side session or token validation. All portal content and functionality is accessible without any real authentication barrier.",
+  "reproduction": "Load MarkPortal.tsx in a browser, open console, find the React component instance, and set `unlocked` state to true, bypassing the PIN entirely.",
+  "recommendation": "Implement server-side authentication. The portal content should only be served or accessible after successful server-side PIN verification and session establishment. Use HTTP-only cookies or tokens for session management.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. This is a fundamental architecture issue requiring manual security review or penetration testing.",
+  "suggestedRegressionTest": "Attempt to access portal content without valid server session and verify access is denied.",
+  "minimumFixScope": "src/src/pages/MarkPortal.tsx - refactor to server-side authentication and session management",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_20a0e00c18",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

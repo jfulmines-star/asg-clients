@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-13681a331e-c0b4e3_845d097a5b",
+  "featureId": "feat_route_13681a331e",
+  "title": "No authentication or rate limiting on status page route",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 608,
+      "endLine": 610,
+      "symbol": null,
+      "quote": "<Route path=\"/status\" element={<StatusPage />} />\n        {/* HTML version (Hendrix) at /status-html or linked from React version */}\n        <Route path=\"/status-react\" element={<StatusPage />} />"
+    }
+  ],
+  "reasoning": "The status page is publicly accessible with no authentication wrapper. While status pages are often public, the feature definition lists 'user-input', 'network', and 'serialization' as trust boundaries. If the production version fetches real health check data from internal APIs (as the comment on line 222 suggests), this could expose internal service topology, latency metrics, and availability information to unauthenticated users. The feature shows internal service names like 'Synapse API', 'VPS (openclaw-kit)', database providers, and infrastructure details that could aid reconnaissance for attackers.",
+  "reproduction": "1. Navigate to /status or /status-react without authentication\n2. View detailed service names, descriptions, latency, and operational status\n3. Internal architecture is exposed",
+  "recommendation": "Evaluate whether this status page should be public or require authentication. If public, redact internal service names and details. If private, wrap the route in an auth guard. Consider a public-facing status page with aggregated data vs. an internal detailed dashboard.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Security/auth requirements are not tested.",
+  "suggestedRegressionTest": "Integration test verifying access control: unauthenticated requests should either be denied or receive a sanitized view without internal service details.",
+  "minimumFixScope": "src/src/main.tsx route definition at lines 608-610, potentially src/src/components/StatusPage.tsx to add auth checks or data sanitization",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-13681a331e_c0b4e36b73",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:18.331Z",
+  "updatedAt": "2026-08-22T05:24:18.331Z"
+}

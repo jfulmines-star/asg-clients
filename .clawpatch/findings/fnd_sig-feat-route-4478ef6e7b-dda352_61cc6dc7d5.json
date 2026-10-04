@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4478ef6e7b-dda352_61cc6dc7d5",
+  "featureId": "feat_route_4478ef6e7b",
+  "title": "Missing error boundary around section components",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 351,
+      "endLine": 354,
+      "symbol": null,
+      "quote": "{activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}\n          {activeSection === 'aboutyou' && <AboutYouSection form={intakeForm} setForm={setIntakeForm} saved={intakeSaved} setSaved={setIntakeSaved} onNavigate={setActiveSection} />}\n          {activeSection === 'chat' && <MarkChatSection intake={intakeSaved ? intakeForm : null} />}\n          {activeSection === 'documents' && <DocumentsSection tenantId=\"lindsay\" />}"
+    },
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 463,
+      "endLine": 466,
+      "symbol": null,
+      "quote": "{activeSection === 'welcome' && <WelcomeSection onNavigate={setActiveSection} />}\n          {activeSection === 'aboutyou' && <AboutYouSection form={intakeForm} setForm={setIntakeForm} saved={intakeSaved} setSaved={setIntakeSaved} onNavigate={setActiveSection} />}\n          {activeSection === 'chat' && <MarkChatSection intake={intakeSaved ? intakeForm : null} />}\n          {activeSection === 'documents' && <DocumentsSection tenantId=\"lindsay\" />}"
+    }
+  ],
+  "reasoning": "If any section component (WelcomeSection, AboutYouSection, MarkChatSection, DocumentsSection) throws an error, the entire portal will crash with a white screen. No error boundary is present to catch and display a fallback UI. This is a poor user experience and prevents partial recovery.",
+  "reproduction": "1. Simulate an error in any section component (e.g., null reference)\n2. Navigate to that section\n3. Observe entire app crashes, user cannot navigate away",
+  "recommendation": "Wrap section rendering in a React ErrorBoundary component. On error, display a fallback message and allow navigation to other sections. Log errors for debugging.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. Error boundary coverage requires integration tests that simulate component errors and assert fallback UI renders.",
+  "suggestedRegressionTest": "Integration test: mock a section component to throw an error, assert ErrorBoundary fallback UI renders and other sections remain accessible.",
+  "minimumFixScope": "LindsayPortal.tsx main content area (both mobile and desktop layouts) + new ErrorBoundary component",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4478ef6e7b_dda3528256",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:25.501Z",
+  "updatedAt": "2026-08-22T05:24:25.501Z"
+}

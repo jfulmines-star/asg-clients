@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_e01b72ff5a",
+  "title": "React route /*",
+  "summary": "React Router route '/*' rendered by NotFound.",
+  "kind": "route",
+  "source": "react-router-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "src/src/pages/NotFound.tsx",
+      "symbol": "NotFound",
+      "route": "/*",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/pages/NotFound.tsx",
+      "reason": "route component"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "reason": "route declaration"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "react-router",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "pending",
+  "lock": null,
+  "findingIds": [],
+  "patchAttemptIds": [],
+  "analysisHistory": [],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:21:34.946Z"
+}

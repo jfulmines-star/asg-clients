@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-a5cb4f5c8c-_251180aa33",
+  "featureId": "feat_cli-command_a5cb4f5c8c",
+  "title": "Type mismatch accessing non-existent config properties",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "startLine": 279,
+      "endLine": 280,
+      "symbol": "IntakeSection",
+      "quote": "<div style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#A78BFA', fontWeight: 700, marginBottom: 16 }}>\n        {(config as any).intakeLabel || 'Quick Context — 2 Minutes'}"
+    },
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "startLine": 282,
+      "endLine": 283,
+      "symbol": "IntakeSection",
+      "quote": "<h2 style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.5px', marginBottom: 12, lineHeight: 1.1 }}>\n        {(config as any).intakeTitle || <span>Tell Us About<br />Your Practice</span>}"
+    },
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "startLine": 286,
+      "endLine": 286,
+      "symbol": "IntakeSection",
+      "quote": "{(config as any).intakeSubtitle || `We've pre-loaded what we already know about ${config.company}. Review it, correct anything off, and add what only you know.`}"
+    }
+  ],
+  "reasoning": "Three `(config as any)` casts at lines 280, 283, 286 indicate the ModuleContext type definition doesn't include intakeLabel, intakeTitle, intakeSubtitle. Using `as any` bypasses type safety and could cause silent bugs if config shape changes. This is a maintainability risk and potential API contract mismatch between the component expectations and the actual config type.",
+  "reproduction": null,
+  "recommendation": "Extend the ModuleContext or config type to include optional intakeLabel, intakeTitle, intakeSubtitle fields, or refactor to accept them as explicit Props. Remove `as any` casts.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests validate the config type contract or that these optional fields render correctly.",
+  "suggestedRegressionTest": "Type-level test ensuring ModuleContext config includes these fields, or runtime test that renders IntakeSection with and without these fields to confirm fallback behavior.",
+  "minimumFixScope": "Update ModuleContext type definition in ../types to include intakeLabel?, intakeTitle?, intakeSubtitle? as optional string fields.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-a5cb4f5c8c_f7d5488c75",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:09.640Z",
+  "updatedAt": "2026-08-22T05:23:09.640Z"
+}

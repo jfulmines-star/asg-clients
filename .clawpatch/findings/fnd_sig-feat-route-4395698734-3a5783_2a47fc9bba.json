@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4395698734-3a5783_2a47fc9bba",
+  "featureId": "feat_route_4395698734",
+  "title": "simulateCheck ignores service.name and breaks in production",
+  "category": "bug",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 221,
+      "endLine": 230,
+      "symbol": "simulateCheck",
+      "quote": "function simulateCheck(service: ServiceStatus): ServiceStatus {\n  // In production, replace with: const res = await fetch(`/api/health/${encodeURIComponent(service.name)}`)\n  const rand = Math.random()\n  const status: StatusLevel =\n    rand > 0.10 ? 'operational' :\n    rand > 0.03 ? 'degraded'    :\n                  'outage'\n  const latency = Math.round(40 + Math.random() * 180)\n  return { ...service, status, latency, lastChecked: new Date() }\n}"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {\n    setRefreshing(true)\n    // Stagger checks slightly so the UI feels live\n    const updated: StatusGroup[] = []\n    for (const group of INITIAL_GROUPS) {\n      const checkedServices = group.services.map(simulateCheck)\n      updated.push({ ...group, services: checkedServices })\n    }\n    setGroups(updated)\n    setLastRefresh(new Date())\n    setRefreshing(false)\n  }, [])"
+    }
+  ],
+  "reasoning": "The simulateCheck function is synchronous and returns random status, but the comment indicates it should be replaced with an async fetch call in production. However, runChecks is declared async but does not await the simulateCheck calls. When simulateCheck is replaced with a real API call, all checks will fire in parallel without proper error handling, and runChecks will complete before any fetch resolves, leaving the UI in 'checking' state forever or showing stale data.",
+  "reproduction": "1. Replace simulateCheck with actual fetch call as indicated in comment\n2. Observe that runChecks completes immediately, before any health checks return\n3. UI shows 'checking' indefinitely or shows stale/initial data",
+  "recommendation": "Make simulateCheck async, add proper error handling, and await the checks in runChecks: `const checkedServices = await Promise.all(group.services.map(s => simulateCheck(s)))`. Add try/catch to handle fetch failures gracefully and mark failed services appropriately.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. This is a production deployment hazard that only surfaces when the TODO comment is acted upon and real API calls are substituted.",
+  "suggestedRegressionTest": "Integration test that mocks fetch, verifies runChecks awaits all health check promises, and handles both success and network failure cases by setting appropriate service status.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 221-230 and 392-403",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4395698734_3a57839117",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:42.045Z",
+  "updatedAt": "2026-08-22T05:24:42.045Z"
+}

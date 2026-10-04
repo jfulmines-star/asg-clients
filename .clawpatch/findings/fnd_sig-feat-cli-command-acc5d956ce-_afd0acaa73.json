@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-acc5d956ce-_afd0acaa73",
+  "featureId": "feat_cli-command_acc5d956ce",
+  "title": "Anthropic API key exposure in client-side code",
+  "category": "security",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/Chat.tsx",
+      "startLine": 649,
+      "endLine": 664,
+      "symbol": "sendViaAnthropicDirect",
+      "quote": "const apiKey =\n      ac.apiKey ||\n      (typeof import.meta !== 'undefined' ? (import.meta as { env?: Record<string, string> }).env?.VITE_ANTHROPIC_API_KEY : undefined)\n\n    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured (set VITE_ANTHROPIC_API_KEY)')\n\n    const systemPrompt = ac.systemPrompt({ config, intake, practiceContext: intakeAsMarkdown })\n\n    const res = await fetch('https://api.anthropic.com/v1/messages', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n        'x-api-key': apiKey,"
+    }
+  ],
+  "reasoning": "The anthropic-direct transport accepts an API key from config.chat.anthropic.apiKey or VITE_ANTHROPIC_API_KEY and sends it directly from the browser to api.anthropic.com. VITE_ environment variables are embedded in the client bundle at build time. This exposes the API key to any user inspecting the bundle or network requests, allowing unlimited API usage under the account. This is a critical security flaw for production use. The header 'anthropic-dangerous-direct-browser-access': 'true' acknowledges the risk but does not mitigate key exposure.",
+  "reproduction": "1. Build the app with VITE_ANTHROPIC_API_KEY set\n2. Open browser DevTools → Network → inspect /api/messages request\n3. x-api-key header is visible in plaintext\n4. Alternatively, search the built bundle for the key string",
+  "recommendation": "Never expose production API keys in client code. Use a backend proxy that holds the key server-side (similar to api-proxy mode). If anthropic-direct is only for sandboxes/demos, document this prominently and add runtime checks to prevent accidental production use (e.g., throw if window.location.hostname is not localhost).",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. This is a design/architecture issue requiring code review or security audit, not unit tests.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "src/src/portal/Chat.tsx sendViaAnthropicDirect + PortalConfig type definition + documentation",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-acc5d956ce_854f7bc084",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:24.263Z",
+  "updatedAt": "2026-08-22T05:23:24.263Z"
+}

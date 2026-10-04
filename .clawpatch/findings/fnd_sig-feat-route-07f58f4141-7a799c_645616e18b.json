@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-07f58f4141-7a799c_645616e18b",
+  "featureId": "feat_route_07f58f4141",
+  "title": "Component displays incorrect hardcoded text 'Portal' instead of RAG demo UI",
+  "category": "bug",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/RAGDemo.tsx",
+      "startLine": 133,
+      "endLine": 133,
+      "symbol": "RAGDemo",
+      "quote": "export default function RAGDemo() { return <div>Portal</div> }"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 208,
+      "endLine": 209,
+      "symbol": null,
+      "quote": "{/* RAG Demo — open access for Ben/Nick */}\n<Route path=\"/rag-demo\" element={<RAGDemo />} />"
+    }
+  ],
+  "reasoning": "The RAGDemo component returns a hardcoded div with text 'Portal', which appears to be copy-paste scaffolding that was never replaced with actual RAG demo functionality. The route comment explicitly states this is a 'RAG Demo' for 'open access for Ben/Nick', suggesting it should provide meaningful RAG-related UI, not generic placeholder text. This is almost certainly a bug rather than intended behavior.",
+  "reproduction": "Navigate to /rag-demo route and observe the page displays only 'Portal' text instead of any RAG demo interface",
+  "recommendation": "Implement the actual RAG demo UI with appropriate components, forms, and functionality for demonstrating retrieval-augmented generation capabilities. If this is intentional placeholder state, add a TODO comment and more descriptive text like 'RAG Demo - Coming Soon'.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in the feature definition (tests array is empty), so there is no automated verification of the component's rendered output or functionality",
+  "suggestedRegressionTest": "Add a React Testing Library test that verifies RAGDemo renders expected UI elements (e.g., input fields, submit button, results area) rather than just placeholder text",
+  "minimumFixScope": "src/src/pages/RAGDemo.tsx - replace hardcoded 'Portal' div with actual RAG demo implementation",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-07f58f4141_7a799cdf9f",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:22.633Z",
+  "updatedAt": "2026-08-22T05:23:22.633Z"
+}

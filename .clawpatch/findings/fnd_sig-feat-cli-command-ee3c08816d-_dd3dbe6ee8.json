@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ee3c08816d-_dd3dbe6ee8",
+  "featureId": "feat_cli-command_ee3c08816d",
+  "title": "DOM ID collision risk in PIN input fields",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/AnttipPortal.tsx",
+      "startLine": 242,
+      "endLine": 243,
+      "symbol": "handleDigit",
+      "quote": "const el = document.getElementById(`ap-pin-${i + 1}`)\n      if (el) (el as HTMLInputElement).focus()"
+    },
+    {
+      "path": "src/src/pages/AnttipPortal.tsx",
+      "startLine": 305,
+      "endLine": 305,
+      "symbol": null,
+      "quote": "id={`ap-pin-${i}`}"
+    }
+  ],
+  "reasoning": "PIN input fields use prefixed IDs (ap-pin-0, ap-pin-1, etc) which are scoped to AnttipPortal by convention only. If multiple portal components are mounted simultaneously (e.g., during client-side routing transition or React concurrent rendering), getElementById will return the first match across the entire document, causing focus() to target the wrong input. This is low severity since portals likely aren't mounted concurrently in current architecture, but becomes a bug if routing patterns change.",
+  "reproduction": "1. Mount two portal components simultaneously (unlikely in current app but possible with future routing changes). 2. Enter PIN in one portal. 3. Focus may jump to PIN field in different portal component.",
+  "recommendation": "1. Use useRef instead of getElementById for focus management within component scope. 2. If IDs are required for accessibility, generate with useId() hook to ensure uniqueness. 3. Example: `const pinRefs = useRef<(HTMLInputElement | null)[]>([])` then `pinRefs.current[i+1]?.focus()`.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. DOM ID collision requires multi-instance mounting tests which are architectural rather than unit-level.",
+  "suggestedRegressionTest": "Integration test: Mount two portal instances in same DOM. Verify PIN input focus management operates independently without cross-component interference.",
+  "minimumFixScope": "src/src/pages/AnttipPortal.tsx handleDigit, handleKeyDown, and checkPin functions. Apply same pattern to BrianPortal.tsx and any other portal files with PIN gates.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ee3c08816d_50f74cea66",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:33.449Z",
+  "updatedAt": "2026-08-22T05:23:33.449Z"
+}

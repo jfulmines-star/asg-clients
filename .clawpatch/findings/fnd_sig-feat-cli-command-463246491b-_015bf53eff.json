@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-463246491b-_015bf53eff",
+  "featureId": "feat_cli-command_463246491b",
+  "title": "Unrestricted file upload types in documents module",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/modules/documents.tsx",
+      "startLine": 441,
+      "endLine": 441,
+      "symbol": "DocumentsSection",
+      "quote": "const accept = opts.accept || 'application/pdf,.pdf,.txt,.md,.docx'"
+    },
+    {
+      "path": "src/src/portal/modules/documents.tsx",
+      "startLine": 527,
+      "endLine": 528,
+      "symbol": null,
+      "quote": "accept={accept}\n  onChange={e => upload(e.target.files)}"
+    },
+    {
+      "path": "src/src/portal/modules/documents.tsx",
+      "startLine": 473,
+      "endLine": 478,
+      "symbol": "upload",
+      "quote": "for (const file of Array.from(files)) {\n  const fd = new FormData()\n  fd.append('file', file)\n  fd.append('tenantId', tenantId)\n  const r = await fetch(uploadEndpoint, { method: 'POST', body: fd })\n  if (!r.ok) throw new Error(`upload failed for ${file.name}`)"
+    }
+  ],
+  "reasoning": "The accept attribute is configurable and defaults to document types, but client-side accept is not enforced—it's only a UI hint. Malicious users can bypass this and upload arbitrary files (executables, scripts, etc.) if the backend /api/rag-upload does not validate file types server-side. The feature allows custom accept via opts.accept, which could be misconfigured to allow dangerous MIME types. No client-side validation of file.type occurs before upload.",
+  "reproduction": "Modify the accept attribute in browser DevTools or use curl to POST a .exe or .js file to uploadEndpoint. If backend does not validate MIME type and file content, arbitrary files are stored in the knowledge base.",
+  "recommendation": "Add client-side file.type validation before upload as defense-in-depth. Document that backend MUST validate file types and scan for malware. Reject files with dangerous extensions or MIME types. Use allowlist-based validation on backend.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. No client-side type checking is implemented; reliance is solely on backend (which is outside this module's scope).",
+  "suggestedRegressionTest": "Unit test: verify upload() rejects files not matching opts.accept MIME types. Integration test: confirm backend rejects .exe, .sh, .js uploads even if client sends them.",
+  "minimumFixScope": "src/src/portal/modules/documents.tsx upload function (lines 468-487): add client-side file.type validation against accept before sending to backend",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-463246491b_ddcca0fd9d",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:47.312Z",
+  "updatedAt": "2026-08-22T05:23:47.312Z"
+}

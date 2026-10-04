@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-13681a331e-c3d488_6ae4465e49",
+  "featureId": "feat_route_13681a331e",
+  "title": "Async runChecks has no error handling",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {\n    setRefreshing(true)\n    // Stagger checks slightly so the UI feels live\n    const updated: StatusGroup[] = []\n    for (const group of INITIAL_GROUPS) {\n      const checkedServices = group.services.map(simulateCheck)\n      updated.push({ ...group, services: checkedServices })\n    }\n    setGroups(updated)\n    setLastRefresh(new Date())\n    setRefreshing(false)\n  }, [])"
+    }
+  ],
+  "reasoning": "runChecks is declared as async but contains no try-catch. The comment on line 222 indicates this will be replaced with real fetch calls in production. If simulateCheck (or future fetch logic) throws an error, setRefreshing(false) will never execute, leaving the UI in a permanently 'refreshing' state and preventing further user-triggered refreshes.",
+  "reproduction": "1. Replace simulateCheck with a function that throws an error\n2. Click refresh button or wait for interval\n3. UI will be stuck in 'Checking…' state",
+  "recommendation": "Wrap the async body in try-finally, ensuring setRefreshing(false) always runs. Optionally add error state to display user-facing error messages.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Would require mocking simulateCheck to throw and verifying error recovery.",
+  "suggestedRegressionTest": "Test that simulates an error in health check logic and verifies: (1) refreshing state is reset to false, (2) last successful status is preserved or an error state is shown, (3) subsequent refresh attempts are not blocked.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 392-403",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-13681a331e_c3d4881da0",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:18.331Z",
+  "updatedAt": "2026-08-22T05:24:18.331Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_ad6bee562f",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Audio resource not cleaned up on error or if component unmounts during playback",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 329,
+      "endLine": 331,
+      "symbol": null,
+      "quote": "if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}) }"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 334,
+      "endLine": 346,
+      "symbol": null,
+      "quote": "useEffect(() => {\n  audioRef.current = new Audio('/mro-voiceover.mp3')\n  audioRef.current.preload = 'auto'\n  audioRef.current.load()\n  ...\n  return () => {\n    clearAll()\n    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null }\n  }\n}, [])"
+    }
+  ],
+  "reasoning": "The audio play promise is silently swallowed with `.catch(() => {})`. If playback fails (e.g., user gesture required, autoplay policy), the audio element remains in an inconsistent state. Additionally, if the component unmounts while audio is playing, the cleanup pauses and nulls the ref, but there's no guarantee the underlying audio resource is fully released. The Audio element is created directly without event listeners for errors or ended states, so errors during load or play are invisible.",
+  "reproduction": null,
+  "recommendation": "Log or surface audio play errors to the user. Consider adding event listeners for 'error' and 'ended' events on the Audio element. Ensure cleanup properly disposes of the audio resource.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist for this feature, and audio playback requires user gesture in many browsers, making this hard to test without mocking.",
+  "suggestedRegressionTest": "Mock Audio API and test that play errors are handled gracefully and that cleanup is called on unmount during playback.",
+  "minimumFixScope": "src/src/pages/MRODemo.tsx startDemo and useEffect audio handling",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_6493d6f995",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

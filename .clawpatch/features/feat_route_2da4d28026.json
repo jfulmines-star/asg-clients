@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_2da4d28026",
+  "title": "React route /mro/demo",
+  "summary": "React Router route '/mro/demo' rendered by MRODemo.",
+  "kind": "route",
+  "source": "react-router-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "symbol": "MRODemo",
+      "route": "/mro/demo",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "reason": "route component"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "reason": "route declaration"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "react-router",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-route-2da4d28026-af81d4_90f593b006",
+    "fnd_sig-feat-route-2da4d28026-794767_b30060303b",
+    "fnd_sig-feat-route-2da4d28026-28d766_b5455af0db"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "3 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:24:04.516Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:24:04.516Z"
+}

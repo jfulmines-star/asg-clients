@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-b2b843562e-_7e03714028",
+  "featureId": "feat_cli-command_b2b843562e",
+  "title": "Route collision risk between dynamic and static routes",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 207,
+      "endLine": 208,
+      "symbol": null,
+      "quote": "<Route path=\"/:clientSlug/chat\" element={<BundleChat />} />\n        <Route path=\"/:clientSlug\" element={<Portal />} />"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 202,
+      "endLine": 206,
+      "symbol": null,
+      "quote": "{Object.values(PORTAL_CONFIGS)\n          .filter(cfg => !cfg.slug.startsWith('chardan'))\n          .map(cfg => (\n            <Route key={cfg.slug} path={`/${cfg.slug}`} element={<ClientPortalV2 config={cfg} />} />\n          ))}"
+    }
+  ],
+  "reasoning": "The routing configuration has catch-all dynamic routes (/:clientSlug and /:clientSlug/chat) defined after specific static routes. While React Router v6 prioritizes more specific routes, there's a risk of collision if any value in PORTAL_CONFIGS.slug matches existing static routes (like 'status', 'mro', 'rag-demo', etc.). The order and precedence is unclear without seeing PORTAL_CONFIGS content, and route definition order matters for catch-alls.",
+  "reproduction": "If PORTAL_CONFIGS contains a slug like 'status' or 'mro', navigating to /status might incorrectly render Portal instead of StatusPage, depending on route matching order.",
+  "recommendation": "1) Audit PORTAL_CONFIGS to ensure no slugs collide with static routes. 2) Add runtime validation that throws an error if a config slug matches a reserved route. 3) Consider namespacing dynamic portals under a prefix like /portal/:clientSlug to avoid collisions. 4) Add explicit route tests.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist for this feature. Route matching logic and collision detection are not tested.",
+  "suggestedRegressionTest": "Add tests that: 1) Verify all static routes resolve correctly, 2) Test that PORTAL_CONFIGS slugs don't overlap with reserved routes, 3) Validate dynamic routes only match when no static route exists.",
+  "minimumFixScope": "src/src/main.tsx routing logic + add validation in PORTAL_CONFIGS definition",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-b2b843562e_34f1688df7",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:00.697Z",
+  "updatedAt": "2026-08-22T05:23:00.697Z"
+}

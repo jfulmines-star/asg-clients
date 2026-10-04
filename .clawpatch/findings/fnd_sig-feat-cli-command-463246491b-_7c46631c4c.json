@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-463246491b-_7c46631c4c",
+  "featureId": "feat_cli-command_463246491b",
+  "title": "Missing error handling exposes internal state in dining module",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/modules/dining.tsx",
+      "startLine": 264,
+      "endLine": 266,
+      "symbol": "askRex",
+      "quote": "} catch {\n  setMsgs(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: 'Connection issue. Try again.' }])\n}"
+    }
+  ],
+  "reasoning": "The catch block swallows all errors without logging or inspecting the error type. Users only see a generic 'Connection issue' message. This hides valuable debugging information (network failures, API errors, malformed responses) and makes production issues harder to diagnose. The same pattern appears in documents.tsx and retirementPlanner.tsx.",
+  "reproduction": "Trigger a network error or a 500 response from /api/chat. The error is caught silently and user sees only 'Connection issue.' No log entry is created for debugging.",
+  "recommendation": "Log caught errors to console.error() or a telemetry service. Differentiate between network failures, server errors, and malformed responses to provide more specific user feedback. Preserve error context for debugging.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist for error paths. Error handling is minimal and does not preserve diagnostic information.",
+  "suggestedRegressionTest": "Unit test: verify that network errors, 500 responses, and JSON parse errors are logged and display appropriate user messages. Integration test: confirm telemetry captures error details.",
+  "minimumFixScope": "src/src/portal/modules/dining.tsx line 264-266: add console.error(e) and differentiate error types for user messaging",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-463246491b_75cbcf40dc",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:47.312Z",
+  "updatedAt": "2026-08-22T05:23:47.312Z"
+}

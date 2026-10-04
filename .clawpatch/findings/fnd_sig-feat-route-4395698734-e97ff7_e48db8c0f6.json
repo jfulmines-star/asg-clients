@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4395698734-e97ff7_e48db8c0f6",
+  "featureId": "feat_route_4395698734",
+  "title": "Missing test coverage for route '/status-react'",
+  "category": "test-gap",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "test-gap",
+  "evidence": [
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 608,
+      "endLine": 610,
+      "symbol": "Route",
+      "quote": "<Route path=\"/status\" element={<StatusPage />} />\n        {/* HTML version (Hendrix) at /status-html or linked from React version */}\n        <Route path=\"/status-react\" element={<StatusPage />} />"
+    }
+  ],
+  "reasoning": "Both /status and /status-react routes render the same StatusPage component. The feature metadata lists /status-react as the entrypoint, but no tests validate either route, the component lifecycle (mount, interval, refresh), or the status aggregation logic in OverallBanner and GroupCard.",
+  "reproduction": null,
+  "recommendation": "Add integration tests that render StatusPage via both routes, verify initial 'checking' state, simulate status updates, test refresh button, validate auto-refresh interval, and assert correct status badge colors and labels for all StatusLevel combinations.",
+  "whyTestsDoNotAlreadyCoverThis": "Feature metadata shows no tests. No test files were provided for review.",
+  "suggestedRegressionTest": "React Testing Library test suite: 1) mount StatusPage, 2) verify initial 'checking' state, 3) mock simulateCheck, 4) advance timers and verify status updates, 5) click refresh and verify re-check, 6) verify interval fires every 60s, 7) test all status combinations (operational/degraded/outage) render correct badges.",
+  "minimumFixScope": "Create new test file: src/src/components/StatusPage.test.tsx",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4395698734_e97ff7525f",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:42.045Z",
+  "updatedAt": "2026-08-22T05:24:42.045Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-13681a331e-ceb04a_71ce262523",
+  "featureId": "feat_route_13681a331e",
+  "title": "simulateCheck uses Math.random() making status non-deterministic and untestable",
+  "category": "test-gap",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "test-gap",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 221,
+      "endLine": 230,
+      "symbol": "simulateCheck",
+      "quote": "function simulateCheck(service: ServiceStatus): ServiceStatus {\n  // In production, replace with: const res = await fetch(`/api/health/${encodeURIComponent(service.name)}`)\n  const rand = Math.random()\n  const status: StatusLevel =\n    rand > 0.10 ? 'operational' :\n    rand > 0.03 ? 'degraded'    :\n                  'outage'\n  const latency = Math.round(40 + Math.random() * 180)\n  return { ...service, status, latency, lastChecked: new Date() }\n}"
+    }
+  ],
+  "reasoning": "The simulateCheck function uses Math.random() for both status determination and latency calculation. This makes the component behavior non-deterministic and difficult to test. While the comment indicates this is placeholder logic, having non-deterministic test/demo code makes it impossible to write reliable unit tests for the current implementation. This also means that in development/demo mode, the status display is meaningless and could mislead stakeholders.",
+  "reproduction": "1. Mount StatusPage multiple times\n2. Each mount produces different random status values\n3. Cannot write assertions about expected UI state",
+  "recommendation": "Accept a health check function as a prop or use dependency injection to allow test mocking. For development, consider using a seeded PRNG or deterministic demo data. Add a flag to toggle between simulation and real API calls.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included in feature definition.",
+  "suggestedRegressionTest": "Component test that injects a mock health check function returning known status values, then verifies the UI correctly displays operational/degraded/outage states and aggregates group-level status.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 221-230 and 392-403 (runChecks integration point)",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-13681a331e_ceb04a395e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:18.331Z",
+  "updatedAt": "2026-08-22T05:24:18.331Z"
+}

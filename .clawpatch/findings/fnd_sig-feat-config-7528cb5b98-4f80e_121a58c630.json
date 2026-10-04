@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-config-7528cb5b98-4f80e_121a58c630",
+  "featureId": "feat_config_7528cb5b98",
+  "title": "No linting or formatting scripts configured",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 123,
+      "endLine": 126,
+      "symbol": null,
+      "quote": "\"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  }"
+    }
+  ],
+  "reasoning": "The project has no lint or format scripts configured (detected commands show lint: null, format: null). For a TypeScript/React project of this nature, the absence of code quality tooling increases the risk of inconsistent code style, common bugs that linters catch, and maintenance issues as the codebase grows. This is particularly important for multi-developer projects or CI/CD pipelines.",
+  "reproduction": null,
+  "recommendation": "Add ESLint and Prettier configurations with corresponding scripts. Install @typescript-eslint/eslint-plugin, @typescript-eslint/parser, eslint-plugin-react, and prettier as devDependencies. Add scripts: '\"lint\": \"eslint . --ext .ts,.tsx\"' and '\"format\": \"prettier --write .\"'",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature. Linting and formatting are static code quality checks that cannot be verified through runtime tests.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "package.json scripts and devDependencies sections",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-config-7528cb5b98_4f80e47d25",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:12.498Z",
+  "updatedAt": "2026-08-22T05:23:12.498Z"
+}

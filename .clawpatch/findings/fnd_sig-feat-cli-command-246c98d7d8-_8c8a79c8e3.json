@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_8c8a79c8e3",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Hardcoded PIN in client-side code exposes authentication mechanism",
+  "category": "security",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/MarkPortal.tsx",
+      "startLine": 758,
+      "endLine": 758,
+      "symbol": null,
+      "quote": "const PIN = '0312' // March 12 — meeting date"
+    },
+    {
+      "path": "src/src/pages/MarkPortal.tsx",
+      "startLine": 831,
+      "endLine": 842,
+      "symbol": null,
+      "quote": "function checkPin(d = digits) {\n  if (d.join('') === PIN) {\n    setUnlocked(true)\n  } else {\n    setPinError(true)\n    setDigits(['', '', '', ''])\n    setTimeout(() => {\n      const el = document.getElementById('pin-0')\n      if (el) (el as HTMLInputElement).focus()\n    }, 100)\n  }\n}"
+    }
+  ],
+  "reasoning": "The PIN '0312' is hardcoded in the client-side React component. Anyone with access to the client bundle (which is always public in a web app) can read the PIN by inspecting the source. This defeats the purpose of the PIN as an access control mechanism. Authentication should always be verified server-side, and secrets should never be embedded in client code.",
+  "reproduction": "Open browser DevTools, search the bundled JavaScript for 'PIN' or '0312', and the PIN is immediately revealed.",
+  "recommendation": "Move authentication to the server. The PIN should be verified via an API call to a backend endpoint that checks the PIN and issues a session token or JWT. Never store secrets in client-side code.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. Security testing would require code review or penetration testing to identify hardcoded secrets.",
+  "suggestedRegressionTest": "Security review: ensure no secrets are present in client bundles. Functional test: verify PIN validation occurs server-side and client cannot bypass.",
+  "minimumFixScope": "src/src/pages/MarkPortal.tsx - remove hardcoded PIN and implement server-side authentication",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_7dffb5879b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-release-51170e0f9c-e2dc_36c29c689d",
+  "featureId": "feat_release_51170e0f9c",
+  "title": "No build output verification or validation",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 128,
+      "endLine": 128,
+      "symbol": "build",
+      "quote": "\"build\": \"vite build\""
+    }
+  ],
+  "reasoning": "The build script executes 'vite build' without any post-build validation. There's no verification that critical assets were generated, no bundle size checks, and no smoke test to ensure the build output is functional. A successful exit code from Vite doesn't guarantee the build produced a usable application, especially if configuration is incorrect or dependencies are missing.",
+  "reproduction": null,
+  "recommendation": "Add a post-build validation step to check that expected output files exist in the dist directory and optionally verify bundle size limits. Consider adding a 'build:verify' script that checks for the presence of critical assets like index.html and JavaScript bundles.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are defined for this feature. The tests array is empty, indicating no automated verification of build output or process.",
+  "suggestedRegressionTest": "Create an integration test that runs 'npm run build' and verifies that dist/index.html and dist/assets/*.js files are created with non-zero size.",
+  "minimumFixScope": "package.json scripts section, potentially a new build verification script",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-release-51170e0f9c_e2dc5b5556",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:19.049Z",
+  "updatedAt": "2026-08-22T05:23:19.049Z"
+}

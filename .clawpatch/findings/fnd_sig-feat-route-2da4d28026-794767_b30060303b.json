@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-2da4d28026-794767_b30060303b",
+  "featureId": "feat_route_2da4d28026",
+  "title": "Race condition between audio load and user interaction",
+  "category": "concurrency",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 305,
+      "endLine": 308,
+      "symbol": "useEffect",
+      "quote": "audioRef.current = new Audio('/mro-voiceover.mp3')\n    audioRef.current.preload = 'auto'\n    audioRef.current.load()"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 300,
+      "endLine": 300,
+      "symbol": "startDemo",
+      "quote": "if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}) }"
+    }
+  ],
+  "reasoning": "The audio element is created and loaded asynchronously in useEffect. If the user clicks the splash screen very quickly after mount (before the audio element is created), audioRef.current will be null and no audio will play. While the play() call is guarded, the user experience degrades silently.",
+  "reproduction": "Mount the component and immediately click the splash screen before the useEffect has executed. Audio will not play but demo will start.",
+  "recommendation": "Either defer startDemo availability until audio is loaded, or create the audio element synchronously before the useEffect runs, or add a loading state that prevents interaction until ready.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist for this feature. Testing this race condition requires timing-sensitive integration tests that simulate immediate user interaction.",
+  "suggestedRegressionTest": "Integration test: mock Audio constructor delay, trigger startDemo immediately after mount, verify audio.play() is called when audio becomes ready.",
+  "minimumFixScope": "Lines 293-308 in src/src/pages/MRODemo.tsx - add audio ready state or synchronous initialization",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-2da4d28026_794767d276",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:04.514Z",
+  "updatedAt": "2026-08-22T05:24:04.514Z"
+}

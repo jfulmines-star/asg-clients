@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-b2b843562e-_cc13b67274",
+  "featureId": "feat_cli-command_b2b843562e",
+  "title": "Hardcoded PINs in route definitions pose security risk",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 161,
+      "endLine": 163,
+      "symbol": null,
+      "quote": "<Route path=\"/andrew/app\" element={<ShieldAppShell slug=\"andrew\" pin=\"6291\" rep=\"Andy\" territory=\"Sales Strategy & Government Capture Intelligence\" />} />\n        <Route path=\"/ryanh/app\" element={<ShieldAppShell slug=\"ryanh\" pin=\"5506\" rep=\"Ryan\" territory=\"Navy, Coast Guard & Commercial Aviation\" />} />\n        <Route path=\"/shield-caleb/app\" element={<ShieldAppShell slug=\"shield-caleb\" pin=\"4829\" rep=\"Caleb\" territory=\"Engineering, Materials Science & Custom Design\" />} />"
+    }
+  ],
+  "reasoning": "Authentication PINs (6291, 5506, 4829) are hardcoded directly in the client-side route definitions. These PINs are visible in the production JavaScript bundle that's sent to all users, making them completely public. Anyone can view the source code or bundle to obtain valid PINs for protected portals. This defeats the purpose of PIN authentication and exposes potentially sensitive business intelligence portals.",
+  "reproduction": "Build the production bundle with 'npm run build', open the bundled JavaScript file, and search for 'pin=\"'. All PIN values will be visible in plaintext.",
+  "recommendation": "Move PIN authentication to server-side validation. The client should never know valid PINs. Instead, ShieldAppShell should prompt for a PIN, send it to a backend API for validation, and receive a session token. Alternatively, use proper authentication (OAuth, JWT) rather than static PINs.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. Security testing would require checking that PINs aren't exposed in the client bundle, which is not covered.",
+  "suggestedRegressionTest": "Add a build-time test that scans the production bundle and fails if it finds hardcoded PIN values or sensitive credentials. Add integration tests for server-side PIN validation.",
+  "minimumFixScope": "src/src/main.tsx lines 161-163 + implement server-side PIN validation in ShieldAppShell component",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-b2b843562e_c3d7ff3588",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:00.697Z",
+  "updatedAt": "2026-08-22T05:23:00.697Z"
+}

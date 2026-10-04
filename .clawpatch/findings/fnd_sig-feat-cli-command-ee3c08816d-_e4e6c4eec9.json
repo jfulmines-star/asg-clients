@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ee3c08816d-_e4e6c4eec9",
+  "featureId": "feat_cli-command_ee3c08816d",
+  "title": "Missing error handling and retry logic in chat persistence",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/AnttipPortal.tsx",
+      "startLine": 201,
+      "endLine": 212,
+      "symbol": "persistMessages",
+      "quote": "async function persistMessages(msgs: ChatMessage[]) {\n  try {\n    const last = msgs.slice(-2)\n    for (const m of last) {\n      await fetch(`/api/portal-chat-history`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ slug: ANTTI_SLUG, role: m.role, content: m.content }),\n      })\n    }\n  } catch { /* non-critical */ }\n}"
+    }
+  ],
+  "reasoning": "The persistMessages function silently swallows all errors without logging, telemetry, or user feedback. Network failures, 4xx/5xx responses, and serialization errors are all ignored. Users lose chat history with no indication that persistence failed. The sequential await pattern means if the first message succeeds but the second fails, there's no rollback or retry. Additionally, fetch responses are never checked (.ok property), so 4xx/5xx are treated as success.",
+  "reproduction": "1. Disconnect network or configure API to return 500. 2. Send chat messages. 3. Observe that messages appear to persist but are silently lost. No error shown to user.",
+  "recommendation": "1. Check response.ok and throw on failure. 2. Log errors to monitoring service (Sentry, etc). 3. Implement exponential backoff retry for transient failures. 4. Show user-facing warning if persistence fails after retries. 5. Consider queuing failed messages in localStorage for later retry. 6. Use Promise.all instead of sequential awaits if order doesn't matter.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. This requires integration tests that mock network failures and verify error handling behavior.",
+  "suggestedRegressionTest": "Integration test: Mock /api/portal-chat-history to return 500. Call persistMessages. Verify error is logged and retry is attempted. Mock intermittent failure. Verify eventual success after retry.",
+  "minimumFixScope": "src/src/pages/AnttipPortal.tsx persistMessages and loadPersistedHistory functions. Consider extracting to shared utility with consistent error handling across all portal files.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ee3c08816d_f1c75779d3",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:33.449Z",
+  "updatedAt": "2026-08-22T05:23:33.449Z"
+}

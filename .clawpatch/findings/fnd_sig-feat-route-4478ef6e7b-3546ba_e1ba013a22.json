@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4478ef6e7b-3546ba_e1ba013a22",
+  "featureId": "feat_route_4478ef6e7b",
+  "title": "Type mismatch: paddingTop and paddingBottom cast to string",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 331,
+      "endLine": 331,
+      "symbol": null,
+      "quote": "paddingTop: 'max(14px, env(safe-area-inset-top))' as string,"
+    },
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 363,
+      "endLine": 363,
+      "symbol": null,
+      "quote": "paddingBottom: 'env(safe-area-inset-bottom, 0px)' as string,"
+    }
+  ],
+  "reasoning": "React CSSProperties typing expects padding* properties to be string | number, so the 'as string' cast is redundant and suggests the developer may have encountered a type error elsewhere. While functionally harmless, the cast obscures the actual type and may indicate misunderstanding of CSS-in-JS typing. The code works, but the cast is unnecessary.",
+  "reproduction": "No runtime issue. Remove 'as string' cast and verify TypeScript still compiles without error.",
+  "recommendation": "Remove 'as string' casts. If TypeScript complains, ensure CSSProperties is imported from React and the style object is correctly typed.",
+  "whyTestsDoNotAlreadyCoverThis": "This is a typing issue, not a runtime bug. Type tests or strict TypeScript CI checks would catch unnecessary casts.",
+  "suggestedRegressionTest": "TypeScript strict mode compilation test: ensure no type errors in LindsayPortal.tsx without the 'as string' casts.",
+  "minimumFixScope": "LindsayPortal.tsx inline style objects (lines 331, 363)",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4478ef6e7b_3546bacfda",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:25.501Z",
+  "updatedAt": "2026-08-22T05:24:25.501Z"
+}

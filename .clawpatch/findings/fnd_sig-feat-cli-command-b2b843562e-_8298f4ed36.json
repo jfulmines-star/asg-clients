@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-b2b843562e-_8298f4ed36",
+  "featureId": "feat_cli-command_b2b843562e",
+  "title": "Non-null assertion on potentially missing DOM element",
+  "category": "bug",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 156,
+      "endLine": 156,
+      "symbol": null,
+      "quote": "ReactDOM.createRoot(document.getElementById('root')!).render("
+    }
+  ],
+  "reasoning": "The code uses a non-null assertion operator (!) on document.getElementById('root'), which can return null if the element doesn't exist. If the root element is missing from the HTML, this will throw a runtime error that crashes the entire application during initialization. This is a common issue in React applications where the HTML template might be misconfigured or the element ID mismatches.",
+  "reproduction": "Load the application with an HTML file that doesn't contain a <div id='root'> element. The app will crash with 'Cannot read properties of null' error.",
+  "recommendation": "Add a null check before calling createRoot. If the element is missing, provide a fallback error message or throw a descriptive error. Example: const rootElement = document.getElementById('root'); if (!rootElement) throw new Error('Root element not found'); ReactDOM.createRoot(rootElement).render(...)",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature. The feature metadata shows an empty tests array, so there's no test coverage for application initialization or DOM mounting.",
+  "suggestedRegressionTest": "Add an integration test that verifies graceful handling when the root element is missing: 1) Create a test HTML without #root, 2) Attempt to initialize the app, 3) Assert a descriptive error is thrown rather than a cryptic null reference error.",
+  "minimumFixScope": "src/src/main.tsx lines 156-157",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-b2b843562e_4618feb4ee",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:00.697Z",
+  "updatedAt": "2026-08-22T05:23:00.697Z"
+}

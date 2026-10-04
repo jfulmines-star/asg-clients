@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-b2b843562e-_f1e5370163",
+  "featureId": "feat_cli-command_b2b843562e",
+  "title": "Missing error boundaries for route components",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/main.tsx",
+      "startLine": 158,
+      "endLine": 212,
+      "symbol": null,
+      "quote": "<BrowserRouter>\n      <Routes>"
+    }
+  ],
+  "reasoning": "The application defines 30+ routes but has no React error boundary wrapping the router or individual routes. If any route component throws an unhandled error during rendering, the entire application will crash and display a blank screen. This is particularly risky given the large number of portal components (Portal, BundleChat, MarkPortal, BrianPortal, etc.) that likely make API calls or handle dynamic data.",
+  "reproduction": "Navigate to any route that throws an error during render (e.g., a portal component that fails to fetch data). The entire app will unmount and show a white screen instead of a user-friendly error message.",
+  "recommendation": "Wrap the <BrowserRouter> or <Routes> component with a React ErrorBoundary component that catches rendering errors and displays a fallback UI. Consider per-route error boundaries for critical routes to isolate failures.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature (tests array is empty), so there's no coverage for error handling scenarios or component error recovery.",
+  "suggestedRegressionTest": "Create an integration test that: 1) Simulates a component error in one of the route handlers, 2) Verifies that an error boundary catches it, 3) Asserts a fallback UI is displayed instead of a crash.",
+  "minimumFixScope": "src/src/main.tsx - wrap Routes with ErrorBoundary component",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-b2b843562e_e47a18654b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:00.697Z",
+  "updatedAt": "2026-08-22T05:23:00.697Z"
+}

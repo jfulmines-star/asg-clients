@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_5e2ee48b5d",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Intake form data saved only in local state, lost on page refresh",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/MarkPortal.tsx",
+      "startLine": 790,
+      "endLine": 798,
+      "symbol": null,
+      "quote": "const [intakeForm, setIntakeForm] = useState<IntakeForm>({\n  aiToday: '',\n  topChallenge: 'Client prep before meetings — want to reduce time spent pulling together research',\n  clientType: ['HNW Individuals & Families', 'Institutions', 'Nonprofits & Foundations'],\n  sectors: ['Healthcare', 'Technology / AI'],\n  horizon: '10–20 years',\n  notes: '...'\n})"
+    }
+  ],
+  "reasoning": "The intake form data is stored in component state with no persistence layer (no localStorage, sessionStorage, or backend save). If the user fills out the form and then refreshes the page or navigates away, all input is lost. The form has a 'saved' state flag but no evidence of actual persistence.",
+  "reproduction": "Fill out the intake form in MarkPortal, refresh the page, and observe all input is lost.",
+  "recommendation": "Persist form data to localStorage or sessionStorage on change, or implement auto-save to a backend API. Restore state on component mount.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. Testing would require simulating page refresh and verifying form state is restored.",
+  "suggestedRegressionTest": "Fill form, refresh page, verify form data persists.",
+  "minimumFixScope": "src/src/pages/MarkPortal.tsx - add persistence for intakeForm state",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_8cbded5304",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

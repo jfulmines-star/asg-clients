@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ddf15e04ec-_c7fc4abf57",
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Silent credential failures create false sense of security",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/api/chat.ts",
+      "startLine": 176,
+      "endLine": 180,
+      "symbol": null,
+      "quote": "const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';\nconst OPENAI_API_KEY_FALLBACK = process.env.OPENAI_API_KEY || '';\nconst BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';\nconst UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';\nconst UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';"
+    },
+    {
+      "path": "src/api/rag-chat.ts",
+      "startLine": 982,
+      "endLine": 985,
+      "symbol": null,
+      "quote": "const SUPABASE_URL = process.env.SUPABASE_URL!;\nconst SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY!;\nconst OPENAI_API_KEY = process.env.OPENAI_API_KEY!;\nconst ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!;"
+    }
+  ],
+  "reasoning": "In chat.ts, missing environment variables default to empty strings. If ANTHROPIC_API_KEY is unset, the module loads successfully but all API calls will fail at runtime with cryptic 401/403 errors. In rag-chat.ts, TypeScript non-null assertions (!) are used but do not throw if vars are undefined—they simply pass undefined to runtime code. This creates a false sense of safety. The system should fail fast at module load time if required credentials are missing, not silently accept empty/undefined values.",
+  "reproduction": null,
+  "recommendation": "Add startup validation: `if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY required');` for all required env vars. Use a shared config validation module loaded by all API routes. For TypeScript non-null assertions in rag-chat.ts, add explicit runtime checks.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Integration tests would catch missing env vars only if they exercise the full request flow. Unit tests with mocked env would not catch this unless they explicitly test the missing-var scenario.",
+  "suggestedRegressionTest": "Unit test: mock process.env with missing ANTHROPIC_API_KEY, attempt to import chat.ts module → expect Error thrown at module load time, not deferred to request handling.",
+  "minimumFixScope": "chat.ts and rag-chat.ts at minimum. Ideally a shared config.ts module imported by all API routes.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ddf15e04ec_79f7a1be6a",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:01.033Z",
+  "updatedAt": "2026-08-22T05:24:01.033Z"
+}

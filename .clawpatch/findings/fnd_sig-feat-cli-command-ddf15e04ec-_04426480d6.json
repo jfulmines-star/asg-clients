@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ddf15e04ec-_04426480d6",
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Sensitive client data hardcoded in source exposes PII and business intel on leak",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/api/chat.ts",
+      "startLine": 340,
+      "endLine": 422,
+      "symbol": "CLIENT_CONTEXTS",
+      "quote": "const CLIENT_CONTEXTS: Record<string, string> = {\n  jj: `\n## SCOPE OVERRIDE — NO RESTRICTIONS\nYou are talking directly to JJ Fulmines, the founder of AxiomStream Group. You were built by him and for him.\n...\n- **Location:** Buffalo, NY (1035 Beach Rd., Building E #11, Buffalo, NY 14225)\n- **Phone:** 571-284-0083\n- **Birthday:** July 14th\n..."
+    }
+  ],
+  "reasoning": "CLIENT_CONTEXTS contains extensive PII (full names, phone numbers, home addresses, birthdays, family details, political leanings) and sensitive business intelligence (client relationships, revenue targets, financial struggles, internal team structures). This data is committed to the Git repository and deployed to Vercel functions. A repository leak, accidental public commit, or compromised Vercel account would expose all of this. The data should be stored in a secure backend (encrypted DB, secrets manager) and loaded at runtime, not baked into source code.",
+  "reproduction": null,
+  "recommendation": "Move CLIENT_CONTEXTS to a secure backend: Supabase table with row-level security, Vercel Environment Variables (for small contexts), or a secrets manager (AWS Secrets Manager, Doppler). Load contexts dynamically at request time. Rotate/audit access logs. Remove existing data from Git history using tools like BFG Repo-Cleaner or git-filter-repo.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Security audits would flag hardcoded secrets/PII in source. Static analysis tools (e.g., TruffleHog, GitGuardian) would detect patterns like phone numbers and addresses.",
+  "suggestedRegressionTest": "Static analysis test: scan codebase for regex patterns matching phone numbers, SSNs, street addresses → expect zero matches in source files (only in secure backend or env vars).",
+  "minimumFixScope": "chat.ts CLIENT_CONTEXTS constant, plus migration script to move data to secure backend and update handler to load contexts at runtime.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ddf15e04ec_d0fa48d952",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:01.033Z",
+  "updatedAt": "2026-08-22T05:24:01.033Z"
+}

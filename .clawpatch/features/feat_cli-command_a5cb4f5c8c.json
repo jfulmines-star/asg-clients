@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_cli-command_a5cb4f5c8c",
+  "title": "Node source src/src/portal/sections",
+  "summary": "Node/TypeScript source group src/src/portal/sections with 3 files.",
+  "kind": "cli-command",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "package.json",
+      "symbol": "src/src/portal/sections",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/portal/sections/About.tsx",
+      "reason": "source group src/src/portal/sections"
+    },
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "reason": "source group src/src/portal/sections"
+    },
+    {
+      "path": "src/src/portal/sections/Welcome.tsx",
+      "reason": "source group src/src/portal/sections"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:asg-clients",
+    "project-root:."
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "process-exec"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-cli-command-a5cb4f5c8c-_9a618bf56c",
+    "fnd_sig-feat-cli-command-a5cb4f5c8c-_251180aa33",
+    "fnd_sig-feat-cli-command-a5cb4f5c8c-_17c9cad1ab",
+    "fnd_sig-feat-cli-command-a5cb4f5c8c-_8d3b31d19e"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "4 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:23:09.644Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:23:09.644Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_b218f2990e",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Race condition: hasStartedRef not reset on replay, allowing double-start",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 322,
+      "endLine": 332,
+      "symbol": null,
+      "quote": "const startDemo = () => {\n  if (hasStartedRef.current) return\n  hasStartedRef.current = true\n  ...\n  run()\n}"
+    },
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 299,
+      "endLine": 320,
+      "symbol": null,
+      "quote": "const replay = () => {\n  clearAll()\n  ...\n  setTimeout(run, 120)\n}"
+    }
+  ],
+  "reasoning": "The `hasStartedRef` flag prevents multiple calls to `startDemo`, but it is never reset. The `replay` function does not reset `hasStartedRef`, so if a user clicks the splash screen again after replay, `startDemo` will return early and do nothing. This is likely intentional for the splash screen (one-time start), but the naming and flow suggest `replay` should re-enable starting, or the splash should be permanently hidden. The current code hides the splash on first start, so this is low severity, but the logic is unclear and could cause confusion if the splash were ever re-shown.",
+  "reproduction": null,
+  "recommendation": "Clarify the intent: if the splash is one-time only, ensure it's never re-shown. If replay should allow re-starting, reset `hasStartedRef` in `replay`.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. This would require testing multiple invocations of startDemo and replay.",
+  "suggestedRegressionTest": "Test that replay correctly restarts the demo and that the splash screen cannot be activated again after initial start.",
+  "minimumFixScope": "src/src/pages/MRODemo.tsx startDemo and replay functions",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_c182f35cce",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

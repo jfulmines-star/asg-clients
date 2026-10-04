@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_13681a331e",
+  "title": "React route /status",
+  "summary": "React Router route '/status' rendered by StatusPage.",
+  "kind": "route",
+  "source": "react-router-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "symbol": "StatusPage",
+      "route": "/status",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "reason": "route component"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "reason": "route declaration"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "react-router",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-route-13681a331e-81bfe3_eb53538ddc",
+    "fnd_sig-feat-route-13681a331e-bcebbc_54ac1e08b8",
+    "fnd_sig-feat-route-13681a331e-c3d488_6ae4465e49",
+    "fnd_sig-feat-route-13681a331e-c0b4e3_845d097a5b",
+    "fnd_sig-feat-route-13681a331e-ceb04a_71ce262523"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "5 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:24:18.334Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:24:18.334Z"
+}

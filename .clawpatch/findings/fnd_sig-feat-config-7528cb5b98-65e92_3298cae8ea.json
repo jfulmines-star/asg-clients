@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-config-7528cb5b98-65e92_3298cae8ea",
+  "featureId": "feat_config_7528cb5b98",
+  "title": "No test infrastructure configured",
+  "category": "test-gap",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "test-gap",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 123,
+      "endLine": 126,
+      "symbol": null,
+      "quote": "\"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  }"
+    },
+    {
+      "path": "package.json",
+      "startLine": 143,
+      "endLine": 149,
+      "symbol": null,
+      "quote": "\"devDependencies\": {\n    \"@types/react\": \"^18.3.3\",\n    \"@types/react-dom\": \"^18.3.1\",\n    \"@vitejs/plugin-react\": \"^4.3.1\",\n    \"typescript\": \"^5.5.3\",\n    \"vite\": \"^5.4.2\"\n  }"
+    }
+  ],
+  "reasoning": "The project has no test script or testing framework dependencies (detected commands show test: null). For a React application with routing, charting, and file processing capabilities, the lack of any testing infrastructure is a significant quality and maintainability risk. Regressions cannot be detected automatically, and refactoring becomes hazardous.",
+  "reproduction": null,
+  "recommendation": "Add a testing framework suitable for React applications. For a Vite + React + TypeScript project, consider Vitest with React Testing Library. Install vitest, @testing-library/react, @testing-library/jest-dom, and jsdom as devDependencies. Add script: '\"test\": \"vitest\"'",
+  "whyTestsDoNotAlreadyCoverThis": "The feature includes no tests, and this finding identifies the absence of testing infrastructure itself.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "package.json scripts and devDependencies sections",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-config-7528cb5b98_65e92b167c",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:12.498Z",
+  "updatedAt": "2026-08-22T05:23:12.498Z"
+}

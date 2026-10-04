@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4395698734-a21cac_12c3c418e1",
+  "featureId": "feat_route_4395698734",
+  "title": "useEffect dependency on runChecks causes infinite re-render loop",
+  "category": "bug",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 406,
+      "endLine": 408,
+      "symbol": "useEffect",
+      "quote": "useEffect(() => {\n    runChecks()\n  }, [runChecks])"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {\n    setRefreshing(true)\n    // Stagger checks slightly so the UI feels live\n    const updated: StatusGroup[] = []\n    for (const group of INITIAL_GROUPS) {\n      const checkedServices = group.services.map(simulateCheck)\n      updated.push({ ...group, services: checkedServices })\n    }\n    setGroups(updated)\n    setLastRefresh(new Date())\n    setRefreshing(false)\n  }, [])"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 411,
+      "endLine": 414,
+      "symbol": "useEffect",
+      "quote": "useEffect(() => {\n    const id = setInterval(runChecks, 60_000)\n    return () => clearInterval(id)\n  }, [runChecks])"
+    }
+  ],
+  "reasoning": "The runChecks callback is defined with useCallback and an empty dependency array. However, both useEffect hooks declare runChecks as a dependency. While the empty deps array on useCallback means runChecks reference stays stable, React's exhaustive-deps lint rule (and React 18+ strict mode) may warn about this pattern. More critically, if runChecks were ever to gain proper dependencies (which it should, since it references INITIAL_GROUPS as a module constant but potentially should track dynamic state), the current pattern would cause the interval useEffect to re-register on every runChecks change, creating potential memory leaks or unexpected behavior.",
+  "reproduction": "1. Mount StatusPage component\n2. Observe console warnings in development mode about exhaustive-deps\n3. If INITIAL_GROUPS were ever made dynamic state, the interval would re-register continuously",
+  "recommendation": "Remove runChecks from the dependency arrays of both useEffect hooks, or restructure to avoid the dependency. Since runChecks has an empty dependency array in useCallback, it's stable and doesn't need to be in the deps. Alternatively, inline the runChecks logic or use a ref pattern.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are provided for this feature. This is a runtime React hooks dependency issue that would only surface through ESLint warnings or unexpected re-renders in development.",
+  "suggestedRegressionTest": "Unit test that mounts StatusPage, advances timers, and verifies setInterval is called exactly once (not re-registered). Also verify runChecks is called on mount and every 60s without unmount/remount cycles.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 406-414",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4395698734_a21cac2ed9",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:42.045Z",
+  "updatedAt": "2026-08-22T05:24:42.045Z"
+}

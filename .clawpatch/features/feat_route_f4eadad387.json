@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_f4eadad387",
+  "title": "React route /ryanh",
+  "summary": "React Router route '/ryanh' rendered by ASGPortalBase.",
+  "kind": "route",
+  "source": "react-router-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "src/src/portal/ASGPortalBase.tsx",
+      "symbol": "ASGPortalBase",
+      "route": "/ryanh",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/portal/ASGPortalBase.tsx",
+      "reason": "route component"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "src/src/main.tsx",
+      "reason": "route declaration"
+    },
+    {
+      "path": "src/src/portal/theme.ts",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/hooks.ts",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/PinGate.tsx",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/Chat.tsx",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/modules/index.ts",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/sections/Welcome.tsx",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/sections/About.tsx",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "reason": "direct import"
+    },
+    {
+      "path": "src/src/portal/types.ts",
+      "reason": "direct import"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "react-router",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "pending",
+  "lock": null,
+  "findingIds": [],
+  "patchAttemptIds": [],
+  "analysisHistory": [],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:21:34.946Z"
+}

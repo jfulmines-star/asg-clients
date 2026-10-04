@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-acc5d956ce-_2f353a0152",
+  "featureId": "feat_cli-command_acc5d956ce",
+  "title": "Race condition in PIN unlock flow using queueMicrotask",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/PinGate.tsx",
+      "startLine": 1066,
+      "endLine": 1068,
+      "symbol": "PinGate",
+      "quote": "if (pin.unlocked) {\n    queueMicrotask(onUnlock)\n  }"
+    }
+  ],
+  "reasoning": "The PinGate component calls onUnlock via queueMicrotask on every render when pin.unlocked is true. This creates a race where onUnlock can be queued multiple times if React re-renders before the parent processes the first unlock. The pattern should either use useEffect with dependency on pin.unlocked, or the parent should gate re-renders defensively. The current implementation is fragile and may cause duplicate state updates in the parent.",
+  "reproduction": "1. Enter correct PIN\n2. Force a re-render (e.g., theme change, window resize)\n3. onUnlock queues again even though already unlocked\n4. Parent may process setUnlocked(true) multiple times",
+  "recommendation": "Replace the conditional queueMicrotask with useEffect: `useEffect(() => { if (pin.unlocked) onUnlock() }, [pin.unlocked, onUnlock])`. This ensures the callback fires exactly once when unlocked transitions to true.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in the feature. This timing bug would require integration tests that simulate re-renders during the unlock transition.",
+  "suggestedRegressionTest": "Mount PinGate with a mock onUnlock, enter the correct PIN, force a re-render, and assert onUnlock was called exactly once.",
+  "minimumFixScope": "src/src/portal/PinGate.tsx lines 1065-1068",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-acc5d956ce_5bb10f582c",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:24.263Z",
+  "updatedAt": "2026-08-22T05:23:24.263Z"
+}

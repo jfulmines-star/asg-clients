@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-463246491b-_726c69a4ca",
+  "featureId": "feat_cli-command_463246491b",
+  "title": "Race condition in dining module message updates",
+  "category": "concurrency",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/modules/dining.tsx",
+      "startLine": 242,
+      "endLine": 244,
+      "symbol": "askRex",
+      "quote": "setMsgs(prev => [...prev, { role: 'user', content: text }])\nconst ts = Date.now()\nsetMsgs(prev => [...prev, { role: 'assistant', content: '🍽️ Finding the best spots...', _id: ts }])"
+    },
+    {
+      "path": "src/src/portal/modules/dining.tsx",
+      "startLine": 263,
+      "endLine": 263,
+      "symbol": "askRex",
+      "quote": "setMsgs(prev => [...prev.filter(m => m._id !== ts), { role: 'assistant', content: reply }])"
+    }
+  ],
+  "reasoning": "If the user sends multiple messages rapidly (or double-clicks the send button despite disabled state), multiple askRex calls can execute concurrently. Each generates a unique ts (Date.now()), but the loading state is shared. The final setMsgs call filters by _id: ts, which works per-request, but React state batching and async timing could cause messages to arrive out of order or duplicate loading messages to appear briefly. The disabled={loading} guard is present but doesn't prevent race if user clicks before loading is set.",
+  "reproduction": "Remove or bypass the disabled={loading} check. Rapidly click send twice. Two concurrent askRex calls execute. Both add loading messages with different _id values. Responses may arrive out of order, causing the UI to show stale loading indicators or messages in wrong sequence.",
+  "recommendation": "Use a ref-based request ID or cancel token to ensure only one request is in flight. Cancel previous requests when a new one starts (AbortController). Ensure loading state prevents duplicate submissions before state updates propagate.",
+  "whyTestsDoNotAlreadyCoverThis": "No concurrency tests exist. The disabled guard is present but not tested under rapid interaction scenarios.",
+  "suggestedRegressionTest": "Unit test: simulate rapid askRex calls and verify only one request completes. Integration test: confirm UI does not allow duplicate submissions even under slow state updates.",
+  "minimumFixScope": "src/src/portal/modules/dining.tsx askRex function: add AbortController to cancel previous requests or use a ref to track in-flight request ID",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-463246491b_caa09fe975",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:47.312Z",
+  "updatedAt": "2026-08-22T05:23:47.312Z"
+}

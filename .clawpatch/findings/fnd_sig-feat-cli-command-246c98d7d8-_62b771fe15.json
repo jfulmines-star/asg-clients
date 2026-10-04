@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-246c98d7d8-_62b771fe15",
+  "featureId": "feat_cli-command_246c98d7d8",
+  "title": "Email input not validated or sanitized before API submission",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/MROLanding.tsx",
+      "startLine": 490,
+      "endLine": 509,
+      "symbol": null,
+      "quote": "async function handleSubmit(e: React.FormEvent) {\n  e.preventDefault()\n  if (!email.trim()) return\n  setStatus('loading')\n  try {\n    const res = await fetch('/api/mro-capture', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ email: email.trim() }),\n    })\n    const data = await res.json()\n    if (data.ok) {\n      setStatus('success')\n    } else {\n      setStatus('error')\n    }\n  } catch {\n    setStatus('error')\n  }\n}"
+    }
+  ],
+  "reasoning": "The email is trimmed but not validated on the client before submission beyond the HTML5 `required` attribute on the input. While the server should validate, relying solely on HTML5 validation is insufficient: it can be bypassed, and malformed emails (e.g., SQL injection payloads, XSS attempts in email strings) could be sent to the backend. The code does not check for a valid email format in JavaScript, nor does it sanitize the input.",
+  "reproduction": null,
+  "recommendation": "Add client-side email format validation using a regex or library (e.g., email-validator). Ensure the backend also validates and sanitizes the email input.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. This would require submitting invalid email formats and ensuring they are rejected client-side or server-side.",
+  "suggestedRegressionTest": "Submit various invalid email formats (e.g., 'test', 'test@', '<script>alert(1)</script>') and verify they are rejected or sanitized.",
+  "minimumFixScope": "src/src/pages/MROLanding.tsx handleSubmit function",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-246c98d7d8_9eb7689429",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:42.325Z",
+  "updatedAt": "2026-08-22T05:23:42.325Z"
+}

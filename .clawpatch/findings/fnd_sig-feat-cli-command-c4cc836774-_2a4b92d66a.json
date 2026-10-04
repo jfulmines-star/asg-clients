@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-c4cc836774-_2a4b92d66a",
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "downloadChart canvas export fails silently with CORS errors",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 221,
+      "endLine": 248,
+      "symbol": "downloadChart",
+      "quote": "async function downloadChart(el: HTMLDivElement, title: string, whiteLabel: boolean) {\n  const canvas = await html2canvas(el, { backgroundColor: '#0a0f1e', scale: 3, useCORS: true })\n\n  if (!whiteLabel) {\n    // Overlay ASG branding on a second canvas\n    const branded = document.createElement('canvas')\n    branded.width = canvas.width\n    branded.height = canvas.height + 28\n    const ctx = branded.getContext('2d')!\n    ctx.fillStyle = '#0a0f1e'\n    ctx.fillRect(0, 0, branded.width, branded.height)\n    ctx.drawImage(canvas, 0, 0)\n    ctx.fillStyle = '#ffffff30'\n    ctx.font = `${12 * 2}px system-ui, sans-serif`\n    ctx.textAlign = 'center'\n    ctx.fillText('Powered by AxiomStream Group', branded.width / 2, canvas.height + 20)\n\n    const link = document.createElement('a')\n    link.download = `chart-${title.toLowerCase().replace(/\\s+/g, '-')}.png`\n    link.href = branded.toDataURL()\n    link.click()\n  } else {\n    const link = document.createElement('a')\n    link.download = `chart-${title.toLowerCase().replace(/\\s+/g, '-')}.png`\n    link.href = canvas.toDataURL()\n    link.click()\n  }\n}"
+    },
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 354,
+      "endLine": 362,
+      "symbol": "handleDownload",
+      "quote": "const handleDownload = async () => {\n    if (!containerRef.current || downloading) return\n    setDownloading(true)\n    try {\n      await downloadChart(containerRef.current, spec.title, whiteLabel)\n    } finally {\n      setDownloading(false)\n    }\n  }"
+    }
+  ],
+  "reasoning": "The downloadChart function uses html2canvas with useCORS: true, but provides no error handling. If the chart contains external images/fonts that violate CORS policy, html2canvas throws and the error is swallowed by the empty catch block in handleDownload (lines 357-360). The user sees the download button return to normal state with no feedback about why the download failed. The useCORS flag suggests the developer anticipated CORS issues but didn't handle failures.",
+  "reproduction": "Render a chart that references an external resource without CORS headers. Click download. html2canvas throws, catch block resets state, user gets no feedback.",
+  "recommendation": "Add error handling in downloadChart. Catch html2canvas failures and throw a descriptive error. In handleDownload, catch and display user-facing error message ('Download failed - chart contains blocked resources'). Consider logging errors for debugging.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests verify download functionality or error states when html2canvas fails.",
+  "suggestedRegressionTest": "Mock html2canvas to reject with CORS error. Verify user sees error message and can retry or continue using the UI.",
+  "minimumFixScope": "src/src/components/ChartRenderer.tsx downloadChart and handleDownload functions",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-c4cc836774_f1947b09db",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:37.648Z",
+  "updatedAt": "2026-08-22T05:23:37.648Z"
+}

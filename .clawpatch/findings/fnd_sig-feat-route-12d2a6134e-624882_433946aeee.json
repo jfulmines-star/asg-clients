@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-12d2a6134e-624882_433946aeee",
+  "featureId": "feat_route_12d2a6134e",
+  "title": "No rate limiting or duplicate submission prevention on chat form",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/KitFullPortal.tsx",
+      "startLine": 212,
+      "endLine": 214,
+      "symbol": "sendMessage",
+      "quote": "async function sendMessage(e: React.FormEvent) {\n    e.preventDefault()\n    if (!input.trim() || loading) return"
+    }
+  ],
+  "reasoning": "The form checks `loading` to prevent duplicate submissions while a request is in flight, which is good. However, if the user rapidly submits multiple messages before the first completes (e.g. by clicking Send multiple times in quick succession before `loading` is set), multiple requests could be queued. Additionally, there is no client-side rate limiting to prevent abuse (e.g. spamming the API with hundreds of requests). While the `loading` guard helps, it only applies after `setLoading(true)` is called, which happens after `setMessages` and `setInput('')`. A fast double-click could theoretically send the same message twice.",
+  "reproduction": "1. Type a message\n2. Rapidly double-click the Send button before the first request completes\n3. Observe if two identical messages are sent (timing-dependent)",
+  "recommendation": "Disable the submit button immediately on click (before async work) or use a ref-based guard to ensure only one request is in flight. Consider adding client-side rate limiting (e.g. max 5 messages per 10 seconds) to prevent abuse.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are provided. A test that simulates rapid double-click would catch this race condition.",
+  "suggestedRegressionTest": "Simulate rapid form submission and verify only one request is sent. Add a test for rate limiting if implemented.",
+  "minimumFixScope": "src/src/pages/KitFullPortal.tsx sendMessage function",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-12d2a6134e_624882d3ad",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:08.227Z",
+  "updatedAt": "2026-08-22T05:24:08.227Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-2da4d28026-af81d4_90f593b006",
+  "featureId": "feat_route_2da4d28026",
+  "title": "Memory leak from event listener not cleaned up on unmount",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/MRODemo.tsx",
+      "startLine": 310,
+      "endLine": 313,
+      "symbol": "useEffect",
+      "quote": "el('mro-btn-replay')?.addEventListener('click', () => {\n      if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}) }\n      replay()\n    })"
+    }
+  ],
+  "reasoning": "The useEffect hook adds a click event listener to the replay button at line 310, but the cleanup function at lines 314-318 only clears timeouts/RAF and pauses audio. The event listener is never removed, causing a memory leak if the component unmounts and remounts multiple times.",
+  "reproduction": "Navigate to /mro/demo, then navigate away and back multiple times. Each mount will add a new event listener without removing the previous one.",
+  "recommendation": "Store the element reference and remove the event listener in the cleanup function. Example: const btn = el('mro-btn-replay'); const handler = () => {...}; btn?.addEventListener('click', handler); return () => { btn?.removeEventListener('click', handler); ... }",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are defined for this feature (tests array is empty in feature metadata). Memory leak detection requires integration testing with component mount/unmount cycles.",
+  "suggestedRegressionTest": "Integration test: mount MRODemo, get initial listener count on replay button, unmount, remount, verify listener count hasn't increased. Or use React Testing Library to verify cleanup.",
+  "minimumFixScope": "Lines 310-313 in src/src/pages/MRODemo.tsx - extract handler to variable, add removeEventListener in cleanup",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-2da4d28026_af81d4adfb",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:04.514Z",
+  "updatedAt": "2026-08-22T05:24:04.514Z"
+}

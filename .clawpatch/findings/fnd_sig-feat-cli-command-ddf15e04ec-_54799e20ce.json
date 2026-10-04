@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ddf15e04ec-_54799e20ce",
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Missing authentication/authorization on all API endpoints",
+  "category": "security",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/api/chat.ts",
+      "startLine": 172,
+      "endLine": 180,
+      "symbol": null,
+      "quote": "const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';\nconst OPENAI_API_KEY_FALLBACK = process.env.OPENAI_API_KEY || '';\nconst BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';\nconst UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';\nconst UPSTASH_TOKEN = process.env.UPSTASH_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';"
+    },
+    {
+      "path": "src/api/conversations.ts",
+      "startLine": 641,
+      "endLine": 650,
+      "symbol": "handler",
+      "quote": "export default async function handler(req: VercelRequest, res: VercelResponse) {\n  res.setHeader('Access-Control-Allow-Origin', '*');\n  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');\n  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');\n  if (req.method === 'OPTIONS') return res.status(200).end();\n\n  const slug = ((req.query.slug || req.body?.slug) as string || '').toLowerCase().trim();\n  const member = ((req.query.member || req.body?.member) as string || '').toLowerCase().trim();\n\n  if (!slug || !member) return res.status(400).json({ error: 'Missing slug or member' });"
+    },
+    {
+      "path": "src/api/history.ts",
+      "startLine": 763,
+      "endLine": 773,
+      "symbol": "handler",
+      "quote": null
+    },
+    {
+      "path": "src/api/portal-chat-history.ts",
+      "startLine": 948,
+      "endLine": 956,
+      "symbol": "handler",
+      "quote": null
+    },
+    {
+      "path": "src/api/rag-chat.ts",
+      "startLine": 1035,
+      "endLine": 1039,
+      "symbol": "handler",
+      "quote": null
+    }
+  ],
+  "reasoning": "All API endpoints accept slug/member/tenantId from untrusted user input (query params or POST body) with no authentication or authorization checks. CORS is set to '*' allowing any origin. Any attacker can read or write conversation history, user memory, documents, and RAG data for any tenant by simply guessing or enumerating slug/member/tenantId values. The trust boundary 'user-input' is listed but not enforced. This exposes all user data including sensitive CLIENT_CONTEXTS (company intel, personal information about JJ, Andy, Kevin, etc.), conversation threads, and uploaded documents.",
+  "reproduction": null,
+  "recommendation": "Implement authentication (API keys, JWT, session tokens) and authorization (verify caller owns the slug/member/tenantId) on every endpoint. Use allowlists for CORS origins. Add rate limiting. Consider Vercel Edge Config or middleware to centralize auth checks.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in the feature. Security tests would explicitly attempt unauthorized access across tenant boundaries.",
+  "suggestedRegressionTest": "Integration test: attempt to access /api/history?slug=jj&member=jj without auth token → expect 401. Attempt to access another user's slug with valid token for different user → expect 403. Verify CORS headers reject requests from unauthorized origins.",
+  "minimumFixScope": "All 5 API handler files (chat.ts, conversations.ts, history.ts, portal-chat-history.ts, rag-chat.ts) plus a shared auth utility module.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ddf15e04ec_a15fa425d0",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:01.033Z",
+  "updatedAt": "2026-08-22T05:24:01.033Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-12d2a6134e-66fe20_da7605b234",
+  "featureId": "feat_route_12d2a6134e",
+  "title": "Hardcoded PIN exposes authentication secret in client-side code",
+  "category": "security",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/KitFullPortal.tsx",
+      "startLine": 139,
+      "endLine": 139,
+      "symbol": "PIN",
+      "quote": "const PIN = '1414' // JJ's birthday"
+    },
+    {
+      "path": "src/src/pages/KitFullPortal.tsx",
+      "startLine": 200,
+      "endLine": 200,
+      "symbol": "checkPin",
+      "quote": "if (d.join('') === PIN) {"
+    }
+  ],
+  "reasoning": "The PIN is hardcoded as a constant in client-side code and checked entirely on the frontend. Any user can inspect the bundle or source, read the PIN value '1414', and bypass authentication. This defeats the entire purpose of the PIN screen and exposes whatever sensitive context (USER.md, SOUL.md, IDENTITY.md, Synapse memory) is behind it.",
+  "reproduction": "1. Navigate to /kit-chat\n2. Open browser DevTools → Sources\n3. Search for 'PIN' or '1414' in the bundle\n4. Enter '1414' to unlock, or simply read the value and use it",
+  "recommendation": "Move PIN validation to the backend. On unlock attempt, send a hashed or plain PIN to an API endpoint (e.g. /api/kit-auth) that checks it server-side and returns a session token or JWT. Store that token in sessionStorage and validate it on every /api/kit-chat request. Never expose the correct PIN in client code.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are provided for this feature. Even if tests existed, they would likely verify the UI flow but not the security vulnerability of client-side secret exposure.",
+  "suggestedRegressionTest": "Add an integration test that attempts to call /api/kit-chat without a valid session token and verifies a 401/403 response. Add a penetration test that scans the client bundle for hardcoded secrets.",
+  "minimumFixScope": "src/src/pages/KitFullPortal.tsx (remove hardcoded PIN, add token-based auth flow) + new backend endpoint for PIN validation + update /api/kit-chat to require valid session token",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-12d2a6134e_66fe208dd8",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:08.227Z",
+  "updatedAt": "2026-08-22T05:24:08.227Z"
+}

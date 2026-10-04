@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-acc5d956ce-_639fb4043f",
+  "featureId": "feat_cli-command_acc5d956ce",
+  "title": "Unbounded message history growth in memory",
+  "category": "performance",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/Chat.tsx",
+      "startLine": 739,
+      "endLine": 740,
+      "symbol": "send",
+      "quote": "const historySnapshot = messages.filter(m => m.role !== 'system')\n    const userMsg: ChatMessage = { role: 'user', content: text }\n    setMessages(prev => [...prev, userMsg])"
+    },
+    {
+      "path": "src/src/portal/hooks.ts",
+      "startLine": 1398,
+      "endLine": 1398,
+      "symbol": "useChatHistory",
+      "quote": "const msgs = (d.messages || d.history || []).slice(-60)"
+    }
+  ],
+  "reasoning": "The Chat component appends every message to the messages state array without any cap. While useChatHistory limits the initial preload to 60 messages, subsequent user interactions grow the array indefinitely. A long session (e.g., 200+ exchanges) will cause performance degradation due to re-renders of the entire message list and memory bloat. The historySnapshot sent to the API also grows unbounded, potentially exceeding API token limits or backend payload limits.",
+  "reproduction": "1. Start a chat session\n2. Send 100+ messages\n3. Observe increasing render time and memory usage in DevTools\n4. API request payload grows linearly with message count",
+  "recommendation": "Implement a sliding window for in-memory messages (e.g., keep only the last 50 exchanges). When sending to the API, slice historySnapshot to the most recent N messages to fit context windows. Persist the full history server-side (already done via persist()), but only render/process a window client-side.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. Performance degradation requires stress testing with many messages, which is beyond typical unit test scope.",
+  "suggestedRegressionTest": "Simulate 100 message exchanges and assert that messages.length does not exceed a defined cap (e.g., 60).",
+  "minimumFixScope": "src/src/portal/Chat.tsx send function: slice historySnapshot and cap messages array",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-acc5d956ce_9c79476489",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:24.263Z",
+  "updatedAt": "2026-08-22T05:23:24.263Z"
+}

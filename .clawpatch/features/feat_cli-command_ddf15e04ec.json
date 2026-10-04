@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Node source src/api",
+  "summary": "Node/TypeScript source group src/api with 10 files.",
+  "kind": "cli-command",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "package.json",
+      "symbol": "src/api",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/api/chat.config.js",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/chat.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/conversations.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/history.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/market-data.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/portal-chat-history.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/rag-chat.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/rag-utils.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/sessions.ts",
+      "reason": "source group src/api"
+    },
+    {
+      "path": "src/api/team-intel.ts",
+      "reason": "source group src/api"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:asg-clients",
+    "project-root:."
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "process-exec"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-cli-command-ddf15e04ec-_54799e20ce",
+    "fnd_sig-feat-cli-command-ddf15e04ec-_ef42ad831d",
+    "fnd_sig-feat-cli-command-ddf15e04ec-_c7fc4abf57",
+    "fnd_sig-feat-cli-command-ddf15e04ec-_442d4c6760",
+    "fnd_sig-feat-cli-command-ddf15e04ec-_1bcb816ad5",
+    "fnd_sig-feat-cli-command-ddf15e04ec-_04426480d6"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "6 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:24:01.039Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:24:01.039Z"
+}

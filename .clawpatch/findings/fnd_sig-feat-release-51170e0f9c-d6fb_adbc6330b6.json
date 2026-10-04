@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-release-51170e0f9c-d6fb_adbc6330b6",
+  "featureId": "feat_release_51170e0f9c",
+  "title": "Missing TypeScript compilation before Vite build",
+  "category": "build-release",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 128,
+      "endLine": 128,
+      "symbol": "build",
+      "quote": "\"build\": \"vite build\""
+    },
+    {
+      "path": "package.json",
+      "startLine": 151,
+      "endLine": 151,
+      "symbol": null,
+      "quote": "\"typescript\": \"^5.5.3\""
+    }
+  ],
+  "reasoning": "The project includes TypeScript as a devDependency and has TypeScript type definitions (@types/react, @types/react-dom, @types/formidable, @types/pdf-parse), indicating TypeScript source files. However, the build script only runs 'vite build' without a preceding type-check step. While Vite can transpile TypeScript, it does not perform type-checking during build by default. This means type errors could exist in production builds, and developers won't catch type issues until runtime or manual checking.",
+  "reproduction": null,
+  "recommendation": "Add a typecheck script using 'tsc --noEmit' and update the build script to run type-checking before building: \"typecheck\": \"tsc --noEmit\", \"build\": \"npm run typecheck && vite build\". This ensures type safety is enforced during the build process.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in the feature's owned or context files. The tests array is empty, so there is no test coverage validating that the build process catches type errors.",
+  "suggestedRegressionTest": "Add a CI/CD test that introduces a deliberate TypeScript type error and verifies the build script fails, ensuring type-checking is enforced.",
+  "minimumFixScope": "package.json scripts section",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-release-51170e0f9c_d6fb9f84f8",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:19.049Z",
+  "updatedAt": "2026-08-22T05:23:19.049Z"
+}

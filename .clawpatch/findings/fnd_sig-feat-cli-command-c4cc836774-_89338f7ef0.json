@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-c4cc836774-_89338f7ef0",
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "Missing null check in formatValue can cause type coercion issues",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 182,
+      "endLine": 183,
+      "symbol": "formatValue",
+      "quote": "if (value === undefined || value === null) return ''\n  const u = unit || ''"
+    }
+  ],
+  "reasoning": "The function checks for undefined/null but then immediately uses 'value' without re-checking. If value is 0, the function works correctly, but the loose equality check pattern suggests the author may have intended to handle falsy values differently. More critically, the function accepts 'number | undefined' but the null check is redundant since TypeScript types don't include null.",
+  "reproduction": null,
+  "recommendation": "Remove the redundant null check and rely on TypeScript's type system: 'if (value === undefined) return '''. Alternatively, if null values are expected from runtime data, update the type signature to 'number | undefined | null'.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this feature. The type mismatch between runtime checks and TypeScript signature could cause confusion during maintenance.",
+  "suggestedRegressionTest": "Unit test formatValue with undefined, null, 0, negative numbers, and large numbers to verify consistent behavior.",
+  "minimumFixScope": "src/src/components/ChartRenderer.tsx formatValue function",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-c4cc836774_a74c65f466",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:37.648Z",
+  "updatedAt": "2026-08-22T05:23:37.648Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-13681a331e-bcebbc_54ac1e08b8",
+  "featureId": "feat_route_13681a331e",
+  "title": "Auto-refresh interval not cleaned up if runChecks changes",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 411,
+      "endLine": 414,
+      "symbol": "useEffect",
+      "quote": "useEffect(() => {\n    const id = setInterval(runChecks, 60_000)\n    return () => clearInterval(id)\n  }, [runChecks])"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {...}, [])"
+    }
+  ],
+  "reasoning": "The interval effect depends on [runChecks]. Since runChecks is memoized with an empty dependency array, it will never change and this effect will run only once. However, if runChecks ever gains dependencies and changes reference, the effect will teardown and recreate the interval, potentially creating a brief window where no interval is running or causing rapid re-subscription. The pattern is correct for the current implementation but fragile.",
+  "reproduction": "Currently not reproducible because runChecks is stable. Would manifest if runChecks dependencies changed.",
+  "recommendation": "Document the intentional empty dependency array in runChecks, or refactor to use a ref-based pattern for the interval callback to decouple effect re-runs from callback identity.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. This would require a test that verifies the interval callback reference stability and cleanup behavior.",
+  "suggestedRegressionTest": "Test that verifies: (1) interval is set on mount, (2) interval fires every 60s, (3) cleanup removes the interval on unmount, and (4) no duplicate intervals are created during the component lifecycle.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 392-414",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-13681a331e_bcebbced2e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:18.331Z",
+  "updatedAt": "2026-08-22T05:24:18.331Z"
+}

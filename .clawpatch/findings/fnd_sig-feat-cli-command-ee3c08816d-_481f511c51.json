@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ee3c08816d-_481f511c51",
+  "featureId": "feat_cli-command_ee3c08816d",
+  "title": "Unsafe type assertion in loadPersistedHistory",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/AnttipPortal.tsx",
+      "startLine": 214,
+      "endLine": 224,
+      "symbol": "loadPersistedHistory",
+      "quote": "const data = await res.json()\n    return (data.messages || []).map((m: { role: string; content: string }) => ({\n      role: m.role as 'user' | 'assistant',\n      content: m.content,\n    }))"
+    }
+  ],
+  "reasoning": "The function uses type assertion (as 'user' | 'assistant') without runtime validation. If the API returns malformed data (e.g., role: 'system', role: null, missing content field), the type assertion succeeds but produces invalid ChatMessage objects. This could crash downstream code expecting strict 'user' | 'assistant' roles or cause rendering errors if content is undefined.",
+  "reproduction": "1. Mock /api/portal-chat-history to return {messages: [{role: 'system', content: 'test'}]}. 2. Call loadPersistedHistory. 3. Observe that invalid role is cast without validation. 4. Downstream rendering may crash or display incorrectly.",
+  "recommendation": "1. Add runtime validation using a type guard or schema validator (Zod, Yup). 2. Filter out invalid messages rather than failing silently. 3. Log validation errors. Example: `if (m.role !== 'user' && m.role !== 'assistant') { logError(); return null }` then filter nulls.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. This requires schema validation tests with malformed API responses.",
+  "suggestedRegressionTest": "Unit test: Mock API response with invalid roles ('system', null, undefined) and missing content. Verify loadPersistedHistory filters invalid entries and returns only valid ChatMessage objects.",
+  "minimumFixScope": "src/src/pages/AnttipPortal.tsx loadPersistedHistory function. Consider shared validation schema if pattern repeats in other portal files.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ee3c08816d_58ac162b94",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:33.449Z",
+  "updatedAt": "2026-08-22T05:23:33.449Z"
+}

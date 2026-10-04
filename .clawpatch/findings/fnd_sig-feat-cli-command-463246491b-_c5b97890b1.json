@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-463246491b-_c5b97890b1",
+  "featureId": "feat_cli-command_463246491b",
+  "title": "XSS vulnerability via unescaped href in crossSellBanner",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/modules/crossSellBanner.tsx",
+      "startLine": 180,
+      "endLine": 183,
+      "symbol": "CrossSellBanner",
+      "quote": "<a\n  href={href}\n  target=\"_blank\"\n  rel=\"noreferrer\""
+    },
+    {
+      "path": "src/src/portal/modules/crossSellBanner.tsx",
+      "startLine": 175,
+      "endLine": 176,
+      "symbol": "CrossSellBanner",
+      "quote": "const href = opts.href || config.crossSell?.href"
+    }
+  ],
+  "reasoning": "The href attribute is directly populated from user-controlled config (opts.href or config.crossSell.href) without validation. An attacker could inject javascript: URLs to execute arbitrary JavaScript when users click the banner link. The feature is marked with trust boundary 'user-input' and this config flows from external sources without sanitization.",
+  "reproduction": "Set moduleOptions['cross-sell-banner'].href to 'javascript:alert(document.cookie)' in portal config. When the banner renders and a user clicks it, arbitrary JavaScript executes in the portal context.",
+  "recommendation": "Validate href against an allowlist of safe URL schemes (https://, http://, mailto:). Reject or sanitize javascript:, data:, and other dangerous schemes. Add a URL validation helper that checks new URL(href).protocol is in ['http:', 'https:', 'mailto:'].",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this feature. No validation logic exists to prevent dangerous URL schemes in external configuration.",
+  "suggestedRegressionTest": "Unit test: assert CrossSellBanner returns null or safe fallback when opts.href='javascript:alert(1)'. Integration test: verify config.crossSell.href with javascript: scheme is rejected or sanitized before render.",
+  "minimumFixScope": "src/src/portal/modules/crossSellBanner.tsx lines 175-177: add URL scheme validation before using href",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-463246491b_64dab76722",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:47.312Z",
+  "updatedAt": "2026-08-22T05:23:47.312Z"
+}

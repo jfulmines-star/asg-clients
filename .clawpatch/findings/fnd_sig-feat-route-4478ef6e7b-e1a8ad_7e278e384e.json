@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4478ef6e7b-e1a8ad_7e278e384e",
+  "featureId": "feat_route_4478ef6e7b",
+  "title": "Hardcoded PIN exposes authentication to anyone with source access",
+  "category": "security",
+  "severity": "critical",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 144,
+      "endLine": 144,
+      "symbol": "PIN",
+      "quote": "const PIN = '2017' // Year Lindsay joined Landmark"
+    },
+    {
+      "path": "src/src/pages/LindsayPortal.tsx",
+      "startLine": 216,
+      "endLine": 216,
+      "symbol": "checkPin",
+      "quote": "if (d.join('') === PIN) {"
+    }
+  ],
+  "reasoning": "The PIN is hardcoded as a plain string constant in client-side code. Anyone with access to the source code (including via browser DevTools on the deployed site) can read the PIN value '2017' and bypass authentication. This defeats the entire purpose of the PIN gate.",
+  "reproduction": "1. Navigate to /lindsay route\n2. Open browser DevTools\n3. Search source for 'PIN' or '2017'\n4. Enter discovered PIN to unlock portal\nAlternatively, inspect the compiled JavaScript bundle.",
+  "recommendation": "Move authentication to server-side. Store hashed PINs server-side, validate submissions via API endpoint, return a session token on success. Client should never contain the credential or validation logic.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in the feature manifest. Security testing would require threat modeling and penetration testing, which are not present.",
+  "suggestedRegressionTest": "Integration test: attempt to access /lindsay without valid session token → expect redirect to login. Unit test (server): verify PIN hash comparison rejects incorrect PINs and accepts correct one.",
+  "minimumFixScope": "LindsayPortal.tsx authentication logic + new backend API endpoint for PIN validation + session management",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4478ef6e7b_e1a8adea92",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:25.501Z",
+  "updatedAt": "2026-08-22T05:24:25.501Z"
+}

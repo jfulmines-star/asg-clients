@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ddf15e04ec-_442d4c6760",
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Race condition in memory consolidation allows lost updates",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/api/chat.ts",
+      "startLine": 250,
+      "endLine": 267,
+      "symbol": "consolidateMemory",
+      "quote": "async function consolidateMemory(slug: string, member: string, thread: TeamMessage[]): Promise<void> {\n  try {\n    const existing = await getUserMemory(slug, member);\n    const conversation = thread.slice(-30)\n      .map(m => `${m.role === 'user' ? member : 'Agent'}: ${m.content.slice(0, 300)}`)\n      .join('\\n');\n    const prompt = `Create a concise memory profile for this user based on their conversation history. Bullet points only, max 14 bullets. Focus on: who they are, their role/company, key topics discussed, preferences or decisions noted, open questions or follow-ups, and — critically — any ACTIVE or IN-PROGRESS tasks (e.g. \"Was mid-draft on an email to X about Y\", \"Working on outreach to Z\", \"In the middle of researching W\"). Flag active tasks clearly with [ACTIVE TASK] prefix so they can be surfaced on the next session start. IMPORTANT: If existing memory contains [ACTIVE TASK] items, preserve them in the updated profile UNLESS the recent conversation explicitly shows the task was completed, sent, or abandoned by the user. A user switching to a different task does NOT cancel a prior active task — preserve both. Be specific and factual — not generic summaries.\\n\\n${existing ? `## Existing memory:\\n${existing}\\n\\n` : ''}## Recent conversation:\\n${conversation}\\n\\n## Updated memory profile (bullet points only):`;\n    const res = await fetch('https://api.anthropic.com/v1/messages', {\n      method: 'POST',\n      headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },\n      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: 'You are a concise memory assistant. Output bullet points only.', messages: [{ role: 'user', content: prompt }] }),\n    });\n    if (!res.ok) return;\n    const data = await res.json();\n    const memory = data.content?.[0]?.type === 'text' ? data.content[0].text : '';\n    if (memory) await setUserMemory(slug, member, memory);\n  } catch { /* non-fatal */ }\n}"
+    }
+  ],
+  "reasoning": "consolidateMemory performs read-modify-write (getUserMemory → LLM call → setUserMemory) without locking or versioning. If two chat sessions for the same user run concurrently (parallel browser tabs, race between session close and new session start), both read the same existing memory, generate new summaries in parallel, and the last setUserMemory write wins—discarding the other's updates. The comment 'IMPORTANT: preserve [ACTIVE TASK] items' shows this data is critical and loss would be user-visible. Redis supports optimistic locking (WATCH/MULTI/EXEC) or Lua scripts for atomic read-modify-write; neither is used here.",
+  "reproduction": null,
+  "recommendation": "Use Redis optimistic locking (WATCH key, check version before SET) or a Lua script to atomically read-modify-write. Alternatively, append memory deltas to a list instead of replacing the entire memory blob, or use a last-write-wins CRDT if concurrent updates are acceptable. If non-fatal loss is acceptable, document this explicitly in code comments and product requirements.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Concurrency tests would require simulating parallel sessions and verifying both updates are preserved or merged correctly.",
+  "suggestedRegressionTest": "Integration test: spawn two parallel consolidateMemory calls for same slug+member with different conversation histories. Verify both updates are reflected in final memory (or explicitly document and test last-write-wins behavior).",
+  "minimumFixScope": "consolidateMemory function in chat.ts, plus upstashCmd to support WATCH/MULTI/EXEC or Lua scripts.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ddf15e04ec_f87d698571",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:01.033Z",
+  "updatedAt": "2026-08-22T05:24:01.033Z"
+}

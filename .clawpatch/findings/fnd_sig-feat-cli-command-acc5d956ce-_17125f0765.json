@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-acc5d956ce-_17125f0765",
+  "featureId": "feat_cli-command_acc5d956ce",
+  "title": "Missing cleanup for AbortController in Chat component",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/Chat.tsx",
+      "startLine": 750,
+      "endLine": 797,
+      "symbol": "send",
+      "quote": "abortRef.current = new AbortController()\n\n    try {\n      let reply: string\n      if (config.chat.transport === 'anthropic-direct') {\n        reply = await sendViaAnthropicDirect(...)\n      } else {\n        reply = await sendViaApiProxy(...)\n      }\n      ...\n    } finally {\n      setLoading(false)\n      abortRef.current = null\n    }"
+    }
+  ],
+  "reasoning": "The send function creates an AbortController but never calls .abort() on it during cleanup or component unmount. If the user navigates away or the component unmounts while a fetch is in-flight (especially for anthropic-direct streaming), the fetch continues in the background. This wastes network resources and may cause setState calls on unmounted components if the promise resolves after unmount.",
+  "reproduction": "1. Send a message in anthropic-direct mode\n2. Immediately navigate away or unmount Chat\n3. The SSE stream continues reading in the background\n4. If it completes, setMessages may be called on an unmounted component (React warning)",
+  "recommendation": "Add a useEffect cleanup that aborts in-flight requests: `useEffect(() => () => { abortRef.current?.abort() }, [])`. Also abort the current request when a new send starts to prevent overlapping requests.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. This requires testing component unmount during async operations, which is not covered by static analysis.",
+  "suggestedRegressionTest": "Mount Chat, initiate a message send, unmount before completion, and verify the fetch was aborted (no setState warnings).",
+  "minimumFixScope": "src/src/portal/Chat.tsx: add useEffect cleanup hook",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-acc5d956ce_9a1b6cdca0",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:24.263Z",
+  "updatedAt": "2026-08-22T05:23:24.263Z"
+}

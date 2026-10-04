@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-463246491b-_95b42467da",
+  "featureId": "feat_cli-command_463246491b",
+  "title": "Missing tenant isolation verification in documents module",
+  "category": "security",
+  "severity": "high",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/modules/documents.tsx",
+      "startLine": 438,
+      "endLine": 439,
+      "symbol": "DocumentsSection",
+      "quote": "const tenantId = opts.tenantId || config.slug"
+    },
+    {
+      "path": "src/src/portal/modules/documents.tsx",
+      "startLine": 450,
+      "endLine": 450,
+      "symbol": "load",
+      "quote": "const r = await fetch(`${listEndpoint}?tenantId=${encodeURIComponent(tenantId)}`)"
+    },
+    {
+      "path": "src/src/portal/modules/documents.tsx",
+      "startLine": 476,
+      "endLine": 476,
+      "symbol": "upload",
+      "quote": "fd.append('tenantId', tenantId)"
+    }
+  ],
+  "reasoning": "The tenantId is client-controlled (derived from opts or config.slug). A malicious user could manipulate this value to access or upload documents belonging to other tenants if the backend does not independently verify tenant ownership based on authenticated session. The client sends tenantId as a query parameter and form field, but does not prove ownership. Backend must enforce authorization; if it naively trusts the client-provided tenantId, this is a critical authorization bypass.",
+  "reproduction": "Intercept the /api/rag-documents request and change tenantId query parameter to another tenant's slug. If backend does not verify the authenticated user owns that tenantId, documents from other tenants are returned. Similarly, upload a document with a different tenantId to pollute another tenant's knowledge base.",
+  "recommendation": "Backend MUST derive tenantId from authenticated session, not from client input. Client should still send tenantId for routing, but backend must validate it matches the session. Document this security contract. Add a warning comment in the code.",
+  "whyTestsDoNotAlreadyCoverThis": "No authorization tests exist. The frontend cannot enforce backend auth, but should document the assumption. No backend code is provided to verify this.",
+  "suggestedRegressionTest": "Backend integration test: verify that requests with mismatched tenantId (client sends 'tenant-a', session is 'tenant-b') are rejected with 403. Frontend: add comment documenting backend auth requirement.",
+  "minimumFixScope": "src/src/portal/modules/documents.tsx: add comment warning that backend must validate tenantId against authenticated session. Backend (not provided): implement auth check.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-463246491b_822f1f4945",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:47.312Z",
+  "updatedAt": "2026-08-22T05:23:47.312Z"
+}

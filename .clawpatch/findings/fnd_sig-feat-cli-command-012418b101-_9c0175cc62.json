@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-012418b101-_9c0175cc62",
+  "featureId": "feat_cli-command_012418b101",
+  "title": "Vite config in wrong directory breaks build tooling",
+  "category": "build-release",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/vite.config.ts",
+      "startLine": 1,
+      "endLine": 8,
+      "symbol": null,
+      "quote": "import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\n\nexport default defineConfig({\n  plugins: [react()],\n  build: {\n    outDir: '../dist',\n    emptyOutDir: true,\n  },\n})"
+    },
+    {
+      "path": "package.json",
+      "startLine": 146,
+      "endLine": 148,
+      "symbol": null,
+      "quote": "\"dev\": \"vite\",\n\"build\": \"vite build\",\n\"preview\": \"vite preview\""
+    }
+  ],
+  "reasoning": "The vite.config.ts file is located in src/ instead of the project root. Vite looks for vite.config.ts in the project root by default. The package.json scripts run 'vite' without specifying a config path, so they will fail to find the config file. The outDir: '../dist' confirms the config expects to be in src/ (going up one level to reach dist), which is non-standard. This will cause all build commands to fail or use default Vite configuration instead of the intended React plugin and build settings.",
+  "reproduction": "Run 'npm run build' or 'npm run dev' from the project root. Vite will either fail to find the config or use default settings, missing the React plugin configuration.",
+  "recommendation": "Move vite.config.ts from src/ to the project root, and change outDir from '../dist' to 'dist'. Alternatively, update package.json scripts to specify the config location: 'vite --config src/vite.config.ts'.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature. Build configuration issues are typically caught during CI/CD or manual testing, not unit tests.",
+  "suggestedRegressionTest": "Add a CI check that runs 'npm run build' and verifies the output exists in dist/ with expected React build artifacts. Alternatively, add a basic smoke test that imports the vite config and validates it resolves correctly.",
+  "minimumFixScope": "Move src/vite.config.ts to ./vite.config.ts and update outDir to 'dist', or update all three package.json script commands to include '--config src/vite.config.ts'.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-012418b101_cde0a5b1e2",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:22:30.523Z",
+  "updatedAt": "2026-08-22T05:22:30.523Z"
+}

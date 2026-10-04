@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4395698734-cf181e_549c94dbc6",
+  "featureId": "feat_route_4395698734",
+  "title": "Race condition: concurrent runChecks invocations can interleave state updates",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 392,
+      "endLine": 403,
+      "symbol": "runChecks",
+      "quote": "const runChecks = useCallback(async () => {\n    setRefreshing(true)\n    // Stagger checks slightly so the UI feels live\n    const updated: StatusGroup[] = []\n    for (const group of INITIAL_GROUPS) {\n      const checkedServices = group.services.map(simulateCheck)\n      updated.push({ ...group, services: checkedServices })\n    }\n    setGroups(updated)\n    setLastRefresh(new Date())\n    setRefreshing(false)\n  }, [])"
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 445,
+      "endLine": 462,
+      "symbol": "button",
+      "quote": "<button\n              onClick={runChecks}\n              disabled={refreshing}\n              aria-label=\"Refresh status\"\n              style={{..."
+    },
+    {
+      "path": "src/src/components/StatusPage.tsx",
+      "startLine": 411,
+      "endLine": 414,
+      "symbol": "useEffect",
+      "quote": "useEffect(() => {\n    const id = setInterval(runChecks, 60_000)\n    return () => clearInterval(id)\n  }, [runChecks])"
+    }
+  ],
+  "reasoning": "While the refresh button is disabled when refreshing=true, if runChecks becomes async (as it should be for real API calls), a user could theoretically trigger a manual refresh just before the 60s interval fires, or the interval could fire while a manual check is in flight. Both invocations would race to setGroups/setLastRefresh, and the last write wins, potentially overwriting newer data with stale data if one check completes before the other.",
+  "reproduction": "1. Make simulateCheck async with artificial delay\n2. Click refresh button, then immediately trigger interval (or vice versa via fast-forward timers)\n3. Observe interleaved or out-of-order state updates",
+  "recommendation": "Add a ref to track in-flight requests and bail early if already refreshing. Alternatively, use a single AbortController to cancel stale requests, or serialize checks with a queue.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests exist. This is a timing-dependent race condition that requires async checks and concurrent triggers.",
+  "suggestedRegressionTest": "Test with mocked async simulateCheck and concurrent runChecks calls (manual + interval). Verify only one set of checks runs at a time and state is consistent.",
+  "minimumFixScope": "src/src/components/StatusPage.tsx lines 387-403",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4395698734_cf181e0d71",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:42.045Z",
+  "updatedAt": "2026-08-22T05:24:42.045Z"
+}

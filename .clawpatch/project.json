@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "projectId": "prj_git-github-com-jfulmines-star-as_869358dffe",
+  "name": "asg-clients",
+  "rootPath": "/root/Projects/asg-clients",
+  "git": {
+    "remoteUrl": "git@github.com:jfulmines-star/asg-clients.git",
+    "defaultBranch": null,
+    "currentBranch": "master",
+    "headSha": "8620c01a417276d5b9db726d652408991e30fc16"
+  },
+  "detected": {
+    "languages": [
+      "typescript",
+      "javascript"
+    ],
+    "frameworks": [],
+    "packageManagers": [
+      "npm"
+    ],
+    "commands": {
+      "typecheck": null,
+      "lint": null,
+      "format": null,
+      "test": null
+    }
+  },
+  "createdAt": "2026-08-22T05:20:40.792Z",
+  "updatedAt": "2026-08-22T05:20:40.792Z"
+}

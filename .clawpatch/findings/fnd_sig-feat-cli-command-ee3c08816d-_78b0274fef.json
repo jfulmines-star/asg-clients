@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ee3c08816d-_78b0274fef",
+  "featureId": "feat_cli-command_ee3c08816d",
+  "title": "Race condition in chat message persistence",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/AnttipPortal.tsx",
+      "startLine": 201,
+      "endLine": 212,
+      "symbol": "persistMessages",
+      "quote": "async function persistMessages(msgs: ChatMessage[]) {\n  try {\n    const last = msgs.slice(-2)\n    for (const m of last) {\n      await fetch(`/api/portal-chat-history`, {\n        method: 'POST',..."
+    }
+  ],
+  "reasoning": "persistMessages processes the last 2 messages sequentially without idempotency or deduplication. If called multiple times concurrently (e.g., rapid user messages or React strict mode double-invocation), the same messages could be persisted multiple times. There's no message ID, timestamp check, or server-side deduplication. The API likely appends blindly, causing duplicate history entries.",
+  "reproduction": "1. Trigger multiple rapid chat messages. 2. If persistMessages is called for each message with overlapping windows, the same message could be sent twice. 3. Check /api/portal-chat-history for duplicate entries.",
+  "recommendation": "1. Add unique message IDs (UUID) and send with each persistence request. 2. Make server API idempotent (upsert by message ID). 3. Implement request coalescing/debouncing to batch rapid calls. 4. Consider using a single persistence call with all new messages rather than last-2 slicing.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Race conditions require concurrent execution tests which are not present.",
+  "suggestedRegressionTest": "Test: Call persistMessages twice concurrently with overlapping message arrays. Mock API to track calls. Verify each unique message is persisted exactly once.",
+  "minimumFixScope": "src/src/pages/AnttipPortal.tsx persistMessages function and /api/portal-chat-history API endpoint to add idempotency.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ee3c08816d_03f4c05e0e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:33.449Z",
+  "updatedAt": "2026-08-22T05:23:33.449Z"
+}

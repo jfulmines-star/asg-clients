@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-bda5b7309d-_af23c13e13",
+  "featureId": "feat_cli-command_bda5b7309d",
+  "title": "TypeScript strict mode disabled for unused variables undermines code quality",
+  "category": "maintainability",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "tsconfig.json",
+      "startLine": 175,
+      "endLine": 176,
+      "symbol": null,
+      "quote": "\"noUnusedLocals\": false,\n    \"noUnusedParameters\": false,"
+    }
+  ],
+  "reasoning": "While tsconfig.json enables 'strict: true', it explicitly disables noUnusedLocals and noUnusedParameters. This allows dead code and unused function parameters to accumulate, reducing maintainability and potentially hiding bugs where variables are accidentally unused when they should be processed. This is especially problematic in a TypeScript project where strict checking is otherwise enabled.",
+  "reproduction": null,
+  "recommendation": "Re-enable noUnusedLocals and noUnusedParameters. Run 'npx tsc --noEmit' to identify violations, then either remove unused code or prefix intentionally-unused parameters with underscore (e.g., '_req').",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included. Unused variable detection is a static analysis concern that cannot be covered by runtime tests.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "Set noUnusedLocals and noUnusedParameters to true in tsconfig.json, then fix or suppress resulting errors",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-bda5b7309d_ae7e089f48",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:22:41.815Z",
+  "updatedAt": "2026-08-22T05:22:41.815Z"
+}

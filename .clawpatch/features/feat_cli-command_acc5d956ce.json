@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_cli-command_acc5d956ce",
+  "title": "Node source src/src/portal",
+  "summary": "Node/TypeScript source group src/src/portal with 7 files.",
+  "kind": "cli-command",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "package.json",
+      "symbol": "src/src/portal",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "src/src/portal/ASGPortalBase.tsx",
+      "reason": "source group src/src/portal"
+    },
+    {
+      "path": "src/src/portal/Chat.tsx",
+      "reason": "source group src/src/portal"
+    },
+    {
+      "path": "src/src/portal/PinGate.tsx",
+      "reason": "source group src/src/portal"
+    },
+    {
+      "path": "src/src/portal/hooks.ts",
+      "reason": "source group src/src/portal"
+    },
+    {
+      "path": "src/src/portal/markdown.tsx",
+      "reason": "source group src/src/portal"
+    },
+    {
+      "path": "src/src/portal/theme.ts",
+      "reason": "source group src/src/portal"
+    },
+    {
+      "path": "src/src/portal/types.ts",
+      "reason": "source group src/src/portal"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:asg-clients",
+    "project-root:."
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "process-exec"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-cli-command-acc5d956ce-_2f353a0152",
+    "fnd_sig-feat-cli-command-acc5d956ce-_17125f0765",
+    "fnd_sig-feat-cli-command-acc5d956ce-_afd0acaa73",
+    "fnd_sig-feat-cli-command-acc5d956ce-_639fb4043f",
+    "fnd_sig-feat-cli-command-acc5d956ce-_3c9eec398d"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260822T052137-0d0e8c",
+      "kind": "review",
+      "summary": "5 finding(s)",
+      "provider": "opencode",
+      "model": "anthropic/claude-sonnet-4-5",
+      "createdAt": "2026-08-22T05:23:24.277Z"
+    }
+  ],
+  "createdAt": "2026-08-22T05:21:34.946Z",
+  "updatedAt": "2026-08-22T05:23:24.277Z"
+}

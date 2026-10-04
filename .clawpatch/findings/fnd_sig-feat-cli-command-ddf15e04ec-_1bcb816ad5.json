@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ddf15e04ec-_1bcb816ad5",
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Unbounded list growth creates memory/performance risk",
+  "category": "performance",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/api/chat.ts",
+      "startLine": 204,
+      "endLine": 208,
+      "symbol": "appendMemberThread",
+      "quote": "async function appendMemberThread(slug: string, member: string, msg: TeamMessage) {\n  await upstashCmd(['RPUSH', memberKey(slug, member), JSON.stringify(msg)]);\n  await upstashCmd(['LTRIM', memberKey(slug, member), -200, -1]);\n  await upstashCmd(['SADD', `team:${slug}:members`, member]);\n}"
+    },
+    {
+      "path": "src/api/conversations.ts",
+      "startLine": 579,
+      "endLine": 585,
+      "symbol": "readAllMessages",
+      "quote": "async function readAllMessages(slug: string, member: string, n = 500): Promise<RawMsg[]> {\n  const result = await upstashCmd(['LRANGE', memberKey(slug, member), -n, -1]);\n  if (!Array.isArray(result.result)) return [];\n  return result.result\n    .map((s: string) => { try { return JSON.parse(s) as RawMsg; } catch { return null; } })\n    .filter(Boolean) as RawMsg[];\n}"
+    }
+  ],
+  "reasoning": "appendMemberThread calls LTRIM to keep only the last 200 messages, but readAllMessages fetches up to 500. If the list is not trimmed immediately after RPUSH (e.g., LTRIM fails or runs out of order), the list can grow unbounded. LRANGE -500 on a multi-thousand-message list causes O(n) scan and large payload over HTTP. The mismatch between LTRIM limit (200) and LRANGE limit (500) is confusing and suggests incomplete coordination. Additionally, the set `team:{slug}:members` grows unbounded—no TTL or cleanup logic for inactive teams/members.",
+  "reproduction": null,
+  "recommendation": "1) Use a single atomic Lua script for RPUSH + LTRIM to guarantee trim happens. 2) Align LTRIM and LRANGE limits (both 200 or both 500). 3) Add TTL or periodic cleanup for `team:{slug}:members` set. 4) Add monitoring/alerting for list sizes exceeding expected bounds.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Load tests simulating thousands of messages per user would reveal performance degradation and memory growth.",
+  "suggestedRegressionTest": "Integration test: append 1000 messages to a member thread, verify list is trimmed to 200 (or configured limit). Load test: measure response time for readAllMessages with 10, 100, 1000 message lists.",
+  "minimumFixScope": "appendMemberThread and readAllMessages in chat.ts, plus similar patterns in conversations.ts and portal-chat-history.ts.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ddf15e04ec_9cc1ff5697",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:01.033Z",
+  "updatedAt": "2026-08-22T05:24:01.033Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-a5cb4f5c8c-_9a618bf56c",
+  "featureId": "feat_cli-command_a5cb4f5c8c",
+  "title": "Missing input validation for config properties",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/portal/sections/About.tsx",
+      "startLine": 145,
+      "endLine": 146,
+      "symbol": "AboutSection",
+      "quote": "const points = config.aboutPoints && config.aboutPoints.length > 0\n    ? config.aboutPoints"
+    },
+    {
+      "path": "src/src/portal/sections/Welcome.tsx",
+      "startLine": 388,
+      "endLine": 389,
+      "symbol": "WelcomeSection",
+      "quote": "const whatWeKnow = config.whatWeKnow\n  const intakeSaved = Boolean(intake)"
+    },
+    {
+      "path": "src/src/portal/sections/Welcome.tsx",
+      "startLine": 420,
+      "endLine": 423,
+      "symbol": "WelcomeSection",
+      "quote": "{typeof whatWeKnow === 'string' ? (\n          <div style={{ fontSize: 13, color: tv.lightGray, lineHeight: 1.7 }}>{whatWeKnow}</div>\n        ) : (\n          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>"
+    }
+  ],
+  "reasoning": "In Welcome.tsx:420-432, code assumes whatWeKnow is either a string or an array-like object with .map() method, but doesn't validate it's truthy or handle null/undefined. If whatWeKnow is null/undefined/number/boolean, the ternary will fall through to the else branch and call .map() on a non-array, causing a runtime crash. Similarly, About.tsx checks length but doesn't validate the array items have required icon/title/body properties before rendering at line 173-176.",
+  "reproduction": "Set config.whatWeKnow to null, undefined, or a non-string/non-array value. The component will attempt to call .map() on the value and throw 'whatWeKnow.map is not a function'.",
+  "recommendation": "Add runtime validation: in Welcome.tsx, check `Array.isArray(whatWeKnow)` before the ternary's else branch. In About.tsx, validate each point object has required fields (icon, title, body) before rendering, or provide defaults.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature to validate config shape or runtime rendering behavior.",
+  "suggestedRegressionTest": "Unit test that renders WelcomeSection with config.whatWeKnow set to null, undefined, {}, and [] to ensure graceful handling. Similar test for AboutSection with malformed aboutPoints array items.",
+  "minimumFixScope": "Add type guards in Welcome.tsx:420 and About.tsx:162 before rendering derived config data.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-a5cb4f5c8c_95d3a22386",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:09.640Z",
+  "updatedAt": "2026-08-22T05:23:09.640Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-a5cb4f5c8c-_17c9cad1ab",
+  "featureId": "feat_cli-command_a5cb4f5c8c",
+  "title": "Potential XSS via unescaped config strings",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/portal/sections/Welcome.tsx",
+      "startLine": 421,
+      "endLine": 421,
+      "symbol": "WelcomeSection",
+      "quote": "<div style={{ fontSize: 13, color: tv.lightGray, lineHeight: 1.7 }}>{whatWeKnow}</div>"
+    },
+    {
+      "path": "src/src/portal/sections/About.tsx",
+      "startLine": 176,
+      "endLine": 176,
+      "symbol": "AboutSection",
+      "quote": "<div style={{ fontSize: 14, color: tv.gray, lineHeight: 1.7 }}>{p.body}</div>"
+    },
+    {
+      "path": "src/src/portal/sections/Intake.tsx",
+      "startLine": 283,
+      "endLine": 283,
+      "symbol": "IntakeSection",
+      "quote": "{(config as any).intakeTitle || <span>Tell Us About<br />Your Practice</span>}"
+    }
+  ],
+  "reasoning": "All three components render config-driven strings (config.whatWeKnow, aboutPoints[].body, intakeTitle, etc.) directly into JSX without sanitization. If config is sourced from user input or external data and contains malicious HTML/script tags, React will render it as text by default (safe), but if config ever gets set via dangerouslySetInnerHTML or the config source is compromised, XSS is possible. This is a moderate risk given the trust boundary 'user-input' in the feature metadata.",
+  "reproduction": null,
+  "recommendation": "Confirm config is always sourced from a trusted, server-controlled origin and never derived from user input. Document this assumption. If config could be influenced by user input, apply sanitization (e.g., DOMPurify) before rendering.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests validate input sanitization or config data provenance.",
+  "suggestedRegressionTest": "Security test ensuring config with <script> tags or event handlers in strings renders safely (React escapes by default, but test to confirm no dangerouslySetInnerHTML path exists).",
+  "minimumFixScope": "Add documentation comment in each component stating config must be from trusted source. Optionally add runtime sanitization if config provenance is uncertain.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-a5cb4f5c8c_b98a81a53e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:09.640Z",
+  "updatedAt": "2026-08-22T05:23:09.640Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-c4cc836774-_04a8e18f22",
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "ChatSection opener fetch has no timeout causing infinite loading state",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/portal/BasePortal.tsx",
+      "startLine": 1179,
+      "endLine": 1200,
+      "symbol": "useEffect",
+      "quote": "fetch('/api/chat', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        agent: agentName,\n        slug: resolvedSlug,\n        disableTeamContext: disableTeamContext ?? true,\n        message: '__opener__',\n        history: [],\n      }),\n    })\n      .then(r => r.json())\n      .then(data => {\n        const reply = data.reply || data.text || openerMessage || `Good to see you, ${clientName.split(' ')[0]}. What are we working on today?`\n        setMessages([{ role: 'assistant', content: reply }])\n        setLoading(false)\n      })\n      .catch(() => {\n        const fallback = openerMessage || `Good to see you, ${clientName.split(' ')[0]}. What are we working on today?`\n        setMessages([{ role: 'assistant', content: fallback }])\n        setLoading(false)\n      })"
+    }
+  ],
+  "reasoning": "The opener fetch has no AbortController or timeout. If the /api/chat endpoint hangs (slow network, server timeout, DNS issue), the component stays in loading state indefinitely. The .catch() only handles rejections, not slow responses. Users see a loading spinner forever with no way to recover except refreshing the page.",
+  "reproduction": "Configure /api/chat to delay response by 60+ seconds or block the endpoint in browser DevTools. The ChatSection shows loading spinner indefinitely.",
+  "recommendation": "Add AbortController with 10-15 second timeout. On timeout, fallback to openerMessage and set loading=false. Provide user feedback ('Connection slow, using offline mode') so they understand the state.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests verify timeout handling or slow network conditions for the opener fetch.",
+  "suggestedRegressionTest": "Mock /api/chat to delay 20 seconds. Verify component shows fallback message after timeout and allows user interaction.",
+  "minimumFixScope": "src/src/components/portal/BasePortal.tsx ChatSection useEffect - add timeout handling to opener fetch",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-c4cc836774_d78957bf11",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:37.648Z",
+  "updatedAt": "2026-08-22T05:23:37.648Z"
+}

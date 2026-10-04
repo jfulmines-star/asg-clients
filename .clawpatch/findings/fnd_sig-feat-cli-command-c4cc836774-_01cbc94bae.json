@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-c4cc836774-_01cbc94bae",
+  "featureId": "feat_cli-command_c4cc836774",
+  "title": "Chart type assertion bypasses type safety for data property",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 253,
+      "endLine": 253,
+      "symbol": "renderBar",
+      "quote": "const data = (spec.data as BarDataItem[]).map(d => ({ name: d.label, value: d.value }))"
+    },
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 269,
+      "endLine": 269,
+      "symbol": "renderLine",
+      "quote": "const data = (spec.data as LineDataItem[]).map(d => ({ name: d.x, value: d.y }))"
+    },
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 285,
+      "endLine": 285,
+      "symbol": "renderDonut",
+      "quote": "const data = spec.data as DonutDataItem[]"
+    },
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 302,
+      "endLine": 302,
+      "symbol": "renderComparison",
+      "quote": "const items = spec.data as ComparisonItem[]"
+    },
+    {
+      "path": "src/src/components/ChartRenderer.tsx",
+      "startLine": 322,
+      "endLine": 322,
+      "symbol": "renderTable",
+      "quote": "const { headers, rows } = spec.data as TableData"
+    }
+  ],
+  "reasoning": "All render functions use type assertions without runtime validation. If spec.data is undefined or has the wrong shape (e.g., BarDataItem[] passed to renderLine), the code will throw at runtime. The ChartSpec type defines data as optional ('data?:'), but none of the render functions handle the undefined case. The try/catch in the main component (line 365-375) catches these errors but provides no diagnostics.",
+  "reproduction": "Pass a ChartSpec with type='bar' but data=undefined, or type='bar' with data as LineDataItem[]. The component will render 'Unable to render chart.' with no error details.",
+  "recommendation": "Add runtime validation in each render function to check if data exists and has the expected shape. Use type guards or throw descriptive errors that can be logged. Consider validating spec.data before calling render functions.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests verify behavior when data shape mismatches type, or when data is undefined for a given chart type.",
+  "suggestedRegressionTest": "Test each render function with: (1) undefined data, (2) empty array, (3) wrong data shape. Verify error handling provides actionable feedback.",
+  "minimumFixScope": "src/src/components/ChartRenderer.tsx all render functions (renderBar, renderLine, renderDonut, renderComparison, renderTable)",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-c4cc836774_4ecb6c8b7f",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:37.648Z",
+  "updatedAt": "2026-08-22T05:23:37.648Z"
+}

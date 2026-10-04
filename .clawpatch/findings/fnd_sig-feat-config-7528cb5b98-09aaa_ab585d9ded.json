@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-config-7528cb5b98-09aaa_ab585d9ded",
+  "featureId": "feat_config_7528cb5b98",
+  "title": "Missing TypeScript type checking in build process",
+  "category": "build-release",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 125,
+      "endLine": 125,
+      "symbol": null,
+      "quote": "\"build\": \"vite build\""
+    }
+  ],
+  "reasoning": "The project includes TypeScript as a devDependency and uses @types packages, indicating TypeScript is being used. However, the build script only runs 'vite build' without a separate type-checking step. Vite does not perform type checking during builds by default - it only transpiles TypeScript. This means type errors could be present in production builds, as the detected project commands show typecheck: null.",
+  "reproduction": "1. Add a type error to any .ts/.tsx file\n2. Run npm run build\n3. Build succeeds despite type errors",
+  "recommendation": "Add a typecheck script using 'tsc --noEmit' and either run it before the build or integrate it into the build process. For example: add '\"typecheck\": \"tsc --noEmit\"' to scripts and update build to '\"build\": \"tsc --noEmit && vite build\"'",
+  "whyTestsDoNotAlreadyCoverThis": "No test files are included in this feature. Type checking is a static analysis concern that must be enforced at build time, not through runtime tests.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "package.json scripts section",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-config-7528cb5b98_09aaa581f4",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:23:12.498Z",
+  "updatedAt": "2026-08-22T05:23:12.498Z"
+}

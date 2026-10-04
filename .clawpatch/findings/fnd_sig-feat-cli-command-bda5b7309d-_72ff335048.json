@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-bda5b7309d-_72ff335048",
+  "featureId": "feat_cli-command_bda5b7309d",
+  "title": "Missing lockfile creates dependency version drift and non-reproducible builds",
+  "category": "build-release",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "package.json",
+      "startLine": 136,
+      "endLine": 157,
+      "symbol": null,
+      "quote": "dependencies and devDependencies use caret ranges (^) without lockfile"
+    }
+  ],
+  "reasoning": "The package.json declares npm as the package manager and uses caret version ranges (^) for all dependencies, but no package-lock.json is included in the feature's owned or context files. Without a lockfile, different environments and CI runs will resolve different dependency versions over time, leading to build inconsistencies, hard-to-reproduce bugs, and potential security vulnerabilities from unvetted minor/patch updates.",
+  "reproduction": "1. Clone repo on two different dates or machines\n2. Run npm install\n3. Compare node_modules versions - they will differ\n4. Build artifacts and behavior may vary between environments",
+  "recommendation": "Generate and commit package-lock.json by running 'npm install'. Add package-lock.json to version control and ensure CI/CD uses 'npm ci' instead of 'npm install' for reproducible builds.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included in this feature. Build reproducibility and dependency locking are infrastructure concerns that require process/tooling validation rather than unit tests.",
+  "suggestedRegressionTest": null,
+  "minimumFixScope": "Run 'npm install' to generate package-lock.json and commit it to the repository root",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-bda5b7309d_1ce07f263d",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:22:41.815Z",
+  "updatedAt": "2026-08-22T05:22:41.815Z"
+}

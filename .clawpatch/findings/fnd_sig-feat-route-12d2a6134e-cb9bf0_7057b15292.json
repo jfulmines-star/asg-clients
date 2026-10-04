@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-12d2a6134e-cb9bf0_7057b15292",
+  "featureId": "feat_route_12d2a6134e",
+  "title": "Missing error handling for non-OK HTTP responses in chat API call",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/src/pages/KitFullPortal.tsx",
+      "startLine": 222,
+      "endLine": 233,
+      "symbol": "sendMessage",
+      "quote": "const res = await fetch('/api/kit-chat', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ message: userMsg.content, member: 'jj' }),\n      })\n\n      const data = await res.json()\n      if (data.response) {\n        setMessages(prev => [...prev, { role: 'assistant', content: data.response, ts: Date.now() }])\n      } else {\n        setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + (data.error || 'Unknown error'), ts: Date.now() }])\n      }"
+    }
+  ],
+  "reasoning": "The code calls fetch and immediately tries to parse JSON without checking res.ok or res.status. If the server returns a 4xx or 5xx status, res.json() may succeed (if the server sent JSON error body) or fail (if it sent HTML or plain text). A 500 error page or a network-level non-JSON response will cause res.json() to throw, hitting the catch block with a generic 'Error connecting to Kit' message. This hides the actual HTTP error (e.g. 401 Unauthorized, 403 Forbidden, 500 Internal Server Error) from the user and makes debugging harder.",
+  "reproduction": "1. Modify backend /api/kit-chat to return 500 with plain text 'Internal Server Error'\n2. Send a message\n3. Observe generic 'Error connecting to Kit' instead of a more specific error message",
+  "recommendation": "Check res.ok before parsing JSON. If !res.ok, read res.status and res.statusText and display a more informative error (e.g. 'Server error (500)', 'Unauthorized (401)'). If the response is JSON, parse and show data.error; otherwise show status text.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are provided. A test that mocks fetch to return non-200 status would catch this.",
+  "suggestedRegressionTest": "Mock fetch to return 500 with non-JSON body and verify the UI displays a helpful error message, not just 'Error connecting to Kit'.",
+  "minimumFixScope": "src/src/pages/KitFullPortal.tsx sendMessage function",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-12d2a6134e_cb9bf0907d",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:08.227Z",
+  "updatedAt": "2026-08-22T05:24:08.227Z"
+}

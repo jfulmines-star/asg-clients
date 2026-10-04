@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-cli-command-ddf15e04ec-_ef42ad831d",
+  "featureId": "feat_cli-command_ddf15e04ec",
+  "title": "Hardcoded Upstash URL exposes infrastructure details",
+  "category": "security",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "src/api/chat.ts",
+      "startLine": 179,
+      "endLine": 179,
+      "symbol": null,
+      "quote": "const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';"
+    },
+    {
+      "path": "src/api/conversations.ts",
+      "startLine": 551,
+      "endLine": 551,
+      "symbol": null,
+      "quote": "const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';"
+    },
+    {
+      "path": "src/api/history.ts",
+      "startLine": 747,
+      "endLine": 747,
+      "symbol": null,
+      "quote": "const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';"
+    },
+    {
+      "path": "src/api/portal-chat-history.ts",
+      "startLine": 932,
+      "endLine": 932,
+      "symbol": null,
+      "quote": "const UPSTASH_URL = 'https://renewed-macaw-61269.upstash.io';"
+    }
+  ],
+  "reasoning": "The Upstash Redis instance URL is hardcoded in source code across 4 files. While the token is correctly pulled from env vars, the URL should also be configurable via environment variable to support testing, staging, and to avoid leaking production infrastructure identifiers in the codebase.",
+  "reproduction": null,
+  "recommendation": "Move UPSTASH_URL to environment variable (process.env.UPSTASH_URL) with the current value as fallback for backwards compatibility. Centralize Redis client construction in a shared module (e.g., src/api/rag-utils.ts or new src/api/upstash.ts) to eliminate duplication.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests included. Environment configuration tests would verify all required env vars are loaded and override defaults correctly.",
+  "suggestedRegressionTest": "Unit test: mock process.env.UPSTASH_URL with test value, verify upstashCmd constructs request to mocked URL instead of hardcoded production URL.",
+  "minimumFixScope": "4 files (chat.ts, conversations.ts, history.ts, portal-chat-history.ts) plus optional shared utility module.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-cli-command-ddf15e04ec_a149b34417",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:01.033Z",
+  "updatedAt": "2026-08-22T05:24:01.033Z"
+}

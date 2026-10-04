@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-12d2a6134e-4fe3ee_f1f7772159",
+  "featureId": "feat_route_12d2a6134e",
+  "title": "Hardcoded 'member: jj' in chat API payload prevents reuse or multi-user scenarios",
+  "category": "maintainability",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "src/src/pages/KitFullPortal.tsx",
+      "startLine": 225,
+      "endLine": 225,
+      "symbol": "sendMessage",
+      "quote": "body: JSON.stringify({ message: userMsg.content, member: 'jj' }),"
+    }
+  ],
+  "reasoning": "The component hardcodes 'member: jj' in every chat request. If this portal is ever used by a different user or cloned for another member, the hardcoded value will send incorrect context to the backend. This is a maintainability risk: the code is tightly coupled to a single user ('jj') and requires manual code changes to support others.",
+  "reproduction": "1. Clone KitFullPortal for another user (e.g. 'lindsay')\n2. Forget to change 'jj' to 'lindsay'\n3. Backend receives 'member: jj' and loads wrong context",
+  "recommendation": "Derive the member identifier from the route path or pass it as a prop. For example, extract from window.location.pathname or accept a `member` prop in KitFullPortal and pass it to the API call. This makes the component reusable and less error-prone.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are provided. A test that verifies the API payload includes the correct member identifier would catch this if the component were reused.",
+  "suggestedRegressionTest": "Add a test that renders KitFullPortal with different member props and verifies the fetch payload includes the correct member value.",
+  "minimumFixScope": "src/src/pages/KitFullPortal.tsx (parameterize member value) + src/src/main.tsx (pass member prop or derive from route if needed)",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-12d2a6134e_4fe3ee6692",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260822T052137-0d0e8c",
+  "createdAt": "2026-08-22T05:24:08.227Z",
+  "updatedAt": "2026-08-22T05:24:08.227Z"
+}

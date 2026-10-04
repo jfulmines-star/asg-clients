@@ -3,7 +3,9 @@ import { writeTeamIntel } from './team-intel';
 import { getMarketSnapshot } from './market-data';
 import { recordUsage, hasAlert80BeenSent, markAlert80Sent } from './billing-ledger';
 import { MODEL_DEFAULTS, isHeavyMessage as sharedIsHeavyMessage } from './modelConfig';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun, BorderStyle, TableRow, TableCell, Table, WidthType, ShadingType } from 'docx';
+import * as fs from 'fs';
+import * as path from 'path';
 import PptxGenJS from 'pptxgenjs';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || '';
@@ -3147,40 +3149,119 @@ async function saveSharePointDocForSlug(slug: string, filename: string, content:
     // Build branded Shield/Envelop .docx natively via docx npm (Vercel-safe — no Python subprocess)
     const titleLine = content.split('\n')[0].replace(/^#+\s*/, '') || filename.replace('.docx','');
     const bodyLines = content.split('\n');
-    const docChildren: (Paragraph)[] = [];
-    // Title
+    const docChildren: Paragraph[] = [];
+
+    // --- Logo header ---
+    const logoPath = path.join(__dirname, 'assets', 'envelop-logo.png');
+    if (fs.existsSync(logoPath)) {
+      const logoData = fs.readFileSync(logoPath);
+      docChildren.push(new Paragraph({
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 200 },
+        children: [
+          new ImageRun({
+            data: logoData,
+            transformation: { width: 160, height: 80 },
+            type: 'png',
+          }),
+        ],
+      }));
+    }
+
+    // --- Horizontal rule (thin black border paragraph) ---
     docChildren.push(new Paragraph({
-      text: titleLine,
-      heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
+      border: { bottom: { color: '1a1a1a', space: 1, style: BorderStyle.SINGLE, size: 12 } },
+      spacing: { after: 320 },
+      children: [],
     }));
-    // Subtitle / portal slug
+
+    // --- Title ---
     docChildren.push(new Paragraph({
-      children: [new TextRun({ text: `Shield Technologies — ${slug.toUpperCase()}`, italics: true, color: '4ADE80' })],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 400 },
+      children: [new TextRun({ text: titleLine, bold: true, size: 52, color: '1a1a1a' })],
+      alignment: AlignmentType.LEFT,
+      spacing: { after: 160 },
     }));
-    // Body — parse markdown headings and paragraphs
+
+    // --- Byline ---
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    docChildren.push(new Paragraph({
+      children: [new TextRun({ text: `Shield Technologies Corporation  |  Prepared by Rex  |  ${today}`, size: 18, color: '666666' })],
+      spacing: { after: 480 },
+    }));
+
+    // --- Body — parse markdown headings and paragraphs ---
     for (const line of bodyLines.slice(1)) {
       const h2 = line.match(/^##\s+(.+)/);
       const h3 = line.match(/^###\s+(.+)/);
       const bullet = line.match(/^[-*]\s+(.+)/);
+      const numbered = line.match(/^\d+\.\s+(.+)/);
+      const bold = line.match(/^\*\*(.+)\*\*$/);
       if (h2) {
-        docChildren.push(new Paragraph({ text: h2[1], heading: HeadingLevel.HEADING_2, spacing: { before: 320, after: 120 } }));
+        // Section header with green accent bar
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: h2[1].toUpperCase(), bold: true, size: 22, color: '1a1a1a', allCaps: true })],
+          border: { left: { color: '22c55e', space: 6, style: BorderStyle.SINGLE, size: 24 } },
+          spacing: { before: 480, after: 160 },
+          indent: { left: 180 },
+        }));
       } else if (h3) {
-        docChildren.push(new Paragraph({ text: h3[1], heading: HeadingLevel.HEADING_3, spacing: { before: 200, after: 80 } }));
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: h3[1], bold: true, size: 20, color: '1a1a1a' })],
+          spacing: { before: 280, after: 100 },
+        }));
       } else if (bullet) {
-        docChildren.push(new Paragraph({ children: [new TextRun({ text: bullet[1] })], bullet: { level: 0 }, spacing: { after: 80 } }));
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: bullet[1], size: 20, color: '1a1a1a' })],
+          bullet: { level: 0 },
+          spacing: { after: 80 },
+          indent: { left: 360, hanging: 260 },
+        }));
+      } else if (numbered) {
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: numbered[1], size: 20, color: '1a1a1a' })],
+          numbering: { reference: 'default-numbering', level: 0 },
+          spacing: { after: 80 },
+        }));
+      } else if (bold) {
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: bold[1], bold: true, size: 20, color: '1a1a1a' })],
+          spacing: { after: 100 },
+        }));
       } else if (line.trim()) {
-        docChildren.push(new Paragraph({ children: [new TextRun({ text: line.trim() })], spacing: { after: 120 } }));
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: line.trim(), size: 20, color: '333333' })],
+          spacing: { after: 120 },
+        }));
       } else {
-        docChildren.push(new Paragraph({ text: '' }));
+        docChildren.push(new Paragraph({ text: '', spacing: { after: 80 } }));
       }
     }
+
+    // --- Footer rule ---
+    docChildren.push(new Paragraph({
+      border: { top: { color: '1a1a1a', space: 1, style: BorderStyle.SINGLE, size: 6 } },
+      spacing: { before: 480 },
+      children: [new TextRun({ text: 'CONFIDENTIAL — Shield Technologies Corporation', size: 16, color: '999999', italics: true })],
+      alignment: AlignmentType.CENTER,
+    }));
+
     const doc = new Document({
       creator: 'Rex — Shield Technologies AI',
       title: titleLine,
-      sections: [{ children: docChildren }],
+      numbering: {
+        config: [{
+          reference: 'default-numbering',
+          levels: [{ level: 0, format: 'decimal', text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 260 } } } }],
+        }],
+      },
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
+          },
+        },
+        children: docChildren,
+      }],
     });
     const buffer = await Packer.toBuffer(doc);
     // Upload binary buffer

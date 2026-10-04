@@ -1,0 +1,11 @@
+{
+  "output": {
+    "filePath": "/tmp/asg-clients-api-compressed.xml",
+    "style": "xml",
+    "compress": true
+  },
+  "include": ["api/**"],
+  "ignore": {
+    "customPatterns": ["api/assets/**"]
+  }
+}

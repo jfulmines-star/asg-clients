@@ -4162,9 +4162,17 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
       let continueLoop = true;
       let toolRounds = 0;
 
-      // Detect if this is a document generation request
-      const docGenKeywords = /\b(create|write|draft|generate|make|prepare|build|save|export|document|brief|report|proposal|analysis|pitch|presentation|deck|spreadsheet|file)\b/i;
-      const isDocGenRequest = docGenKeywords.test(String(message)) && !/analyze|read|fetch|get|review|check|look at/i.test(String(message));
+      // Detect if this is a document generation request — catches deep-context casual phrasing too
+      const docGenKeywords = /\b(create|write|draft|generate|make|prepare|build|save|export|document|brief|report|proposal|analysis|pitch|presentation|deck|spreadsheet|file|write.?up|put.?that.?in|send.?me.?a|put.?together|compile|summarize.?into|turn.?that.?into|send.?that|package.?that|format.?that)\b/i;
+      const isDocGenRequest = docGenKeywords.test(String(message)) && !/analyze|read|fetch|get|review|check|look at|what is|who is|tell me|explain/i.test(String(message));
+
+      // If doc gen detected mid-context, append a hard reminder to loopMessages so the model sees it right before responding
+      if (isDocGenRequest) {
+        loopMessages.push({
+          role: 'user',
+          content: '[SYSTEM REMINDER: This message is a document request. You MUST call save_document now. Do not write the document in chat. Do not explain. Just call the tool with the filename and full content. This is non-negotiable.]',
+        });
+      }
 
       while (continueLoop && toolRounds < 3) {
         const loopRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -4235,8 +4243,23 @@ Keep proactive flags to one line. Surface the most relevant thing first. Never o
           }
           loopMessages.push({ role: 'user', content: toolResults });
         } else {
-          reply = (loopData.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || 'Ready when you are.';
-          continueLoop = false;
+          const textReply = (loopData.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || '';
+
+          // Guard: if this was a doc gen request but Rex responded with text instead of calling save_document, force a retry
+          const toolWasCalled = loopMessages.some(m => Array.isArray(m.content) && (m.content as Array<{type:string;name?:string}>).some(b => b.type === 'tool_use' && b.name === 'save_document'));
+          if (isDocGenRequest && !toolWasCalled && toolRounds < 2) {
+            // Rex wrote the doc in chat instead of calling the tool — inject correction and retry
+            loopMessages.push({ role: 'assistant', content: loopData.content });
+            loopMessages.push({
+              role: 'user',
+              content: `[SYSTEM CORRECTION: You wrote the document content in chat instead of calling save_document. That is wrong. Call save_document NOW with filename and the full document content you just wrote. Do not repeat yourself in chat. Just call the tool.]`,
+            });
+            toolRounds += 1;
+            // continue loop — do not set continueLoop = false
+          } else {
+            reply = textReply || 'Ready when you are.';
+            continueLoop = false;
+          }
         }
       }
       if (continueLoop) reply = 'I could not complete that lookup within the safe tool limit. Please try a narrower question.';

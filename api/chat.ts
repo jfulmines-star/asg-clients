@@ -2937,7 +2937,7 @@ async function sendDocViaResend(docBuffer: Buffer, filename: string, recipientEm
     const base64Doc = docBuffer.toString('base64');
     const payload = {
       from: 'onboarding@resend.dev',
-      to: 'jfulmines@axiomstreamgroup.com',
+      to: recipientEmail,
       subject: subject,
       html: body,
       attachments: [
